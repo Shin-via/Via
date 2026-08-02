@@ -46,3 +46,6 @@ build/
 .springBeans
 .sts4-cache
 bin/
+
+#DB 설정파일
+application-db.yml
