@@ -1,4 +1,4 @@
-package com.via.shinvia.member.dto;
+package com.via.shinvia.member.domain;
 
 import lombok.*;
 
