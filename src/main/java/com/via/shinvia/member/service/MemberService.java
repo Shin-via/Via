@@ -1,6 +1,7 @@
 package com.via.shinvia.member.service;
 
 import com.via.shinvia.member.domain.Member;
+import com.via.shinvia.member.domain.MemberRole;
 import com.via.shinvia.member.domain.MemberStatus;
 import com.via.shinvia.member.dto.MemberSignupRequestDto;
 import com.via.shinvia.member.mapper.MemberMapper;
@@ -35,6 +36,7 @@ public class MemberService {
         member.setPhoneNumber(request.getPhoneNumber());
         member.setBirthDate(request.getBirthDate());
         member.setUserStatus(MemberStatus.ACTIVE);
+        member.setUserRole(MemberRole.USER);
 
         try{
             int insertedCount = memberMapper.insertMember(member);

@@ -19,4 +19,5 @@ public class Member {
     private MemberStatus userStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private MemberRole userRole;
 }
