@@ -29,54 +29,10 @@
         <div class="form-group">
             <label for="loginEmail">이메일</label>
 
-            <div class="input-button-row">
-                <input type="email"
-                       id="loginEmail"
-                       th:field="*{loginEmail}"
-                       th:readonly="${emailVerified}"
-                       placeholder="example@email.com"
-                       autocomplete="email">
-
-                <button type="button"
-                        id="sendCodeButton"
-                        class="verification-button"
-                        th:disabled="${emailVerified}">
-                    인증번호 전송
-                </button>
-            </div>
-
-            <div id="verificationArea"
-                 class="input-button-row"
-                 th:classappend="${emailVerified} ? ' hidden' : ''"
-                 hidden>
-                <input type="text"
-                       id="verificationCode"
-                       placeholder="인증번호 입력"
-                       inputmode="numeric"
-                       autocomplete="one-time-code">
-
-                <button type="button"
-                        id="verifyCodeButton"
-                        class="verification-button">
-                    인증하기
-                </button>
-            </div>
-
-            <p id="emailVerificationMessage"
-               th:class="${emailVerified}
-                    ? 'success-message'
-                    : 'field-error'"
-               th:text="${emailVerified}
-                    ? '이메일 인증이 완료되었습니다.'
-                    : '이메일 인증을 먼저 완료해주세요.'">
-            </p>
-
-            <p class="field-error"
-               th:if="${#fields.hasErrors('loginEmail')}"
-               th:errors="*{loginEmail}">
-                이메일 오류
-            </p>
-
+            <input type="email"
+                   id="loginEmail"
+                   th:field="*{loginEmail}"
+                   readonly>
         </div>
 
         <div class="form-group">
@@ -98,7 +54,6 @@
         <div class="form-group">
             <label for="passwordConfirm">비밀번호 확인</label>
 
-            <!-- DTO에 전달하지 않는 프론트 확인용 필드 -->
             <input type="password"
                    id="passwordConfirm"
                    placeholder="비밀번호를 다시 입력해주세요"
@@ -130,7 +85,7 @@
             <input type="tel"
                    id="phoneNumber"
                    th:field="*{phoneNumber}"
-                   placeholder="01012345678"
+                   placeholder="- 제외"
                    autocomplete="tel">
         </div>
 
@@ -149,8 +104,7 @@
         </div>
 
         <button type="submit"
-                class="submit-button"
-                th:disabled="${!emailVerified}">
+                class="submit-button">
             가입하기
         </button>
     </form>

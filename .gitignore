@@ -49,3 +49,6 @@ bin/
 
 #DB 설정파일
 application-db.yml
+
+#SMTP
+application-mail.yml

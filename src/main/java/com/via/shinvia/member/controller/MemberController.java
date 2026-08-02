@@ -21,14 +21,26 @@ public class MemberController {
     private static final String VERIFIED_EMAIL_KEY="VERIFIED_EMAIL";
     private final MemberService memberService;
 
+    @GetMapping("/email")
+    public String emailVerificationFrom(HttpSession session) {
+        if (session.getAttribute(VERIFIED_EMAIL_KEY)!=null){
+            return "redirect:/signup";
+        }
+        return "member/email";
+    }
+
     @GetMapping
     public String signupForm(HttpSession session, Model model){
+        String verifiedEmail=(String) session.getAttribute( VERIFIED_EMAIL_KEY);
+
+        if (verifiedEmail ==null){
+            return "redirect:/email";
+        }
+
         if(!model.containsAttribute("memberRequest")) {
             MemberSignupRequestDto request = new MemberSignupRequestDto();
-            String verifiedEmail=(String) session.getAttribute( VERIFIED_EMAIL_KEY);
-            if(verifiedEmail!=null) {
-                request.setLoginEmail(verifiedEmail);
-            }
+
+           request.setLoginEmail(verifiedEmail);
             model.addAttribute("memberRequest", request);
         }
         return "member/signup";
@@ -39,16 +51,23 @@ public class MemberController {
                           BindingResult bindingResult,
                           HttpSession session,
                           RedirectAttributes redirectAttributes) {
+        String verifiedEmail = (String) session.getAttribute(VERIFIED_EMAIL_KEY);
+        if (verifiedEmail==null) {
+            return "redirect:/email";
+        }
+
+        request.setLoginEmail(verifiedEmail);
+
         if(bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error->System.out.println(error.getDefaultMessage()));
             return "member/signup";
         }
-        String verifiedEmail=(String) session.getAttribute(VERIFIED_EMAIL_KEY);
 
         try{
-            Long userId = memberService.signup(request, verifiedEmail);
+            memberService.signup(request, verifiedEmail);
             session.removeAttribute(VERIFIED_EMAIL_KEY);
             redirectAttributes.addFlashAttribute("signupMessage", "회원가입이 완료되었습니다.");
-            return "redirect:/login";
+            return "redirect:/";
         } catch(IllegalArgumentException e) {
             bindingResult.reject("signupFailed", e.getMessage());
             return "member/signup";
@@ -57,7 +76,7 @@ public class MemberController {
 
     @ModelAttribute("emailVerified")
     public boolean emailVerified(HttpSession session) {
-        return session.getAttribute("VERIFIED_EMAIL") != null;
+        return session.getAttribute(VERIFIED_EMAIL_KEY) != null;
     }
 
 }
