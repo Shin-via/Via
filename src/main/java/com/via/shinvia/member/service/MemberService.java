@@ -29,7 +29,7 @@ public class MemberService {
         validateDuplicateEmail(loginEmail);
 
         Member member = new Member();
-        member.setLoginEmail(loginEmail);
+        member.setLoginEmail(verifiedEmail);
         member.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         member.setUserName(request.getUserName());
         member.setPhoneNumber(request.getPhoneNumber());
@@ -48,8 +48,8 @@ public class MemberService {
     }
 
     private void validateVerifiedEmail(String loginEmail, String verifiedEmail) {
-        if(verifiedEmail==null || !loginEmail.equals(normalizeEmail(verifiedEmail))) {
-            throw new IllegalArgumentException("이메일 인증이 필요합니다.");
+        if(verifiedEmail==null || !loginEmail.equalsIgnoreCase(normalizeEmail(verifiedEmail))) {
+            throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
         }
     }
 
