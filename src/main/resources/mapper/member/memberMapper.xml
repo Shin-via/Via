@@ -17,7 +17,8 @@
                 birth_date,
                 user_status,
                 created_at,
-                updated_at
+                updated_at,
+                user_role
             )
             VALUES (
                 #{loginEmail},
@@ -27,7 +28,8 @@
                 #{birthDate},
                 #{userStatus},
                 CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
+                CURRENT_TIMESTAMP,
+                #{userRole}
             )
     </insert>
 
@@ -49,7 +51,8 @@
             birth_date,
             user_status,
             created_at,
-            updated_at
+            updated_at,
+            user_role
         FROM user
         WHERE login_email=#{loginEmail}
         LIMIT 1

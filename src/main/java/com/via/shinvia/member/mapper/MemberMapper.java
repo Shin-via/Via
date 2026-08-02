@@ -2,7 +2,7 @@ package com.via.shinvia.member.mapper;
 
 import com.via.shinvia.member.domain.Member;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface MemberMapper {
