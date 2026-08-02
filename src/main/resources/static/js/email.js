@@ -5,6 +5,13 @@ const verificationCode = document.querySelector('#verificationCode');
 const verifyCodeButton = document.querySelector('#verifyCodeButton');
 const emailVerificationMessage = document.querySelector('#emailVerificationMessage');
 const nextButton = document.querySelector('#nextButton');
+const csrfToken = document
+    .querySelector('meta[name="_csrf"]')
+    .getAttribute('content');
+
+const csrfHeader = document
+    .querySelector('meta[name="_csrf_header"]')
+    .getAttribute('content');
 
 sendCodeButton.addEventListener('click', async () => {
     if (!loginEmail.checkValidity()) {
@@ -83,7 +90,8 @@ async function requestEmailVerification(url, body) {
     const response = await fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            [csrfHeader]: csrfToken
         },
         body: JSON.stringify(body)
     });
@@ -100,5 +108,5 @@ async function requestEmailVerification(url, body) {
 }
 
 nextButton.addEventListener('click', () => {
-    window.location.href = '';
+    window.location.href = '/signup';
 });
