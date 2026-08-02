@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter @ToString
+@Setter @ToString(exclude="passwordHash")
 public class Member {
     private Long userId;
     private String loginEmail;
@@ -17,6 +17,6 @@ public class Member {
     private String phoneNumber;
     private LocalDate birthDate;
     private MemberStatus userStatus;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
