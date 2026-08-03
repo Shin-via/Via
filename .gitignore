@@ -50,4 +50,6 @@ bin/
 
 
 application.properties
-application
+application-db.yml
+application-email.yml
+claude.md
