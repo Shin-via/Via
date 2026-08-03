@@ -37,17 +37,6 @@ build/
 # Mac OS
 .DS_Store
 
-# Claude Code 프로젝트 지침 (로컬 전용, 공유 저장소에 커밋하지 않음)
-Claude.md
-
-# DB 접속 정보(계정/비밀번호)가 들어있는 로컬 설정 - 커밋 금지
-src/main/resources/application.yml
-src/main/resources/application-db.yml
-src/main/resources/application-mail.yml
-src/main/resources/application.properties
-
-# docker-compose용 로컬 환경변수(DB root 비밀번호 등) - 커밋 금지
-.env
 
 # STS / Eclipse (혹시 몰라 추가)
 .apt_generated
@@ -58,3 +47,6 @@ src/main/resources/application.properties
 .springBeans
 .sts4-cache
 bin/
+
+
+application.properties
