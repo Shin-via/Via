@@ -24,9 +24,12 @@ public class PolicySupportApiController {
     public ResponseEntity<PolicySupportProgramDTO> getProgramDetail(
             @PathVariable Long programId
     ) {
-        PolicySupportProgramDTO program =
-                policySupportProgramService.findById(programId);
-
-        return ResponseEntity.ok(program);
+        try {
+            return ResponseEntity.ok(
+                    policySupportProgramService.findById(programId)
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

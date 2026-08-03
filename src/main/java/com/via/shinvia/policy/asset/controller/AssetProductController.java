@@ -3,6 +3,7 @@ package com.via.shinvia.policy.asset.controller;
 import com.via.shinvia.policy.asset.dto.AssetProductSearchDTO;
 import com.via.shinvia.policy.asset.service.AssetProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class AssetProductController {
     private final AssetProductService service;
 
@@ -32,6 +34,7 @@ public class AssetProductController {
             model.addAttribute("products", page.getProducts());
             model.addAttribute("loadError", false);
         } catch (Exception e) {
+            log.error("자산형성 상품 목록 조회 실패", e);
             model.addAttribute("products", java.util.List.of());
             model.addAttribute("loadError", true);
         }
@@ -41,7 +44,11 @@ public class AssetProductController {
     @ResponseBody
     @GetMapping("/api/asset-products/{id}")
     public ResponseEntity<?> detail(@PathVariable String id) {
-        return ResponseEntity.ok(service.findById(id));
+        try {
+            return ResponseEntity.ok(service.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     private void normalize(AssetProductSearchDTO search) {
