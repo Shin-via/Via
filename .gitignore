@@ -37,6 +37,7 @@ build/
 # Mac OS
 .DS_Store
 
+
 # STS / Eclipse (혹시 몰라 추가)
 .apt_generated
 .classpath
