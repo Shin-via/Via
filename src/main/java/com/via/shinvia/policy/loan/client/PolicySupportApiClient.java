@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PolicySupportApiClient {
 
-    private final RestClient.Builder restClientBuilder;
+    private final RestClient restClient;
 
     @Value("${finance.api.service-key}")
     private String serviceKey;
@@ -36,6 +36,9 @@ public class PolicySupportApiClient {
 
     @Value("${finance.api.num-of-rows:100}")
     private int numOfRows;
+
+    @Value("${finance.api.max-pages:1000}")
+    private int maxPages;
 
     /**
      * API의 모든 페이지를 반복 호출한다.
@@ -47,7 +50,8 @@ public class PolicySupportApiClient {
         int pageNo = 1;
         int totalCount = Integer.MAX_VALUE;
 
-        while (allItems.size() < totalCount) {
+        while (allItems.size() < totalCount
+                && pageNo <= maxPages) {
 
             String xml = requestPage(pageNo);
 
@@ -83,6 +87,16 @@ public class PolicySupportApiClient {
             pageNo++;
         }
 
+        if (allItems.size() < totalCount
+                && pageNo > maxPages) {
+            log.warn(
+                    "정책상품 API 최대 페이지 제한 도달 - maxPages={}, 조회={}건, 전체={}건",
+                    maxPages,
+                    allItems.size(),
+                    totalCount
+            );
+        }
+
         return allItems;
     }
 
@@ -107,9 +121,6 @@ public class PolicySupportApiClient {
                 .queryParam("type", "xml")
                 .build()
                 .toUri();
-
-        RestClient restClient =
-                restClientBuilder.build();
 
         byte[] responseBytes = restClient
                 .get()

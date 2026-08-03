@@ -41,7 +41,7 @@ public class KinfaFinancialProductClient {
             "name=\"sn\"\\s+value=\"([^\"]+)\""
     );
 
-    private final RestClient.Builder restClientBuilder;
+    private final RestClient restClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public FinancialProductPageDTO findProducts(
@@ -70,7 +70,7 @@ public class KinfaFinancialProductClient {
         request.put("prdDs", productType.productCode);
         request.putAll(filters);
 
-        String response = restClientBuilder.build()
+        String response = restClient
                 .post()
                 .uri(BASE_URL + productType.endpoint)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -95,7 +95,7 @@ public class KinfaFinancialProductClient {
             ProductType productType,
             String id
     ) {
-        String response = restClientBuilder.build()
+        String response = restClient
                 .post()
                 .uri(BASE_URL + productType.detailEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
