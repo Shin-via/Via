@@ -1,6 +1,7 @@
 package com.via.shinvia.auth.service;
 
 import com.via.shinvia.member.domain.Member;
+import com.via.shinvia.member.domain.MemberStatus;
 import com.via.shinvia.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -20,6 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Member member = memberMapper.findByLoginEmail(loginEmail);
         if (member==null){
             throw new UsernameNotFoundException("이메일 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        if(member.getUserStatus()== MemberStatus.SUSPENDED || member.getUserStatus()==MemberStatus.WITHDRAWN){
+            throw new UsernameNotFoundException("사용 불가 계정입니다.");
         }
 
         return User.builder()
