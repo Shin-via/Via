@@ -47,8 +47,5 @@ build/
 .sts4-cache
 bin/
 
-#DB 설정파일
-application-db.yml
 
-#SMTP
-application-mail.yml
+application.properties
