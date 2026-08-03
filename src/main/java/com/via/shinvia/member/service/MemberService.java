@@ -5,11 +5,11 @@ import com.via.shinvia.member.domain.MemberRole;
 import com.via.shinvia.member.domain.MemberStatus;
 import com.via.shinvia.member.dto.MemberSignupRequestDto;
 import com.via.shinvia.member.mapper.MemberMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
@@ -24,11 +24,6 @@ public class MemberService {
             MemberSignupRequestDto request,
             String verifiedEmail
     ) {
-        String loginEmail = normalizeEmail(request.getLoginEmail());
-
-        validateVerifiedEmail(loginEmail, verifiedEmail);
-        validateDuplicateEmail(loginEmail);
-
         Member member = new Member();
         member.setLoginEmail(verifiedEmail);
         member.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -47,24 +42,5 @@ public class MemberService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.", e);
         }
         return member.getUserId();
-    }
-
-    private void validateVerifiedEmail(String loginEmail, String verifiedEmail) {
-        if(verifiedEmail==null || !loginEmail.equalsIgnoreCase(normalizeEmail(verifiedEmail))) {
-            throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
-        }
-    }
-
-    private void validateDuplicateEmail(String loginEmail) {
-        if (memberMapper.existsByLoginEmail(loginEmail)) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
-        }
-    }
-
-    private String normalizeEmail(String email) {
-        if (email == null || email.isBlank()){
-            throw new IllegalArgumentException("이메일은 필수입니다.");
-        }
-        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

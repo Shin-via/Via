@@ -1,14 +1,11 @@
 package com.via.shinvia.member.service;
 
-import io.netty.util.internal.StringUtil;
-import jakarta.mail.internet.MimeMessage;
+import com.via.shinvia.member.mapper.MemberMapper;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,14 +21,16 @@ public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
     private final StringRedisTemplate redisTemplate;
-
+    private final MemberMapper memberMapper;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public void sendCode (String email, HttpSession session) {
         String normalizedEmail = normalizedEmail(email);
+        validateDuplicateEmail(email);
+        validateVerifiedEmail(normalizedEmail, email);
+
         String code = createVerificationCode();
 
-        //새 인증 요청시 기존 요청 인증 상태 해제
         session.removeAttribute(VERIFIED_EMAIL_KEY);
 
         sendVerificationMail(normalizedEmail, code);
@@ -44,6 +43,17 @@ public class EmailVerificationService {
                 Duration.ofMinutes(5)
         );
 
+    }
+    private void validateVerifiedEmail(String loginEmail, String verifiedEmail) {
+        if(verifiedEmail==null || !loginEmail.equalsIgnoreCase(normalizedEmail(verifiedEmail))) {
+            throw new IllegalArgumentException("이메일 인증을 완료해주세요.");
+        }
+    }
+
+    private void validateDuplicateEmail(String loginEmail) {
+        if (memberMapper.existsByLoginEmail(loginEmail)) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
     }
 
     public void verifyCode(String email, String inputCode, HttpSession session) {
@@ -61,7 +71,6 @@ public class EmailVerificationService {
         redisTemplate.delete(key);
         session.setAttribute(VERIFIED_EMAIL_KEY, normalizedEmail);
     }
-
 
 
     private void sendVerificationMail(String email, String code) {

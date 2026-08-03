@@ -49,3 +49,5 @@ bin/
 
 
 application.properties
+application-db.yml
+application-mail.yml
