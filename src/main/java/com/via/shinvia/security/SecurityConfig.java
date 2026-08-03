@@ -10,6 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
@@ -22,6 +24,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup/**",
                                 "/api/email-verify/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
@@ -38,6 +42,14 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/login?error")
                         .permitAll()
+                )
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(customOAuth2UserService)
+                        )
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?oauthError")
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
