@@ -16,8 +16,6 @@
                 phone_number,
                 birth_date,
                 user_status,
-                created_at,
-                updated_at,
                 user_role
             )
             VALUES (
@@ -27,8 +25,6 @@
                 #{phoneNumber},
                 #{birthDate},
                 #{userStatus},
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP,
                 #{userRole}
             )
     </insert>
@@ -39,6 +35,22 @@
             FROM app_user
             WHERE login_email = #{loginEmail}
         )
+    </select>
+
+    <select id="findByUserId">
+        SELECT
+            user_id,
+            login_email,
+            password_hash,
+            user_name,
+            phone_number,
+            birth_date,
+            user_status,
+            created_at,
+            updated_at,
+            user_role
+        FROM app_user
+        WHERE user_id=#{userId}
     </select>
 
     <select id="findByLoginEmail">

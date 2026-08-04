@@ -8,5 +8,6 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper {
     int insertUser(User user);
     boolean existsByLoginEmail(@Param("loginEmail") String loginEmail);
+    User findByUserId(@Param("userId") Long userId);
     User findByLoginEmail(@Param("loginEmail") String loginEmail);
 }
