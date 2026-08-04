@@ -20,4 +20,7 @@ public class Member {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private MemberRole userRole;
+
+    // user connection_id 추가하였습니다~
+    private String userCi;
 }
