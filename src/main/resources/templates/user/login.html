@@ -41,9 +41,15 @@
         </div>
 
         <button type="submit">로그인</button>
-    </form>
 
+    </form>
+    <a th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
     <a th:href="@{/signup/email}">회원가입</a>
+
+    <p th:if="${param.signup}">
+        회원가입이 완료되었습니다.
+        카카오 계정으로 다시 로그인해주세요.
+    </p>
 </main>
 </body>
 </html>

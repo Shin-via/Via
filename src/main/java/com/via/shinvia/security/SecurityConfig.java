@@ -1,5 +1,6 @@
 package com.via.shinvia.security;
 
+import com.via.shinvia.oauth2.security.OAuth2LoginSuccessHandler;
 import com.via.shinvia.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -24,6 +26,7 @@ public class SecurityConfig {
                                 "/",
                                 "/login",
                                 "/signup/**",
+                                "/social/signup/**",
                                 "/api/email-verify/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
@@ -49,7 +52,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(oAuth2LoginSuccessHandler)
                         .failureUrl("/login?oauthError")
                 )
                 .logout(logout -> logout
