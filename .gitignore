@@ -30,9 +30,9 @@ replay_pid*
 out/
 
 # Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
+                         .gradle/
+                         build/
+                         !gradle/wrapper/gradle-wrapper.jar
 
 # Mac OS
 .DS_Store
@@ -48,8 +48,18 @@ build/
 .sts4-cache
 bin/
 
+# 개인설정
+build/
+.github/
+.gradle/
+.idea/
+gradle/
+
+
 
 application.properties
 application-db.yml
 application-mail.yml
+application-client.yml
 claude.md
+
