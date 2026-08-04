@@ -1,5 +1,6 @@
 package com.via.shinvia.security;
 
+import com.via.shinvia.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

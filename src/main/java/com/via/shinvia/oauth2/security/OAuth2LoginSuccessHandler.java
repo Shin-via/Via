@@ -1,0 +1,53 @@
+package com.via.shinvia.oauth2.security;
+
+import com.via.shinvia.oauth2.domain.OAuth2LoginStatus;
+import com.via.shinvia.oauth2.domain.PendingSocialUser;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+
+@Component
+public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+    public static final String PENDING_SOCIAL_USER = "PENDING_SOCIAL_USER";
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication
+    ) throws IOException, ServletException {
+        if(!(authentication.getPrincipal() instanceof CustomOAuth2User customOAuth2User)) {
+            throw new IllegalStateException("OAuth2 인증 사용자 정보를 확인할 수 없습니다.");
+        }
+
+        OAuth2LoginStatus loginStatus = customOAuth2User.getLoginStatus();
+
+        switch (loginStatus) {
+            case EXISTING_USER -> handleExistingUser(request, response);
+            case LINK_REQUIRED -> handlePendingUser(request, response, customOAuth2User, "/social/link");
+            case NEW_USER -> handlePendingUser(request, response, customOAuth2User, "/signup");
+        }
+    }
+
+    private void handleExistingUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        if(session!=null){
+            session.removeAttribute(PENDING_SOCIAL_USER);
+        }
+        response.sendRedirect("/");
+    }
+
+    private void handlePendingUser(HttpServletRequest request, HttpServletResponse response,
+                                   CustomOAuth2User customOAuth2User, String redirectUrl) throws IOException {
+        PendingSocialUser pendingSocialUser= new PendingSocialUser(customOAuth2User.getProvider(),
+                                                                    customOAuth2User.getProviderUserId(),
+                                                                    customOAuth2User.getProviderEmail());
+        request.getSession().setAttribute(PENDING_SOCIAL_USER, pendingSocialUser);
+        response.sendRedirect(redirectUrl);
+    }
+}
