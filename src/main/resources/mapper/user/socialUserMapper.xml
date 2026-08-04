@@ -17,17 +17,15 @@
             keyProperty="socialUserId"
             keyColumn="social_user_id">
         INSERT INTO social_user (
-            social_user_id,
             user_id,
             provider,
             provider_user_id,
             provider_email
         )
         VALUES (
-            #{socialUserId}
-            #{userId}
-            #{provider}
-            #{providerUserId}
+            #{userId},
+            #{provider},
+            #{providerUserId},
             #{providerEmail}
         )
     </insert>
