@@ -1,9 +1,6 @@
 package com.via.shinvia.user.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +25,7 @@ public class UserSignupRequestDto {
     @NotBlank
     private String phoneNumber;
 
+    @NotNull
     @Past(message="생년월일은 과거 날짜여야 합니다.")
     private LocalDate birthDate;
 }
