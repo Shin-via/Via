@@ -1,8 +1,8 @@
-package com.via.shinvia.member.controller;
+package com.via.shinvia.user.controller;
 
-import com.via.shinvia.member.dto.EmailSendRequestDto;
-import com.via.shinvia.member.dto.EmailVerifyRequestDto;
-import com.via.shinvia.member.service.EmailVerificationService;
+import com.via.shinvia.user.dto.EmailSendRequestDto;
+import com.via.shinvia.user.dto.EmailVerifyRequestDto;
+import com.via.shinvia.user.service.EmailVerificationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

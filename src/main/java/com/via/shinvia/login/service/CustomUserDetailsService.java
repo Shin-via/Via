@@ -1,10 +1,9 @@
-package com.via.shinvia.auth.service;
+package com.via.shinvia.login.service;
 
-import com.via.shinvia.member.domain.Member;
-import com.via.shinvia.member.domain.MemberStatus;
-import com.via.shinvia.member.mapper.MemberMapper;
+import com.via.shinvia.user.domain.User;
+import com.via.shinvia.user.domain.UserStatus;
+import com.via.shinvia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,23 +13,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final MemberMapper memberMapper;
+    private final UserMapper userMapper;
 
     @Override
     public UserDetails loadUserByUsername(String loginEmail) throws UsernameNotFoundException {
-        Member member = memberMapper.findByLoginEmail(loginEmail);
-        if (member==null){
+        User user = userMapper.findByLoginEmail(loginEmail);
+        if (user==null){
             throw new UsernameNotFoundException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
 
-        if(member.getUserStatus()== MemberStatus.SUSPENDED || member.getUserStatus()==MemberStatus.WITHDRAWN){
+        if(user.getUserStatus()== UserStatus.SUSPENDED || user.getUserStatus()== UserStatus.WITHDRAWN){
             throw new UsernameNotFoundException("사용 불가 계정입니다.");
         }
 
-        return User.builder()
-                    .username(member.getLoginEmail())
-                    .password(member.getPasswordHash())
-                    .roles(member.getUserRole().name())
+        return org.springframework.security.core.userdetails.User.builder()
+                    .username(user.getLoginEmail())
+                    .password(user.getPasswordHash())
+                    .roles(user.getUserRole().name())
                     .build();
     }
 }
