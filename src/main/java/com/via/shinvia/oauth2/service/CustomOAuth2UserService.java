@@ -32,7 +32,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         SocialProvider provider = SocialProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
-        String providerUserId = oauth2User.getAttribute("id");
+        Object id = oauth2User.getAttribute("id");
+        String providerUserId = String.valueOf(id);
         String providerEmail = extractKaKaoEmail(oauth2User);
 
         return determineLoginStatus(oauth2User, provider, providerUserId, providerEmail);
