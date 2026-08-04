@@ -1,4 +1,4 @@
-package com.via.shinvia.member.domain;
+package com.via.shinvia.user.domain;
 
 import lombok.*;
 
@@ -9,15 +9,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter @ToString(exclude="passwordHash")
-public class Member {
+@Builder
+public class User {
     private Long userId;
     private String loginEmail;
     private String passwordHash;
     private String userName;
     private String phoneNumber;
     private LocalDate birthDate;
-    private MemberStatus userStatus;
+    private UserStatus userStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private MemberRole userRole;
+    private UserRole userRole;
 }

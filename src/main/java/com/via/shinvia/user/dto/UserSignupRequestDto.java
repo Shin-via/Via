@@ -1,4 +1,4 @@
-package com.via.shinvia.member.dto;
+package com.via.shinvia.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-public class MemberSignupRequestDto {
+public class UserSignupRequestDto {
     @NotBlank(message="이메일은 필수입니다.")
     @Email(message="올바른 이메일 형식이 아닙니다.")
     private String loginEmail;

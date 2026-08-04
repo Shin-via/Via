@@ -1,4 +1,4 @@
-package com.via.shinvia.auth.controller;
+package com.via.shinvia.login.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +8,7 @@ public class LoginController {
 
     @GetMapping("/login")
     public String loginForm() {
-        return "/member/login";
+        return "/user/login";
     }
 
     @GetMapping("/")

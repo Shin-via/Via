@@ -1,7 +1,7 @@
-package com.via.shinvia.member.controller;
+package com.via.shinvia.user.controller;
 
-import com.via.shinvia.member.dto.MemberSignupRequestDto;
-import com.via.shinvia.member.service.MemberService;
+import com.via.shinvia.user.dto.UserSignupRequestDto;
+import com.via.shinvia.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +17,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/signup")
 @RequiredArgsConstructor
-public class MemberController {
+public class UserController {
     private static final String VERIFIED_EMAIL_KEY="VERIFIED_EMAIL";
-    private final MemberService memberService;
+    private final UserService userService;
 
     @GetMapping("/email")
     public String emailVerificationFrom(HttpSession session) {
         if (session.getAttribute(VERIFIED_EMAIL_KEY)!=null){
             return "redirect:/signup";
         }
-        return "member/email";
+        return "user/email";
     }
 
     @GetMapping
@@ -37,17 +37,17 @@ public class MemberController {
             return "redirect:/email";
         }
 
-        if(!model.containsAttribute("memberRequest")) {
-            MemberSignupRequestDto request = new MemberSignupRequestDto();
+        if(!model.containsAttribute("userRequest")) {
+            UserSignupRequestDto request = new UserSignupRequestDto();
 
            request.setLoginEmail(verifiedEmail);
-            model.addAttribute("memberRequest", request);
+            model.addAttribute("userRequest", request);
         }
-        return "member/signup";
+        return "user/signup";
     }
 
     @PostMapping
-    public String signup( @Valid @ModelAttribute("memberRequest") MemberSignupRequestDto request,
+    public String signup( @Valid @ModelAttribute("userRequest") UserSignupRequestDto request,
                           BindingResult bindingResult,
                           HttpSession session,
                           RedirectAttributes redirectAttributes) {
@@ -60,17 +60,17 @@ public class MemberController {
 
         if(bindingResult.hasErrors()) {
             bindingResult.getAllErrors().forEach(error->System.out.println(error.getDefaultMessage()));
-            return "member/signup";
+            return "user/signup";
         }
 
         try{
-            memberService.signup(request, verifiedEmail);
+            userService.signup(request, verifiedEmail);
             session.removeAttribute(VERIFIED_EMAIL_KEY);
             redirectAttributes.addFlashAttribute("signupMessage", "회원가입이 완료되었습니다.");
             return "redirect:/";
         } catch(IllegalArgumentException e) {
             bindingResult.reject("signupFailed", e.getMessage());
-            return "member/signup";
+            return "user/signup";
         }
     }
 

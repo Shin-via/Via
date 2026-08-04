@@ -1,6 +1,6 @@
-package com.via.shinvia.member.service;
+package com.via.shinvia.user.service;
 
-import com.via.shinvia.member.mapper.MemberMapper;
+import com.via.shinvia.user.mapper.UserMapper;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,7 +21,7 @@ public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
     private final StringRedisTemplate redisTemplate;
-    private final MemberMapper memberMapper;
+    private final UserMapper userMapper;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public void sendCode (String email, HttpSession session) {
@@ -51,7 +51,7 @@ public class EmailVerificationService {
     }
 
     private void validateDuplicateEmail(String loginEmail) {
-        if (memberMapper.existsByLoginEmail(loginEmail)) {
+        if (userMapper.existsByLoginEmail(loginEmail)) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
     }

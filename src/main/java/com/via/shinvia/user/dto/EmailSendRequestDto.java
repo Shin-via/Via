@@ -1,4 +1,4 @@
-package com.via.shinvia.member.dto;
+package com.via.shinvia.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
