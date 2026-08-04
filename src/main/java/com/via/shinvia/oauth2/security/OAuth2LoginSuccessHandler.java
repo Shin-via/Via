@@ -30,7 +30,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         switch (loginStatus) {
             case EXISTING_USER -> handleExistingUser(request, response);
             case LINK_REQUIRED -> handlePendingUser(request, response, customOAuth2User, "/social/link");
-            case NEW_USER -> handlePendingUser(request, response, customOAuth2User, "/signup");
+            case NEW_USER -> handlePendingUser(request, response, customOAuth2User, "/social/signup");
         }
     }
 
