@@ -15,6 +15,7 @@ import java.util.Map;
 @Slf4j
 @Getter
 @Builder
+// 맞춤대출 상품정보 전달 기능
 public class PolicySupportProgramDTO {
 
     private Long policySupportProgramId;

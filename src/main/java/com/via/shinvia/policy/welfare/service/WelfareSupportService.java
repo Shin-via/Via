@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// 복합지원 조회 처리 기능
 public class WelfareSupportService {
     private final WelfareSupportClient client;
     public FinancialProductPageDTO findAll(WelfareSupportSearchDTO search) { return client.findAll(search); }

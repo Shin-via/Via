@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+// 사회연대금융 외부 API 호출 기능
 public class SocialFinanceClient {
     private final KinfaFinancialProductClient client;
     public FinancialProductPageDTO findAll(SocialFinanceSearchDTO search) {

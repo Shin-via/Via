@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
+// 맞춤대출 목록 화면 제공 기능
 public class PolicySupportViewController {
 
     private final PolicySupportProgramService

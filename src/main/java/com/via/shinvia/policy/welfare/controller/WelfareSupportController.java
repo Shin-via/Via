@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+// 복합지원 화면 및 상세조회 기능
 public class WelfareSupportController {
     private final WelfareSupportService service;
 

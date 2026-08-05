@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mapper
+// 맞춤대출 상품 DB 조회 및 저장 기능
 public interface PolicySupportProgramRepository {
 
     Optional<PolicySupportProgram> findByExternalSeq(

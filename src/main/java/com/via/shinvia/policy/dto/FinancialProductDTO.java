@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+// 금융상품 목록정보 전달 기능
 public class FinancialProductDTO {
 
     private String id;
