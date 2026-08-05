@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>?? ?? ????</title>
+
+    <!-- ???? CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/debt-priority.css}">
+</head>
+
+<body>
+
+<main class="page-container">
+
+    <!-- ??? ?? -->
+    <section class="page-header">
+
+        <p class="page-category">
+            ??? ?? ???
+        </p>
+
+        <h1>
+            ?? ?? ?? ??
+        </h1>
+
+        <p class="page-description">
+            ?? ??, ??, ???????,
+            ?? ??? ?? ??? ????
+            ?? ??? ??? ?????.
+        </p>
+
+    </section>
+
+
+    <!-- ?? ?? -->
+    <section class="summary-card">
+
+        <div>
+            <span class="summary-label">
+                ?? ??
+            </span>
+
+            <strong id="loanCount">
+                ?? ?
+            </strong>
+        </div>
+
+        <div>
+            <span class="summary-label">
+                ??? ?? ??
+            </span>
+
+            <strong id="topLoanType">
+                ?? ?
+            </strong>
+        </div>
+
+        <div>
+            <span class="summary-label">
+                ?? RPS
+            </span>
+
+            <strong id="topPriorityScore">
+                ?? ?
+            </strong>
+        </div>
+
+    </section>
+
+
+    <!-- RPS ?? -->
+    <section class="guide-card">
+
+        <h2>
+            RPS??
+        </h2>
+
+        <p>
+            RPS? ?? ?? ???? ?????.
+            ??? ???? ?? ???? ? ???? ? ?????.
+        </p>
+
+        <div class="score-guide">
+
+            <span>?? ??</span>
+            <span>?? ??</span>
+            <span>??? ??</span>
+            <span>???? ??</span>
+            <span>????? ??</span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ?? ?? -->
+    <section id="loadingArea"
+             class="loading-area">
+
+        ????? ???? ????.
+
+    </section>
+
+
+    <!-- ?? ?? -->
+    <section id="errorArea"
+             class="error-area hidden">
+
+        ????? ???? ?????.
+
+    </section>
+
+
+    <!-- ?? ?? ?? -->
+    <section id="priorityList"
+             class="priority-list">
+
+    </section>
+
+</main>
+
+
+<!-- ???? JavaScript -->
+<script th:src="@{/js/debt-priority.js}">
+</script>
+
+</body>
+</html>
