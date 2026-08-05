@@ -1,4 +1,4 @@
-package com.via.shinvia.controller;
+package com.via.shinvia.client.card.controller;
 
 import com.via.shinvia.client.card.billdetail.MydataCardBillDetailClient;
 import com.via.shinvia.client.card.billdetail.request.CardBillDetailRequest;
@@ -6,8 +6,8 @@ import com.via.shinvia.client.card.billdetail.response.CardBillDetailResponse;
 import com.via.shinvia.client.card.list.MydataCardListClient;
 import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardListResponse;
-import com.via.shinvia.controller.dto.CardListSyncResponse;
-import com.via.shinvia.controller.dto.CardTransactionSyncResponse;
+import com.via.shinvia.client.card.controller.dto.CardListSyncResponse;
+import com.via.shinvia.client.card.controller.dto.CardTransactionSyncResponse;
 import com.via.shinvia.service.mydata.CardSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

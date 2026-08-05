@@ -13,7 +13,7 @@ import com.via.shinvia.client.card.list.MydataCardListClient;
 import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardInfoDto;
 import com.via.shinvia.client.card.list.response.CardListResponse;
-import com.via.shinvia.config.MockServerProperties;
+import com.via.shinvia.client.card.config.MockServerProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;

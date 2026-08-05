@@ -1,4 +1,4 @@
-package com.via.shinvia.entity.card;
+package com.via.shinvia.client.card.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
