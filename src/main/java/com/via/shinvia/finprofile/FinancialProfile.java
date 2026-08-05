@@ -1,12 +1,13 @@
 package com.via.shinvia.finprofile;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Setter @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter @Getter @Builder
 public class FinancialProfile {
     private Long userFinancialProfileId;
     private Long userId;
