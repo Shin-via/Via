@@ -9,6 +9,7 @@ import org.springframework.web.client.RestClient;
 import java.time.Duration;
 
 @Configuration
+// 정책상품 API 통신 설정 기능
 public class PolicyRestClientConfig {
 
     @Bean

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// 자산형성상품 조회 처리 기능
 public class AssetProductService {
     private final AssetProductClient client;
     public FinancialProductPageDTO findAll(AssetProductSearchDTO search) { return client.findAll(search); }

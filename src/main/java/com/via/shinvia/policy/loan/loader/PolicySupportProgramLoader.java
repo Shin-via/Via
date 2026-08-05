@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+// 서버 시작 시 정책상품 동기화 기능
 public class PolicySupportProgramLoader
         implements ApplicationRunner {
 
