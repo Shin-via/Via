@@ -14,6 +14,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+// 맞춤대출 상품 저장 및 갱신 기능
 public class PolicySupportSaveService {
 
     private final PolicySupportProgramMapper mapper;

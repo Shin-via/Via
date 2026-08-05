@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+// 복합지원 검색조건 전달 기능
 public class WelfareSupportSearchDTO {
     private String keyword = "";
     private int page;

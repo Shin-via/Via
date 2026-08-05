@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+// 사회연대금융 화면 및 상세조회 기능
 public class SocialFinanceController {
     private final SocialFinanceService service;
 

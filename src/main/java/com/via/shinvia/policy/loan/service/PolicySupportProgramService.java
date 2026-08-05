@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+// 맞춤대출 상품 검색 및 상세조회 기능
 public class PolicySupportProgramService {
 
     private final PolicySupportProgramRepository repository;

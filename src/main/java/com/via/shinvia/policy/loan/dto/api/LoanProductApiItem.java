@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+// 공공데이터 대출상품 응답 전달 기능
 public class LoanProductApiItem {
 
     // 공공데이터 상품 고유번호

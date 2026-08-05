@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
+// 서민금융 상품 외부 API 호출 기능
 public class KinfaFinancialProductClient {
 
     private static final String BASE_URL =

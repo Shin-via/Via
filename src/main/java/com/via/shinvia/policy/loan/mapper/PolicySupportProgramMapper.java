@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+// API 상품정보를 저장 데이터로 변환하는 기능
 public class PolicySupportProgramMapper {
 
     private static final Pattern NUMBER_PATTERN =

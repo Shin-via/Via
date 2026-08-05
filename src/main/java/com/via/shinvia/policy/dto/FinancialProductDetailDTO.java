@@ -7,6 +7,7 @@ import java.util.Map;
 
 @Getter
 @Builder
+// 금융상품 상세정보 전달 기능
 public class FinancialProductDetailDTO {
 
     private String title;

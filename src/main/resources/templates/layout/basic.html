@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<th:block th:fragment="layout(pageTitle, pageContent)">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+
+        <title th:replace="${pageTitle}">
+            SHINVIA
+        </title>
+
+        <link rel="stylesheet"
+              th:href="@{/css/policy.css}">
+
+        <script defer
+                th:src="@{/js/policy.js}">
+        </script>
+    </head>
+
+    <body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <a class="logo" th:href="@{/}">SHINVIA</a>
+                <span class="header-service-name">금융상품 안내</span>
+            </div>
+
+            <div class="header-account">
+                <div class="header-account-links" sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}">로그인</a>
+                    <a th:href="@{/signup}">회원가입</a>
+                </div>
+
+                <div class="header-account-user" sec:authorize="isAuthenticated()">
+                    <span><strong sec:authentication="name">사용자</strong>님</span>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="site-layout">
+        <aside class="service-sidebar" aria-label="금융 서비스 메뉴">
+            <nav class="sidebar-navigation">
+                <section class="sidebar-menu-group">
+                    <h2>정책지원 안내서비스</h2>
+                    <ul>
+                        <li><a th:href="@{/policy-support}">맞춤대출 정책지원</a></li>
+                        <li><a th:href="@{/asset-products}">자산형성상품</a></li>
+                        <li><a th:href="@{/social-finance}">사회연대금융</a></li>
+                        <li><a th:href="@{/welfare-support}">복합지원</a></li>
+                    </ul>
+                </section>
+
+                <section class="sidebar-menu-group">
+                    <h2>일반대출 추천서비스</h2>
+                    <ul>
+                        <li><span class="sidebar-menu-disabled">전세대출 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">담보대출 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">자동차대출 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">신용대출 <small>준비중</small></span></li>
+                    </ul>
+                </section>
+            </nav>
+        </aside>
+
+        <div class="site-content">
+            <main th:replace="${pageContent}">
+                페이지 본문
+            </main>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>SHINVIA 금융진단 플랫폼</p>
+            <p>본 서비스의 정책정보는 프로젝트 시연용 데이터입니다.</p>
+        </div>
+    </footer>
+
+    </body>
+
+</th:block>
+
+</html>
