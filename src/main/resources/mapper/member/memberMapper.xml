@@ -57,4 +57,11 @@
         WHERE login_email=#{loginEmail}
         LIMIT 1
     </select>
+
+    <select id="findCi">
+        SELECT
+        ci
+        FROM user
+        WHERE user_id=#{userId}
+    </select>
 </mapper>

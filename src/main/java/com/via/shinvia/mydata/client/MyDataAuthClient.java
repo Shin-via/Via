@@ -57,23 +57,20 @@ public class MyDataAuthClient {
 
 
      // 1. 인가 코드 발급 요청 (GET /v2/oauth/2.0/authorize)
-    public String requestAuthorize(String userCi ,String state) {
+    public String requestAuthorize(String userCi) {
         String tranId = generateTranId();
-
-        String effectiveClientId =  myDataProperties.getClientId();
-        String effectiveRedirectUri = myDataProperties.getRedirectUri();
-        String effectiveOrgCode = myDataProperties.getOrgCode();
-        String effectiveState = (state != null && !state.isBlank()) ? state : "xyz123";
+        // state 파라미터에 userCi를 담아서 전송 (목 서버 변경 없이 콜백 시 userCi 복원 가능)
+        String state = userCi != null ? userCi : "1";
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/v2/oauth/2.0/authorize")
+                .queryParam("org_code", myDataProperties.getOrgCode())
                 .queryParam("response_type", "code")
-                .queryParam("client_id", effectiveClientId)
-                .queryParam("redirect_uri", effectiveRedirectUri)
-                .queryParam("org_code", effectiveOrgCode)
-                .queryParam("state", effectiveState)
-                .queryParam("app_scheme", myDataProperties.getAppScheme());
+                .queryParam("client_id", myDataProperties.getClientId())
+                .queryParam("redirect_uri", myDataProperties.getRedirectUri())
+                .queryParam("app_scheme", myDataProperties.getAppScheme())
+                .queryParam("state", state);
 
-        log.info("[MyData Client] 인가코드 요청 - userCi: {}, orgCode: {}, tranId: {}", userCi, effectiveOrgCode, tranId);
+        log.info("[MyData Client] 인가코드 요청 - userCi: {}, orgCode: {}, tranId: {}", userCi, myDataProperties.getOrgCode(), tranId);
 
         ResponseEntity<Void> response = restClient.get()
                 .uri(uriBuilder.build().toUriString())
@@ -87,25 +84,24 @@ public class MyDataAuthClient {
         return location;
     }
 
+    private String generateState() {
+        return "MOCK_TRAN_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+    }
 
-     // 2. 접근 토큰 발급 요청 (POST /v2/oauth/2.0/token)
+
+    // 2. 접근 토큰 발급 요청 (POST /v2/oauth/2.0/token)
     public MyDataAuthTokenResponseDto requestAccessToken(String code) {
         String tranId = generateTranId();
-
-        String effectiveClientId = myDataProperties.getClientId();
-        String effectiveClientSecret =myDataProperties.getClientSecret();
-        String effectiveOrgCode =  myDataProperties.getOrgCode();
-        String effectiveRedirectUri =  myDataProperties.getRedirectUri();
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
         if (code != null) formData.add("code", code);
-        formData.add("client_id", effectiveClientId);
-        if (effectiveClientSecret != null) formData.add("client_secret", effectiveClientSecret);
-        formData.add("org_code", effectiveOrgCode);
-        formData.add("redirect_uri", effectiveRedirectUri);
+        formData.add("client_id", myDataProperties.getClientId());
+        if (myDataProperties.getClientSecret() != null) formData.add("client_secret", myDataProperties.getClientSecret());
+        formData.add("org_code", myDataProperties.getOrgCode());
+        formData.add("redirect_uri", myDataProperties.getRedirectUri());
 
-        log.info("[MyData Client] Access Token 발급 요청 - code: {}, orgCode: {}, tranId: {}", code, effectiveOrgCode, tranId);
+        log.info("[MyData Client] Access Token 발급 요청 - code: {}, tranId: {}", code, tranId);
 
         MyDataAuthTokenResponseDto response = restClient.post()
                 .uri("/v2/oauth/2.0/token")
@@ -124,19 +120,15 @@ public class MyDataAuthClient {
     public MyDataAuthTokenResponseDto refreshAccessToken(String refreshToken) {
         String tranId = generateTranId();
 
-        String effectiveClientId = myDataProperties.getClientId();
-        String effectiveClientSecret =  myDataProperties.getClientSecret();
-        String effectiveOrgCode = myDataProperties.getOrgCode();
-
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "refresh_token");
-        if (refreshToken != null) formData.add("refresh_token", refreshToken);
-        formData.add("client_id", effectiveClientId);
-        if (effectiveClientSecret != null) formData.add("client_secret", effectiveClientSecret);
-        formData.add("org_code", effectiveOrgCode);
+        formData.add("refresh_token", refreshToken);
+        formData.add("client_id", myDataProperties.getClientId());
+        formData.add("client_secret", myDataProperties.getClientSecret());
+        formData.add("org_code", myDataProperties.getOrgCode());
         formData.add("is_refreshed", "N");
-
-        log.info("[MyData Client] Access Token 갱신 요청 - refreshToken: {}, orgCode: {}, tranId: {}", refreshToken, effectiveOrgCode, tranId);
+    log.info("{}",formData.toString());
+        log.info("[MyData Client] Access Token 갱신 요청 - refreshToken: {}, tranId: {}", refreshToken, tranId);
 
         MyDataAuthTokenResponseDto response = restClient.post()
                 .uri("/v2/oauth/2.0/token")

@@ -63,4 +63,9 @@
             merchant_name = VALUES(merchant_name)
     </insert>
 
+    <delete id="deleteCardAccountsByAppUserId">
+        DELETE FROM card_account
+        WHERE app_user_id = #{appUserId}
+    </delete>
+
 </mapper>

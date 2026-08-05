@@ -34,20 +34,12 @@ public class MyDataAuthController {
      */
     @GetMapping("/authorize")
     public ResponseEntity<Void> authorize(
-            @RequestParam(required = false, defaultValue = "1") String userCi,
-            @RequestParam(required = false) String clientId,
-            @RequestParam(required = false) String redirectUri,
-            @RequestParam(required = false) String orgCode,
-            @RequestParam(required = false, defaultValue = "xyz123") String state) {
-
-        String effectiveClientId = (clientId != null && !clientId.isBlank()) ? clientId : myDataProperties.getClientId();
-        String effectiveRedirectUri = (redirectUri != null && !redirectUri.isBlank()) ? redirectUri : myDataProperties.getRedirectUri();
-        String effectiveOrgCode = (orgCode != null && !orgCode.isBlank()) ? orgCode : myDataProperties.getOrgCode();
-
-        log.info("[MyData Controller] 인가코드 요청 시작 - userCi: {}, orgCode: {}", userCi, effectiveOrgCode);
+           @RequestParam(required = false, defaultValue = "1") String userCi)
+            {
+        log.info("[MyData Controller] 인가코드 요청 시작 - userCi: {}", userCi);
 
         // 신한 목 서버 302 Location URL 획득
-        String mockAuthorizeUrl = myDataAuthService.getAuthorizeUrl(userCi,state);
+        String mockAuthorizeUrl = myDataAuthService.getAuthorizeUrl(userCi);
 
         log.info("[MyData Controller] 목 서버 인가 URL로 리다이렉트(302): {}", mockAuthorizeUrl);
 
@@ -62,18 +54,16 @@ public class MyDataAuthController {
      */
     @GetMapping("/callback")
     public ResponseEntity<MyDataAuthTokenResponseDto> callback(
-            @RequestParam("code") String code,
-            @RequestParam(value = "userCi", required = false, defaultValue = "1") String userCi,
+            @RequestHeader(value = "api_tran_id", required = false) String apiTranId,
+            @RequestParam(value = "org_code", required = false) String orgCode,
             @RequestParam(value = "state", required = false) String state,
-            @RequestParam(value = "api_tran_id", required = false) String apiTranId,
-            @RequestParam(value = "org_code", required = false) String orgCode) {
+            @RequestParam("code") String code) {
+        String effectiveUserCi = (state != null && !state.isBlank()) ? state : "1";
 
-        String effectiveOrgCode = (orgCode != null && !orgCode.isBlank()) ? orgCode : myDataProperties.getOrgCode();
-
-        log.info("[MyData Controller] 인가코드 콜백 수신 - userCi: {}, code: {}, state: {}, tranId: {}", userCi, code, state, apiTranId);
+        log.info("[MyData Controller] 인가코드 콜백 수신 - effectiveUserCi: {}, code: {}, state: {}, tranId: {}", effectiveUserCi, code, state, apiTranId);
 
         // 수신받은 인가코드(code)로 Access Token 및 Refresh Token 발급 요청 및 Redis 저장
-        MyDataAuthTokenResponseDto tokenResponse = myDataAuthService.issueTokens(userCi, code);
+        MyDataAuthTokenResponseDto tokenResponse = myDataAuthService.issueTokens(effectiveUserCi, code);
 
         log.info("[MyData Controller] 토큰 발급 성공 - AccessToken: {}, RefreshToken: {}",
                 tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
@@ -86,15 +76,10 @@ public class MyDataAuthController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<MyDataAuthTokenResponseDto> refresh(
-            @RequestParam("refreshToken") String refreshToken,
-            @RequestParam(value = "userCi", required = false, defaultValue = "1") String userCi,
-            @RequestParam(value = "orgCode", required = false) String orgCode) {
+            @RequestParam("refreshToken") String refreshToken) {
+        log.info("[MyData Controller] Access Token 갱신 요청 - refreshToken: {}", refreshToken);
 
-        String effectiveOrgCode = (orgCode != null && !orgCode.isBlank()) ? orgCode : myDataProperties.getOrgCode();
-
-        log.info("[MyData Controller] Access Token 갱신 요청 - userCi: {}, refreshToken: {}", userCi, refreshToken);
-
-        MyDataAuthTokenResponseDto tokenResponse = myDataAuthService.refreshToken(userCi, refreshToken);
+        MyDataAuthTokenResponseDto tokenResponse = myDataAuthService.refreshToken(refreshToken);
 
         return ResponseEntity.ok(tokenResponse);
     }
@@ -105,14 +90,10 @@ public class MyDataAuthController {
     @PostMapping("/revoke")
     public ResponseEntity<MyDataCommonResponseDto> revoke(
             @RequestParam("token") String token,
-            @RequestParam(value = "orgCode", required = false) String orgCode) {
-
-        String effectiveOrgCode = (orgCode != null && !orgCode.isBlank()) ? orgCode : myDataProperties.getOrgCode();
-
+        @RequestParam("revoke_type") String revokeType)
+    {
         log.info("[MyData Controller] 토큰 폐기 요청 - token: {}", token);
-
-        MyDataCommonResponseDto response = myDataAuthService.revokeToken(
-                token,"0");
+        MyDataCommonResponseDto response = myDataAuthService.revokeToken(token,revokeType);
 
         return ResponseEntity.ok(response);
     }

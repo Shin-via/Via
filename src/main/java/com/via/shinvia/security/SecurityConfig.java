@@ -16,12 +16,14 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
                                 "/login",
                                 "/signup/**",
                                 "/api/email-verify/**",
+                                "/api/mydata/oauth/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
