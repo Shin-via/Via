@@ -34,19 +34,15 @@
     </insert>
 
 
-    <update id="updateFinancialProfile"
-            parameterType="FinancialProfile">
-        UPDATE FROM user_financial_profile
-        SET(
+    <update id="updateFinancialProfile">
+        UPDATE user_financial_profile
+        SET
             annual_income = #{annualIncome},
             income_type= #{incomeType},
             employment_status= #{employmentStatus},
             credit_score= #{creditScore},
             liquid_asset_amount= #{liquidAssetAmount}
-        )
         WHERE user_id = #{userId}
-
-
     </update>
 
 </mapper>
