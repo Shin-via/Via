@@ -1,7 +1,7 @@
-package com.via.shinvia.mapper.card;
+package com.via.shinvia.client.card.mapper;
 
-import com.via.shinvia.entity.card.CardAccount;
-import com.via.shinvia.entity.card.CardTransaction;
+import com.via.shinvia.client.card.entity.CardAccount;
+import com.via.shinvia.client.card.entity.CardTransaction;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
