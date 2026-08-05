@@ -1,4 +1,4 @@
-package com.via.shinvia.config;
+package com.via.shinvia.client.card.config;
 
 import lombok.Getter;
 import lombok.Setter;
