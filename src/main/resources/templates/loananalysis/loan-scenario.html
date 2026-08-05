@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>대출 대응방안 비교</title>
+
+    <!-- 대출 시나리오 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/loan-scenario.css}">
+</head>
+
+<body>
+
+<!-- 상단 유틸리티 영역 -->
+<div class="utility-bar">
+    <div class="utility-inner">
+        <span>개인화 금융 리포트</span>
+
+        <div class="utility-links">
+            <a href="/">홈</a>
+            <a href="/loan-analysis/debt-priority">
+                부채 상환순위
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<!-- 상단 헤더 -->
+<header class="main-header">
+    <div class="header-inner">
+
+        <div class="service-logo">
+            <span class="logo-mark">S</span>
+
+            <div>
+                <strong>SHINVIA</strong>
+                <span>Financial Analysis</span>
+            </div>
+        </div>
+
+        <nav class="main-menu">
+            <a href="/loan-analysis/debt-priority">
+                부채 상환순위
+            </a>
+
+            <a href="/loan-analysis/scenarios"
+               class="active">
+                대응방안 비교
+            </a>
+
+            <a href="#">
+                개인화 리포트
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+
+<!-- 현재 위치 -->
+<div class="location-bar">
+    <div class="content-width">
+        홈 &gt; 개인화 금융 리포트 &gt;
+        <strong>대출 대응방안 비교</strong>
+    </div>
+</div>
+
+
+<main class="content-width">
+
+    <!-- 페이지 제목 -->
+    <section class="page-title">
+
+        <p class="title-category">
+            LOAN ANALYSIS
+        </p>
+
+        <h1>대출 대응방안 비교</h1>
+
+        <p>
+            현재 유지, 부분상환, 대환, 현금보유 방안을 비교하여
+            예상 월 상환액과 이자 절감 효과를 확인합니다.
+        </p>
+
+    </section>
+
+
+    <!-- 안내사항 -->
+    <section class="notice-area">
+
+        <strong>이용 안내</strong>
+
+        <ul>
+            <li>
+                입력한 조건은 실제 대출 실행 결과가 아닌
+                예상 시뮬레이션에 사용됩니다.
+            </li>
+
+            <li>
+                부분상환 금액은 현금성 자산과 비상자금 기준으로
+                자동 조정될 수 있습니다.
+            </li>
+
+            <li>
+                대환 결과는 입력한 예상금리와 부대비용을 기준으로
+                계산됩니다.
+            </li>
+        </ul>
+
+    </section>
+
+
+    <!-- 입력 영역 -->
+    <section class="section-block">
+
+        <div class="section-heading">
+            <h2>분석 조건 입력</h2>
+            <span>필수 정보를 입력한 후 비교하기를 눌러주세요.</span>
+        </div>
+
+        <form id="scenarioForm"
+              class="bank-form">
+
+            <table class="input-table">
+                <caption>
+                    대출 대응방안 분석조건
+                </caption>
+
+                <colgroup>
+                    <col class="label-column">
+                    <col class="input-column">
+                    <col class="label-column">
+                    <col class="input-column">
+                </colgroup>
+
+                <tbody>
+
+                <tr>
+                    <th scope="row">
+                        회원번호
+                        <span class="required">*</span>
+                    </th>
+
+                    <td>
+                        <input type="number"
+                               id="userId"
+                               name="userId"
+                               value="1"
+                               min="1"
+                               required>
+
+                        <span class="field-description">
+                            테스트 회원번호
+                        </span>
+                    </td>
+
+                    <th scope="row">
+                        분석 대출번호
+                        <span class="required">*</span>
+                    </th>
+
+                    <td>
+                        <select id="targetLoanAccountId"
+                                name="targetLoanAccountId"
+                                required>
+
+                            <option value="1">
+                                1 - 신용대출
+                            </option>
+
+                            <option value="2">
+                                2 - 주택담보대출
+                            </option>
+
+                            <option value="3">
+                                3 - 전세자금대출
+                            </option>
+
+                        </select>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <th scope="row">
+                        부분상환 희망금액
+                    </th>
+
+                    <td>
+                        <div class="amount-input">
+                            <input type="number"
+                                   id="desiredRepaymentAmount"
+                                   name="desiredRepaymentAmount"
+                                   value="5000000"
+                                   min="0"
+                                   step="100000">
+
+                            <span>원</span>
+                        </div>
+
+                        <span class="field-description">
+                            실제 상환 가능한 범위에서 적용
+                        </span>
+                    </td>
+
+                    <th scope="row">
+                        비상자금 유지금액
+                    </th>
+
+                    <td>
+                        <div class="amount-input">
+                            <input type="number"
+                                   id="emergencyFundAmount"
+                                   name="emergencyFundAmount"
+                                   value="8000000"
+                                   min="0"
+                                   step="100000">
+
+                            <span>원</span>
+                        </div>
+
+                        <span class="field-description">
+                            상환 후에도 남겨둘 현금
+                        </span>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <th scope="row">
+                        대환 예상금리
+                    </th>
+
+                    <td>
+                        <div class="amount-input rate-input">
+                            <input type="number"
+                                   id="refinanceInterestRate"
+                                   name="refinanceInterestRate"
+                                   value="5.2"
+                                   min="0"
+                                   max="100"
+                                   step="0.1">
+
+                            <span>%</span>
+                        </div>
+                    </td>
+
+                    <th scope="row">
+                        대환 부대비용
+                    </th>
+
+                    <td>
+                        <div class="amount-input">
+                            <input type="number"
+                                   id="refinanceCostAmount"
+                                   name="refinanceCostAmount"
+                                   value="300000"
+                                   min="0"
+                                   step="10000">
+
+                            <span>원</span>
+                        </div>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <th scope="row">
+                        대환 상환기간
+                    </th>
+
+                    <td colspan="3">
+                        <div class="amount-input period-input">
+                            <input type="number"
+                                   id="refinancePeriodMonths"
+                                   name="refinancePeriodMonths"
+                                   value="36"
+                                   min="1"
+                                   max="600">
+
+                            <span>개월</span>
+                        </div>
+
+                        <span class="field-description">
+                            대환 이후 예상 상환기간을 입력합니다.
+                        </span>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <!-- 버튼 영역 -->
+            <div class="button-area">
+
+                <button type="button"
+                        id="resetButton"
+                        class="button button-secondary">
+                    입력 초기화
+                </button>
+
+                <button type="submit"
+                        id="submitButton"
+                        class="button button-primary">
+                    대응방안 비교하기
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- 로딩 영역 -->
+    <section id="loadingArea"
+             class="status-message hidden">
+
+        <div class="loading-symbol"></div>
+
+        <p>
+            대출정보와 금융상태를 분석하고 있습니다.
+        </p>
+
+    </section>
+
+
+    <!-- 오류 영역 -->
+    <section id="errorArea"
+             class="error-message hidden">
+
+        <strong>분석을 완료하지 못했습니다.</strong>
+
+        <p id="errorMessage">
+            입력값과 서버 상태를 확인해주세요.
+        </p>
+
+    </section>
+
+
+    <!-- 분석 결과 -->
+    <section id="resultArea"
+             class="section-block hidden">
+
+        <div class="section-heading">
+            <h2>대응방안 비교 결과</h2>
+            <span id="analysisTargetText"></span>
+        </div>
+
+
+        <!-- 최종 추천 -->
+        <div class="recommendation-area">
+
+            <div class="recommendation-label">
+                우선 검토 방안
+            </div>
+
+            <div class="recommendation-content">
+
+                <div>
+                    <strong id="recommendedScenarioName">
+                        -
+                    </strong>
+
+                    <p id="recommendedReason">
+                        -
+                    </p>
+                </div>
+
+                <div class="recommendation-score">
+                    <span>추천점수</span>
+                    <strong id="recommendedScore">0점</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- 비교표 -->
+        <div class="table-scroll">
+
+            <table class="result-table">
+                <caption>
+                    대출 대응방안별 비교 결과
+                </caption>
+
+                <thead>
+                <tr>
+                    <th scope="col">비교항목</th>
+                    <th scope="col" data-scenario="KEEP">
+                        현재 유지
+                    </th>
+                    <th scope="col"
+                        data-scenario="PARTIAL_REPAYMENT">
+                        부분상환
+                    </th>
+                    <th scope="col"
+                        data-scenario="REFINANCE">
+                        대환
+                    </th>
+                    <th scope="col"
+                        data-scenario="CASH_HOLDING">
+                        현금보유
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody id="comparisonTableBody">
+                </tbody>
+            </table>
+
+        </div>
+
+
+        <!-- 시나리오 설명 -->
+        <div class="scenario-description">
+
+            <h3>상세 분석 의견</h3>
+
+            <div id="scenarioReasonList"
+                 class="reason-list">
+            </div>
+
+        </div>
+
+
+        <!-- 하단 안내 -->
+        <div class="result-notice">
+
+            <strong>유의사항</strong>
+
+            <p>
+                본 결과는 입력된 조건을 기준으로 계산한 예상값입니다.
+                실제 중도상환수수료, 대환금리 및 실행 가능 여부는
+                금융기관 심사 결과와 다를 수 있습니다.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- 하단 영역 -->
+<footer class="footer">
+
+    <div class="content-width">
+
+        <div>
+            <strong>SHINVIA 금융분석 서비스</strong>
+
+            <p>
+                개인의 금융정보를 기반으로 한
+                대출 대응방안 시뮬레이션 서비스입니다.
+            </p>
+        </div>
+
+        <span>
+            Financial Analysis System
+        </span>
+
+    </div>
+
+</footer>
+
+
+<!-- 대출 시나리오 JavaScript -->
+<script th:src="@{/js/loan-scenario.js}">
+</script>
+
+</body>
+</html>
