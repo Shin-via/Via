@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// 사회연대금융 조회 처리 기능
 public class SocialFinanceService {
     private final SocialFinanceClient client;
     public FinancialProductPageDTO findAll(SocialFinanceSearchDTO search) { return client.findAll(search); }

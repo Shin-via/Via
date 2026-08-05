@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+// 사회연대금융 검색조건 전달 기능
 public class SocialFinanceSearchDTO {
     private String keyword = "";
     private int page;

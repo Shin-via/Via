@@ -24,6 +24,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+// 맞춤대출 공공데이터 API 호출 기능
 public class PolicySupportApiClient {
 
     private final RestClient restClient;

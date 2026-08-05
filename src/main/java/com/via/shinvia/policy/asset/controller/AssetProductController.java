@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+// 자산형성상품 화면 및 상세조회 기능
 public class AssetProductController {
     private final AssetProductService service;
 

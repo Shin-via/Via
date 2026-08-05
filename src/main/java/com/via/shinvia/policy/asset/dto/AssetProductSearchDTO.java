@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+// 자산형성상품 검색조건 전달 기능
 public class AssetProductSearchDTO {
     private String keyword = "";
     private int page;

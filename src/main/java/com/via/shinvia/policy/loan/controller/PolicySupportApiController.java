@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/policy-support")
+// 맞춤대출 상세 API 제공 기능
 public class PolicySupportApiController {
 
     private final PolicySupportProgramService

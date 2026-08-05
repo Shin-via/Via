@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+// 자산형성상품 외부 API 호출 기능
 public class AssetProductClient {
     private final KinfaFinancialProductClient client;
 

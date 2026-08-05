@@ -8,125 +8,65 @@ import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
+// 맞춤대출 상품 데이터 관리 기능
 public class PolicySupportProgram {
 
     private Long policySupportProgramId;
-
-    /**
-     * 공공데이터 API seq
-     */
+     //공공데이터 API seq
     private String externalSeq;
-
-    /**
-     * 상품명
-     */
+     //상품명
     private String programName;
-
-    /**
-     * 대상 요약
-     */
+     //대상 요약
     private String targetDescription;
-
-    /**
-     * 최대 지원금액·대출한도
-     * 원 단위로 저장
-     */
+    //최대 지원금액·대출한도 원 단위로 저장
     private BigDecimal maxSupportAmount;
-
-    /**
-     * 최저금리
-     */
+     // 최저금리
     private BigDecimal minInterestRate;
-
-    /**
-     * 최고금리
-     */
+    // 최고금리
     private BigDecimal maxInterestRate;
-
-    /**
-     * 금리 유형
-     */
+    // 금리 유형
     private String interestRateType;
-
-    /**
-     * 금리 원문
-     */
+    // 금리 원문
     private String interestRateDescription;
-
-    /**
-     * 대출기간
-     */
+    // 대출기간
     private String supportPeriodDescription;
-
-    /**
-     * 상환방법
-     */
+     // 상환방법
     private String repaymentMethod;
-
-    /**
-     * 용도
-     */
+     //용도
     private String usageDescription;
-
-    /**
-     * 기관구분
-     */
+    // 기관구분
     private String institutionCategory;
-
-    /**
-     * 제공기관명
-     */
+    // 제공기관명
     private String offeringInstitutionName;
-
-    /**
-     * 취급기관
-     */
+    // 취급기관
     private String handlingInstitution;
-
-    /**
-     * 지원지역
-     */
+    //지원지역
     private String supportArea;
-
-    /**
-     * 상세 지원조건
-     */
+     // 상세 지원조건
     private String eligibilityDescription;
-
-    /**
-     * 신청방법
-     */
+     // 신청방법
     private String applicationMethod;
-
-    /**
-     * 문의처
-     */
+    // 문의처
     private String contactDescription;
 
-    /**
-     * 관련 사이트
-     */
+    //관련 사이트
+
     private String applicationUrl;
 
-    /**
-     * 상품 운영기간
-     */
+
+    //  상품 운영기간
+
     private String operationPeriod;
 
-    /**
-     * 추가 조건 JSON
-     */
+
+    //  추가 조건 JSON
+
     private String eligibilityJson;
 
-    /**
-     * 시작일
-     * API에서 별도 제공하지 않으므로 null 가능
-     */
-    private LocalDate effectiveFrom;
+      //시작일 API에서 별도 제공하지 않으므로 null 가능
 
-    /**
-     * 종료일
-     */
+    private LocalDate effectiveFrom;
+      //종료일
     private LocalDate effectiveTo;
 
     private Boolean active;

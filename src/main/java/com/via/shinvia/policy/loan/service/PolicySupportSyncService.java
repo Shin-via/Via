@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+// 맞춤대출 API 데이터 동기화 기능
 public class PolicySupportSyncService {
 
     private final PolicySupportApiClient apiClient;
