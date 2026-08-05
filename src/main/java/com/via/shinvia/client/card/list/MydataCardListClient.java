@@ -2,7 +2,7 @@ package com.via.shinvia.client.card.list;
 
 import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardListResponse;
-import com.via.shinvia.config.MockServerProperties;
+import com.via.shinvia.client.card.config.MockServerProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

@@ -1,7 +1,7 @@
-package com.via.shinvia.controller.dto;
+package com.via.shinvia.client.card.controller.dto;
 
 import com.via.shinvia.client.card.list.response.CardInfoDto;
-import com.via.shinvia.entity.card.CardAccount;
+import com.via.shinvia.client.card.entity.CardAccount;
 
 import java.util.List;
 
