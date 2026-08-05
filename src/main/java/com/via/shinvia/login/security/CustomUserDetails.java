@@ -1,7 +1,6 @@
 package com.via.shinvia.login.security;
 
 import com.via.shinvia.user.domain.User;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
