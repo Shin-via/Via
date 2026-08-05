@@ -1,0 +1,18 @@
+shinvia-client:
+  mock:
+    url: http://localhost:9090
+  mydata:
+    client-id: Shinvia_client_id
+    client-secret: Shinvia_secret_key
+    org-code: ShinVia
+    redirect-uri: http://localhost:8080/api/mydata/oauth/callback
+
+finance:
+  api:
+    service-key: ${FINANCE_API_SERVICE_KEY:79c67cbed6be7319d77841757aab0a42da18f5f259b3c208991a19ca6d783723}
+    base-url: https://apis.data.go.kr/B553701/LoanProductSearchingInfo/LoanProductSearchingInfo/getLoanProductSearchingInfo
+    num-of-rows: 100
+    max-pages: 1000
+    connect-timeout: 5s
+    read-timeout: 15s
+    sync-on-startup: false
