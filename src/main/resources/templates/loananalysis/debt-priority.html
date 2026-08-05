@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>부채 상환 우선순위</title>
+
+    <!-- 부채분석 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/debt-priority.css}">
+</head>
+
+<body>
+
+<main class="page-container">
+
+    <!-- 페이지 제목 -->
+    <section class="page-header">
+
+        <p class="page-category">
+            개인화 금융 리포트
+        </p>
+
+        <h1>
+            부채 상환 순서 추천
+        </h1>
+
+        <p class="page-description">
+            연체 여부, 금리, 중도상환수수료,
+            대출 잔액과 대출 유형을 종합하여
+            먼저 상환할 대출을 분석합니다.
+        </p>
+
+    </section>
+
+
+    <!-- 분석 요약 -->
+    <section class="summary-card">
+
+        <div>
+            <span class="summary-label">
+                분석 결과
+            </span>
+
+            <strong id="loanCount">
+                조회 중
+            </strong>
+        </div>
+
+        <div>
+            <span class="summary-label">
+                최우선 상환 대출
+            </span>
+
+            <strong id="topLoanType">
+                조회 중
+            </strong>
+        </div>
+
+        <div>
+            <span class="summary-label">
+                최고 RPS
+            </span>
+
+            <strong id="topPriorityScore">
+                조회 중
+            </strong>
+        </div>
+
+    </section>
+
+
+    <!-- RPS 안내 -->
+    <section class="guide-card">
+
+        <h2>
+            RPS란?
+        </h2>
+
+        <p>
+            RPS는 부채 상환 우선순위 점수입니다.
+            점수가 높을수록 먼저 상환해야 할 필요성이 큰 대출입니다.
+        </p>
+
+        <div class="score-guide">
+
+            <span>연체 가점</span>
+            <span>금리 가점</span>
+            <span>수수료 감점</span>
+            <span>소액대출 가점</span>
+            <span>학자금대출 감점</span>
+
+        </div>
+
+    </section>
+
+
+    <!-- 로딩 표시 -->
+    <section id="loadingArea"
+             class="loading-area">
+
+        대출정보를 분석하고 있습니다.
+
+    </section>
+
+
+    <!-- 오류 표시 -->
+    <section id="errorArea"
+             class="error-area hidden">
+
+        대출정보를 불러오지 못했습니다.
+
+    </section>
+
+
+    <!-- 대출 순위 목록 -->
+    <section id="priorityList"
+             class="priority-list">
+
+    </section>
+
+</main>
+
+
+<!-- 부채분석 JavaScript -->
+<script th:src="@{/js/debt-priority.js}">
+</script>
+
+</body>
+</html>
