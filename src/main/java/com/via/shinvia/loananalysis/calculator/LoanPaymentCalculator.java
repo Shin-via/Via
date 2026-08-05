@@ -11,6 +11,8 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class LoanPaymentCalculator {
 
+    private static final int MAX_REPAYMENT_MONTHS = 600;
+
     // 잔여 상환개월 계산
     public int calculateRemainingMonths(
             LocalDate maturityAt
@@ -38,10 +40,12 @@ public class LoanPaymentCalculator {
             int months,
             String repaymentType
     ) {
+        validateRepaymentMonths(months);
+
         // 잘못된 값 처리
         if (balance == null
                 || balance.compareTo(BigDecimal.ZERO) <= 0
-                || months <= 0) {
+        ) {
 
             return BigDecimal.ZERO;
         }
@@ -190,10 +194,12 @@ public class LoanPaymentCalculator {
             int months,
             String repaymentType
     ) {
+        validateRepaymentMonths(months);
+
         // 잘못된 값 처리
         if (balance == null
                 || balance.compareTo(BigDecimal.ZERO) <= 0
-                || months <= 0) {
+        ) {
 
             return BigDecimal.ZERO;
         }
@@ -244,6 +250,15 @@ public class LoanPaymentCalculator {
                         0,
                         RoundingMode.HALF_UP
                 );
+    }
+
+
+    private void validateRepaymentMonths(int months) {
+        if (months <= 0 || months > MAX_REPAYMENT_MONTHS) {
+            throw new IllegalArgumentException(
+                    "상환기간은 1개월 이상 600개월 이하여야 합니다."
+            );
+        }
     }
 
 

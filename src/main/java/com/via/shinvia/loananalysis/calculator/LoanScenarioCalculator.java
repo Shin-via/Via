@@ -408,6 +408,7 @@ public class LoanScenarioCalculator {
                         financial.getLiquidAssetAmount()
                 )
                         .subtract(refinanceCost)
+                        .subtract(prepaymentFee)
                         .max(BigDecimal.ZERO);
 
         // 추천점수
