@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ???? ?? Mapper -->
+<mapper namespace="com.via.shinvia.loananalysis.mapper.LoanAccountAnalysisMapper">
+
+
+    <!-- ??? ?? ?? ?? ?? -->
+    <select id="findActiveLoansByUserId"
+            resultType="com.via.shinvia.loananalysis.dto.LoanAccountAnalysisDTO">
+
+        SELECT
+        la.loan_account_id,
+        la.loan_type,
+        la.principal_amount,
+        la.current_balance,
+        la.interest_rate,
+        la.rate_type,
+        la.repayment_type,
+        la.disbursed_at,
+        la.maturity_at,
+        la.loan_status,
+        la.prepayment_fee_rate,
+        la.prepayment_fee_end_date
+
+        FROM loan_account la
+
+        <!-- ??? ????? ?? ?? -->
+        INNER JOIN mydata_connection mc
+        ON mc.connection_id = la.connection_id
+
+        <!-- ??? ?? ?? -->
+        WHERE mc.user_id = #{userId}
+
+        <!-- ?? ?? ?? ?? -->
+        AND la.loan_status IN ('??', '??')
+
+        <!-- ??? ?? ?? ?? ?? -->
+        ORDER BY
+        la.interest_rate DESC,
+        la.current_balance ASC
+
+    </select>
+
+
+    <!-- ??? ?? 1? ?? -->
+    <select id="findLoanById"
+            resultType="com.via.shinvia.loananalysis.dto.LoanAccountAnalysisDTO">
+
+        SELECT
+        la.loan_account_id,
+        la.loan_type,
+        la.principal_amount,
+        la.current_balance,
+        la.interest_rate,
+        la.rate_type,
+        la.repayment_type,
+        la.disbursed_at,
+        la.maturity_at,
+        la.loan_status,
+        la.prepayment_fee_rate,
+        la.prepayment_fee_end_date
+
+        FROM loan_account la
+
+        <!-- ??? ????? ?? ?? -->
+        INNER JOIN mydata_connection mc
+        ON mc.connection_id = la.connection_id
+
+        <!-- ???? ???? ?? -->
+        WHERE mc.user_id = #{userId}
+        AND la.loan_account_id = #{loanAccountId}
+
+        <!-- ????? ??? ?? -->
+        AND la.loan_status IN ('??', '??')
+
+        LIMIT 1
+
+    </select>
+
+
+</mapper>

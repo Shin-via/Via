@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ??? ???? ?? Mapper -->
+<mapper namespace="com.via.shinvia.loananalysis.mapper.FinancialCapacityMapper">
+
+
+    <!-- ??? ?? ???? ?? -->
+    <select id="findFinancialCapacityByUserId"
+            parameterType="long"
+            resultType="com.via.shinvia.loananalysis.dto.FinancialCapacityDTO">
+
+        SELECT
+        ufp.user_id,
+        ufp.user_financial_profile_id,
+        ufp.annual_income,
+        ufp.income_type,
+        ufp.employment_status,
+        ufp.credit_score,
+
+        <!-- ??? ?? -->
+        COALESCE(
+        ufp.liquid_asset_amount,
+        0
+        ) AS liquid_asset_amount,
+
+        <!-- ?? ??? -->
+        COALESCE(
+        ta.total_income,
+        0
+        ) AS total_income,
+
+        <!-- ?? ??? -->
+        COALESCE(
+        ta.total_expense,
+        0
+        ) AS total_expense,
+
+        <!-- ?? ???? -->
+        COALESCE(
+        ta.savings_amount,
+        0
+        ) AS savings_amount,
+
+        <!-- ?? ??? -->
+        COALESCE(
+        ta.savings_rate,
+        0
+        ) AS savings_rate,
+
+        <!-- ?? ???? -->
+        COALESCE(
+        ta.spending_cv,
+        0
+        ) AS spending_cv,
+
+        <!-- ?? DSR -->
+        COALESCE(
+        la.actual_dsr,
+        0
+        ) AS actual_dsr,
+
+        <!-- ???? DSR -->
+        COALESCE(
+        la.stress_dsr,
+        0
+        ) AS stress_dsr
+
+        FROM user_financial_profile ufp
+
+
+        <!-- ??? ?? ???? ?? -->
+        LEFT JOIN transaction_analysis ta
+        ON ta.transaction_analysis_id = (
+
+        SELECT
+        ta2.transaction_analysis_id
+
+        FROM transaction_analysis ta2
+
+        WHERE ta2.user_financial_profile_id
+        = ufp.user_financial_profile_id
+
+        ORDER BY
+        ta2.analysis_year_month DESC,
+        ta2.generated_at DESC
+
+        LIMIT 1
+        )
+
+
+        <!-- ??? ?? ???? ?? -->
+        LEFT JOIN loan_analysis la
+        ON la.loan_analysis_id = (
+
+        SELECT
+        la2.loan_analysis_id
+
+        FROM loan_analysis la2
+
+        WHERE la2.user_financial_profile_id
+        = ufp.user_financial_profile_id
+
+        ORDER BY
+        la2.analysis_base_date DESC,
+        la2.created_at DESC
+
+        LIMIT 1
+        )
+
+
+        <!-- ?? ?? ?? -->
+        WHERE ufp.user_id = #{userId}
+
+        <!-- ?? ????? ?? -->
+        ORDER BY
+        ufp.updated_at DESC,
+        ufp.user_financial_profile_id DESC
+
+        LIMIT 1
+
+    </select>
+
+
+</mapper>
