@@ -9,4 +9,5 @@ public interface MemberMapper {
     int insertMember(Member member);
     boolean existsByLoginEmail(@Param("loginEmail") String loginEmail);
     Member findByLoginEmail(@Param("loginEmail") String loginEmail);
+    String findCi(@Param("userId") String userId);
 }

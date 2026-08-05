@@ -21,4 +21,6 @@ public interface CardMapper {
     Long findCardAccountIdByExternalCardKey(@Param("externalCardKey") String externalCardKey);
 
     void upsertCardTransactions(@Param("transactions") List<CardTransaction> transactions);
+
+    void deleteCardAccountsByAppUserId(@Param("appUserId") Long appUserId);
 }

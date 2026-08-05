@@ -11,6 +11,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 
+import com.via.shinvia.mapper.card.CardMapper;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
 /**
  * 마이데이터 OAuth 연동 비즈니스 서비스
  */
@@ -24,12 +27,14 @@ public class MyDataAuthService {
 
     private final MyDataAuthClient myDataAuthClient;
     private final StringRedisTemplate redisTemplate;
+    private final CardMapper cardMapper;
+    private final LocalValidatorFactoryBean localValidatorFactoryBean;
 
     /**
      * 1. 인가코드 발급 URL 요청
      */
-    public String getAuthorizeUrl(String userCi, String state) {
-        return myDataAuthClient.requestAuthorize(userCi, state);
+    public String getAuthorizeUrl(String userCi) {
+        return myDataAuthClient.requestAuthorize(userCi);
     }
 
     /**
@@ -38,7 +43,7 @@ public class MyDataAuthService {
     public MyDataAuthTokenResponseDto issueTokens(String userCi, String code) {
         MyDataAuthTokenResponseDto response = myDataAuthClient.requestAccessToken(code);
 
-        if (response != null && StringUtils.hasText(userCi)) {
+        if (response != null) {
             saveTokensToRedis(userCi, response.getAccessToken(), response.getRefreshToken());
         }
 
@@ -48,21 +53,101 @@ public class MyDataAuthService {
     /**
      * 3. Refresh Token으로 Access Token 갱신 및 Redis 저장
      */
-    public MyDataAuthTokenResponseDto refreshToken(String userCi, String refreshToken) {
-        MyDataAuthTokenResponseDto response = myDataAuthClient.refreshAccessToken(refreshToken);
+    public MyDataAuthTokenResponseDto refreshToken(String refreshToken) {
+        String cleanToken = cleanToken(refreshToken);
+        if (!StringUtils.hasText(cleanToken)) {
+            throw new IllegalArgumentException("refreshToken이 비어있습니다.");
+        }
 
-        if (response != null && StringUtils.hasText(userCi)) {
+        log.info("[Redis Token Refresh] 입력된 cleanToken: '{}'", cleanToken);
+
+        // 2. Redis 역방향 키(mydata:rt:ci:{cleanToken})에서 userCi 추출 시도
+        String userCi = redisTemplate.opsForValue().get("mydata:rt:ci:" + cleanToken);
+
+        // 3. Redis 조회가 안 된 경우 토큰 규격(mock_rt_{ci}_{uuid})에서 userCi 파싱 시도
+        if (!StringUtils.hasText(userCi)) {
+            userCi = extractCiFromToken(cleanToken);
+        }
+
+        // 4. 그럼에도 userCi를 알 수 없다면 기본값 "1" 적용 (500 에러 예방)
+        if (!StringUtils.hasText(userCi)) {
+            userCi = "1";
+            log.info("[Redis Token Refresh] userCi 식별 불가로 기본값 '1'을 적용합니다.");
+        }
+
+        log.info("[Redis Token Refresh] 토큰 갱신 진행 - userCi: {}, cleanToken: {}", userCi, cleanToken);
+
+        // 5. 목 서버로 토큰 갱신 요청
+        MyDataAuthTokenResponseDto response = myDataAuthClient.refreshAccessToken(cleanToken);
+
+        // 6. 획득한 userCi와 신규 발급된 토큰 정보로 Redis 갱신
+        if (response != null) {
             saveTokensToRedis(userCi, response.getAccessToken(), response.getRefreshToken());
         }
 
         return response;
     }
 
+    private String extractCiFromToken(String token) {
+        if (token == null) return null;
+        try {
+            String[] parts = token.split("_");
+            if (parts.length >= 4) {
+                // 예: mock_rt_5_uuid -> parts[2] = "5"
+                return parts[2];
+            } else if (parts.length == 3) {
+                return parts[1];
+            }
+        } catch (Exception e) {
+            log.warn("[Token Extract Warning] 토큰 파싱 실패: {}", e.getMessage());
+        }
+        return null;
+    }
+
     /**
-     * 4. 토큰 폐기
+     * 4. Access Token 폐기 (Redis의 ci:at 및 at:ci 2개 키 삭제)
      */
     public MyDataCommonResponseDto revokeToken(String token, String revokeType) {
-        return myDataAuthClient.revokeToken(token, "0");
+        String cleanToken = cleanToken(token);
+        if (!StringUtils.hasText(cleanToken)) {
+            throw new IllegalArgumentException("폐기할 token이 비어있습니다.");
+        }
+
+        // 1. 토큰 폐기 전 Redis에서 userCi 및 현재 저장된 Access Token 사전 조회
+        String userCi = redisTemplate.opsForValue().get("mydata:at:ci:" + cleanToken);
+        if (!StringUtils.hasText(userCi)) {
+            userCi = redisTemplate.opsForValue().get("mydata:rt:ci:" + cleanToken);
+        }
+        if (!StringUtils.hasText(userCi)) {
+            userCi = extractCiFromToken(cleanToken);
+        }
+
+        String currentAt = null;
+        if (StringUtils.hasText(userCi)) {
+            currentAt = redisTemplate.opsForValue().get("mydata:ci:at:" + userCi);
+        }
+
+        log.info("[Redis Token Revoke] 폐기 요청 수신 - token: '{}', userCi: '{}', currentAt: '{}'", cleanToken, userCi, currentAt);
+
+        // 2. 외부 목 서버로 토큰 폐기 요청
+        MyDataCommonResponseDto response = myDataAuthClient.revokeToken(cleanToken, revokeType);
+
+        // 3. Redis에서 입력받은 토큰 및 Access Token 키 (at:ci, ci:at, 목서버 at:ci) 타겟 삭제
+        redisTemplate.delete("mydata:at:ci:" + cleanToken);
+        log.info("cleanToken = '{}'", cleanToken);
+        redisTemplate.delete("mydata:rt:ci:" + cleanToken);
+
+        if (StringUtils.hasText(currentAt)) {
+            redisTemplate.delete("mydata:at:ci:" + currentAt);
+        }
+
+        if (StringUtils.hasText(userCi)) {
+            redisTemplate.delete("mydata:ci:at:" + userCi);
+            redisTemplate.delete("at:" + userCi); // 목 서버가 생성한 at:{ci} 키도 함께 삭제!
+            log.info("[Redis Token Revoke] CI[{}]의 Access Token 키 (mydata:ci:at:{}, at:{}) 삭제 완료", userCi, userCi, userCi);
+        }
+
+        return response;
     }
 
     /**
@@ -78,17 +163,55 @@ public class MyDataAuthService {
             return;
         }
 
-        if (StringUtils.hasText(accessToken)) {
-            redisTemplate.opsForValue().set("mydata:ci:at:" + userCi, accessToken, ACCESS_TOKEN_TTL);
-            redisTemplate.opsForValue().set("mydata:at:ci:" + accessToken, userCi, ACCESS_TOKEN_TTL);
+        String cleanAt = cleanToken(accessToken);
+        String cleanRt = cleanToken(refreshToken);
+
+        // 1. 기존 Access Token & Refresh Token 역방향 키 삭제 (token:ci Key 2개)
+        String oldAccessToken = redisTemplate.opsForValue().get("mydata:ci:at:" + userCi);
+        if (StringUtils.hasText(oldAccessToken)) {
+            redisTemplate.delete("mydata:at:ci:" + oldAccessToken);
         }
 
-        if (StringUtils.hasText(refreshToken)) {
-            redisTemplate.opsForValue().set("mydata:ci:rt:" + userCi, refreshToken, REFRESH_TOKEN_TTL);
-            redisTemplate.opsForValue().set("mydata:rt:ci:" + refreshToken, userCi, REFRESH_TOKEN_TTL);
+        String oldRefreshToken = redisTemplate.opsForValue().get("mydata:ci:rt:" + userCi);
+        if (StringUtils.hasText(oldRefreshToken)) {
+            redisTemplate.delete("mydata:rt:ci:" + oldRefreshToken);
         }
 
-        log.info("[Redis Token Storage] CI[{}] 토큰 4개 Key-Value 저장 완료 (Access TTL: 1시간, Refresh TTL: 365일)", userCi);
+        // 2. 신규 Access Token 저장 (ci:at Key 덮어쓰기 & at:ci 신규 생성)
+        if (StringUtils.hasText(cleanAt)) {
+            redisTemplate.opsForValue().set("mydata:ci:at:" + userCi, cleanAt, ACCESS_TOKEN_TTL);
+            redisTemplate.opsForValue().set("mydata:at:ci:" + cleanAt, userCi, ACCESS_TOKEN_TTL);
+        }
+
+        // 3. 신규 Refresh Token 저장 (ci:rt Key 덮어쓰기 & rt:ci 신규 생성)
+        if (StringUtils.hasText(cleanRt)) {
+            redisTemplate.opsForValue().set("mydata:ci:rt:" + userCi, cleanRt, REFRESH_TOKEN_TTL);
+            redisTemplate.opsForValue().set("mydata:rt:ci:" + cleanRt, userCi, REFRESH_TOKEN_TTL);
+        }
+
+        log.info("[Redis Token Storage] CI[{}] 토큰 4개 Key-Value 갱신 완료 (Access TTL: 1시간, Refresh TTL: 365일)", userCi);
+    }
+
+    /**
+     * 토큰에서 앞뒤 따옴표(', "), Bearer 접두어 및 공백을 완벽하게 제거
+     */
+    private String cleanToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            return "";
+        }
+        String cleaned = token.trim();
+        while ((cleaned.startsWith("'") && cleaned.endsWith("'") && cleaned.length() > 1) ||
+               (cleaned.startsWith("\"") && cleaned.endsWith("\"") && cleaned.length() > 1)) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1).trim();
+        }
+        if (cleaned.startsWith("Bearer ") || cleaned.startsWith("bearer ")) {
+            cleaned = cleaned.substring(7).trim();
+        }
+        while ((cleaned.startsWith("'") && cleaned.endsWith("'") && cleaned.length() > 1) ||
+               (cleaned.startsWith("\"") && cleaned.endsWith("\"") && cleaned.length() > 1)) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1).trim();
+        }
+        return cleaned;
     }
 }
 
