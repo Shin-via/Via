@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-// ?? ?????? ???
+// 부채 상환우선순위 서비스
 @Service
 @RequiredArgsConstructor
 public class DebtPriorityService {
@@ -24,23 +24,23 @@ public class DebtPriorityService {
             debtPriorityCalculator;
 
 
-    // ??? ?? ???? ??
+    // 사용자 부채 상환순위 계산
     public List<DebtPriorityResponseDTO> calculate(
             Long userId
     ) {
-        // ??? ?? ??
+        // 사용자 대출 조회
         List<LoanAccountAnalysisDTO> loans =
                 loanAccountAnalysisMapper
                         .findActiveLoansByUserId(
                                 userId
                         );
 
-        // ?? ?? ??
+        // 대출 없음 처리
         if (loans == null || loans.isEmpty()) {
             return List.of();
         }
 
-        // ?? ???? ??
+        // 전체 대출잔액 계산
         BigDecimal totalLoanBalance =
                 loans.stream()
                         .map(
@@ -55,7 +55,7 @@ public class DebtPriorityService {
                                 BigDecimal::add
                         );
 
-        // ??? RPS ??
+        // 대출별 RPS 계산
         List<DebtPriorityResponseDTO> results =
                 loans.stream()
                         .map(loan ->
@@ -73,7 +73,7 @@ public class DebtPriorityService {
                         )
                         .toList();
 
-        // ?? ?? ??
+        // 순위 결과 생성
         List<DebtPriorityResponseDTO> rankedResults =
                 new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class DebtPriorityService {
             DebtPriorityResponseDTO result =
                     results.get(index);
 
-            // ?? ?? ?? ??
+            // 순위 포함 결과 생성
             rankedResults.add(
                     DebtPriorityResponseDTO.builder()
                             .loanAccountId(
@@ -135,4 +135,4 @@ public class DebtPriorityService {
 
         return rankedResults;
     }
-}
+}

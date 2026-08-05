@@ -1,17 +1,17 @@
-// ?? ??
+// 화면 실행
 document.addEventListener(
     "DOMContentLoaded",
     loadDebtPriorities
 );
 
 
-// ?? ???? ??
+// 부채 상환순위 조회
 async function loadDebtPriorities() {
 
-    // ??? ?????
+    // 테스트 사용자번호
     const userId = 1;
 
-    // ???? ??
+    // 화면요소 조회
     const loadingArea =
         document.getElementById("loadingArea");
 
@@ -23,7 +23,7 @@ async function loadDebtPriorities() {
 
     try {
 
-        // ???? API ??
+        // 부채순위 API 요청
         const response = await fetch(
             `/api/loan-analysis/debt-priority/${userId}`,
             {
@@ -34,27 +34,27 @@ async function loadDebtPriorities() {
             }
         );
 
-        // API ?? ??
+        // API 오류 처리
         if (!response.ok) {
             throw new Error(
-                `HTTP ??: ${response.status}`
+                `HTTP 오류: ${response.status}`
             );
         }
 
-        // JSON ??
+        // JSON 변환
         const priorities =
             await response.json();
 
-        // ?? ??
+        // 로딩 숨김
         loadingArea.classList.add("hidden");
 
-        // ?? ?? ??
+        // 대출 없음 처리
         if (!Array.isArray(priorities)
             || priorities.length === 0) {
 
             priorityList.innerHTML = `
                 <div class="loading-area">
-                    ??? ????? ????.
+                    분석할 대출정보가 없습니다.
                 </div>
             `;
 
@@ -63,30 +63,30 @@ async function loadDebtPriorities() {
             return;
         }
 
-        // ???? ??
+        // 요약정보 출력
         updateSummary(priorities);
 
-        // ???? ??
+        // 순위카드 출력
         renderPriorityCards(priorities);
 
     } catch (error) {
 
-        // ?? ??
+        // 오류 로그
         console.error(
-            "?? ???? ?? ??:",
+            "부채 상환순위 조회 실패:",
             error
         );
 
-        // ?? ??
+        // 로딩 숨김
         loadingArea.classList.add("hidden");
 
-        // ?? ??
+        // 오류 표시
         errorArea.classList.remove("hidden");
     }
 }
 
 
-// ???? ??
+// 요약정보 출력
 function updateSummary(priorities) {
 
     const loanCount =
@@ -100,21 +100,21 @@ function updateSummary(priorities) {
             "topPriorityScore"
         );
 
-    // ?? ??
+    // 대출 없음
     if (priorities.length === 0) {
 
-        loanCount.textContent = "0?";
+        loanCount.textContent = "0건";
         topLoanType.textContent = "-";
         topPriorityScore.textContent = "-";
 
         return;
     }
 
-    // 1?? ??
+    // 1순위 대출
     const firstLoan = priorities[0];
 
     loanCount.textContent =
-        `${priorities.length}?`;
+        `${priorities.length}건`;
 
     topLoanType.textContent =
         firstLoan.loanType ?? "-";
@@ -124,7 +124,7 @@ function updateSummary(priorities) {
 }
 
 
-// ?? ???? ??
+// 대출 순위카드 출력
 function renderPriorityCards(priorities) {
 
     const priorityList =
@@ -137,10 +137,10 @@ function renderPriorityCards(priorities) {
 }
 
 
-// ???? HTML ??
+// 대출카드 HTML 생성
 function createPriorityCard(loan) {
 
-    // 1?? ???
+    // 1순위 스타일
     const firstClass =
         loan.priorityRank === 1
             ? "first"
@@ -150,7 +150,7 @@ function createPriorityCard(loan) {
         <article class="priority-card ${firstClass}">
 
             <div class="rank-box">
-                ${loan.priorityRank}?
+                ${loan.priorityRank}위
             </div>
 
             <div>
@@ -172,7 +172,7 @@ function createPriorityCard(loan) {
                 <div class="loan-info-grid">
 
                     <div class="loan-info-item">
-                        <span>?? ??</span>
+                        <span>현재 잔액</span>
                         <strong>
                             ${formatCurrency(
         loan.currentBalance
@@ -181,7 +181,7 @@ function createPriorityCard(loan) {
                     </div>
 
                     <div class="loan-info-item">
-                        <span>?? ??</span>
+                        <span>적용 금리</span>
                         <strong>
                             ${formatRate(
         loan.interestRate
@@ -190,7 +190,7 @@ function createPriorityCard(loan) {
                     </div>
 
                     <div class="loan-info-item">
-                        <span>?? ??</span>
+                        <span>금리 유형</span>
                         <strong>
                             ${escapeHtml(
         loan.rateType
@@ -199,7 +199,7 @@ function createPriorityCard(loan) {
                     </div>
 
                     <div class="loan-info-item">
-                        <span>?? ??</span>
+                        <span>대출 상태</span>
                         <strong>
                             ${escapeHtml(
         loan.loanStatus
@@ -220,7 +220,7 @@ function createPriorityCard(loan) {
 }
 
 
-// ?? ??
+// 원화 표시
 function formatCurrency(value) {
 
     const number =
@@ -237,7 +237,7 @@ function formatCurrency(value) {
 }
 
 
-// ?? ??
+// 금리 표시
 function formatRate(value) {
 
     const number =
@@ -247,7 +247,7 @@ function formatRate(value) {
 }
 
 
-// ?? ??
+// 점수 표시
 function formatScore(value) {
 
     const number =
@@ -257,7 +257,7 @@ function formatScore(value) {
 }
 
 
-// HTML ???? ??
+// HTML 특수문자 처리
 function escapeHtml(value) {
 
     const text =
@@ -269,4 +269,4 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-}
+}

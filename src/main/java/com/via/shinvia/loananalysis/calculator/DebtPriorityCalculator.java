@@ -8,102 +8,102 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 
-// ?? ?? ???? ???
+// 부채 상환 우선순위 계산기
 @Component
 public class DebtPriorityCalculator {
 
-    // ?? ???
+    // 연체 가중치
     private static final BigDecimal OVERDUE_WEIGHT =
             new BigDecimal("0.40");
 
-    // ?? ???
+    // 금리 가중치
     private static final BigDecimal INTEREST_WEIGHT =
             new BigDecimal("0.30");
 
-    // ??? ???
+    // 수수료 가중치
     private static final BigDecimal FEE_WEIGHT =
             new BigDecimal("0.15");
 
-    // ???? ???
+    // 소액대출 가중치
     private static final BigDecimal SMALL_LOAN_WEIGHT =
             new BigDecimal("0.10");
 
-    // ????? ???
+    // 학자금대출 가중치
     private static final BigDecimal STUDENT_LOAN_WEIGHT =
             new BigDecimal("0.05");
 
 
-    // ?? 1? RPS ??
+    // 대출 1건 RPS 계산
     public DebtPriorityResponseDTO calculate(
             LoanAccountAnalysisDTO loan,
             BigDecimal totalLoanBalance
     ) {
 
-        // ?? ?? ??
+        // 연체 점수 계산
         BigDecimal overdueScore =
                 calculateOverdueScore(
                         loan.getLoanStatus()
                 );
 
-        // ?? ?? ??
+        // 금리 점수 계산
         BigDecimal interestScore =
                 defaultZero(
                         loan.getInterestRate()
                 );
 
-        // ??? ?? ??
+        // 수수료 점수 계산
         BigDecimal feeScore =
                 calculateFeeScore(
                         loan.getPrepaymentFeeRate(),
                         loan.getPrepaymentFeeEndDate()
                 );
 
-        // ???? ?? ??
+        // 소액대출 점수 계산
         BigDecimal smallLoanScore =
                 calculateSmallLoanScore(
                         loan.getCurrentBalance(),
                         totalLoanBalance
                 );
 
-        // ????? ?? ??
+        // 학자금대출 점수 계산
         BigDecimal studentLoanScore =
                 calculateStudentLoanScore(
                         loan.getLoanType()
                 );
 
 
-        // ?? ????
+        // 연체 가중점수
         BigDecimal weightedOverdue =
                 overdueScore.multiply(
                         OVERDUE_WEIGHT
                 );
 
-        // ?? ????
+        // 금리 가중점수
         BigDecimal weightedInterest =
                 interestScore.multiply(
                         INTEREST_WEIGHT
                 );
 
-        // ??? ????
+        // 수수료 가중점수
         BigDecimal weightedFee =
                 feeScore.multiply(
                         FEE_WEIGHT
                 );
 
-        // ???? ????
+        // 소액대출 가중점수
         BigDecimal weightedSmallLoan =
                 smallLoanScore.multiply(
                         SMALL_LOAN_WEIGHT
                 );
 
-        // ????? ????
+        // 학자금대출 가중점수
         BigDecimal weightedStudentLoan =
                 studentLoanScore.multiply(
                         STUDENT_LOAN_WEIGHT
                 );
 
 
-        // ?? RPS ??
+        // 최종 RPS 계산
         BigDecimal finalScore =
                 weightedOverdue
                         .add(weightedInterest)
@@ -116,7 +116,7 @@ public class DebtPriorityCalculator {
                         );
 
 
-        // ?? ?? ??
+        // 추천 사유 생성
         String reason =
                 createReason(
                         loan,
@@ -127,7 +127,7 @@ public class DebtPriorityCalculator {
                 );
 
 
-        // ?? ?? ??
+        // 계산 결과 반환
         return DebtPriorityResponseDTO.builder()
                 .loanAccountId(
                         loan.getLoanAccountId()
@@ -174,28 +174,28 @@ public class DebtPriorityCalculator {
     }
 
 
-    // ?? ?? ??
+    // 연체 점수 계산
     private BigDecimal calculateOverdueScore(
             String loanStatus
     ) {
 
-        // ???? 100?
-        if ("??".equals(loanStatus)) {
+        // 연체이면 100점
+        if ("연체".equals(loanStatus)) {
             return BigDecimal.valueOf(100);
         }
 
-        // ???? 0?
+        // 정상이면 0점
         return BigDecimal.ZERO;
     }
 
 
-    // ??????? ?? ??
+    // 중도상환수수료 점수 계산
     private BigDecimal calculateFeeScore(
             BigDecimal feeRate,
             LocalDate feeEndDate
     ) {
 
-        // ???? ??
+        // 수수료율 없음
         if (feeRate == null
                 || feeRate.compareTo(
                 BigDecimal.ZERO
@@ -203,49 +203,49 @@ public class DebtPriorityCalculator {
             return BigDecimal.ZERO;
         }
 
-        // ??? ??
+        // 종료일 없음
         if (feeEndDate == null) {
             return feeRate.multiply(
                     BigDecimal.TEN
             );
         }
 
-        // ??? ?? ??
+        // 수수료 기간 종료
         if (feeEndDate.isBefore(
                 LocalDate.now()
         )) {
             return BigDecimal.ZERO;
         }
 
-        // ???? ? 10
+        // 수수료율 × 10
         return feeRate.multiply(
                 BigDecimal.TEN
         );
     }
 
 
-    // ???? ?? ??
+    // 소액대출 점수 계산
     private BigDecimal calculateSmallLoanScore(
             BigDecimal currentBalance,
             BigDecimal totalLoanBalance
     ) {
 
-        // ???? null ??
+        // 대출잔액 null 처리
         BigDecimal balance =
                 defaultZero(currentBalance);
 
-        // ????? null ??
+        // 총대출잔액 null 처리
         BigDecimal totalBalance =
                 defaultZero(totalLoanBalance);
 
-        // ???? 0?? ?? ??
+        // 총잔액이 0이면 계산 불가
         if (totalBalance.compareTo(
                 BigDecimal.ZERO
         ) <= 0) {
             return BigDecimal.ZERO;
         }
 
-        // ?? ?? ?? ??
+        // 해당 대출 잔액 비율
         BigDecimal balanceRatio =
                 balance.divide(
                         totalBalance,
@@ -253,7 +253,7 @@ public class DebtPriorityCalculator {
                         RoundingMode.HALF_UP
                 );
 
-        // 100 ? (1 - ?? ??)
+        // 100 × (1 - 잔액 비율)
         BigDecimal score =
                 BigDecimal.ONE
                         .subtract(balanceRatio)
@@ -261,7 +261,7 @@ public class DebtPriorityCalculator {
                                 BigDecimal.valueOf(100)
                         );
 
-        // ?? ?? ? ??? ??
+        // 음수 방지 및 소수점 정리
         return score
                 .max(BigDecimal.ZERO)
                 .setScale(
@@ -271,27 +271,27 @@ public class DebtPriorityCalculator {
     }
 
 
-    // ????? ?? ??
+    // 학자금대출 점수 계산
     private BigDecimal calculateStudentLoanScore(
             String loanType
     ) {
 
-        // ?? ?? ??
+        // 대출 종류 없음
         if (loanType == null) {
             return BigDecimal.ZERO;
         }
 
-        // ??????? 100?
-        if (loanType.contains("???")) {
+        // 학자금대출이면 100점
+        if (loanType.contains("학자금")) {
             return BigDecimal.valueOf(100);
         }
 
-        // ?????? 0?
+        // 일반대출이면 0점
         return BigDecimal.ZERO;
     }
 
 
-    // ?? ?? ??
+    // 추천 사유 생성
     private String createReason(
             LoanAccountAnalysisDTO loan,
             BigDecimal overdueScore,
@@ -303,16 +303,16 @@ public class DebtPriorityCalculator {
         StringBuilder reason =
                 new StringBuilder();
 
-        // ?? ??
+        // 연체 사유
         if (overdueScore.compareTo(
                 BigDecimal.ZERO
         ) > 0) {
             reason.append(
-                    "?? ?? ???? ??? ??? ?????. "
+                    "현재 연체 중이므로 최우선 상환이 필요합니다. "
             );
         }
 
-        // ??? ??
+        // 고금리 사유
         if (defaultZero(
                 loan.getInterestRate()
         ).compareTo(
@@ -320,10 +320,10 @@ public class DebtPriorityCalculator {
         ) >= 0) {
 
             reason.append(
-                    "??? ?? ?????. "
+                    "금리가 높은 대출입니다. "
             );
 
-            // ??? ??
+            // 중금리 사유
         } else if (defaultZero(
                 loan.getInterestRate()
         ).compareTo(
@@ -331,44 +331,44 @@ public class DebtPriorityCalculator {
         ) >= 0) {
 
             reason.append(
-                    "??? ?????. "
+                    "중금리 대출입니다. "
             );
         }
 
-        // ??? ??
+        // 수수료 사유
         if (feeScore.compareTo(
                 BigDecimal.ZERO
         ) > 0) {
 
             reason.append(
-                    "???????? ?? ?? ??? ??? ???? ???. "
+                    "중도상환수수료가 있어 즉시 상환의 실익을 확인해야 합니다. "
             );
         }
 
-        // ???? ??
+        // 소액대출 사유
         if (smallLoanScore.compareTo(
                 BigDecimal.valueOf(80)
         ) >= 0) {
 
             reason.append(
-                    "?? ???? ???? ??? ?? ?? ??? ?????. "
+                    "전체 부채에서 차지하는 비중이 작아 빠른 정리가 가능합니다. "
             );
         }
 
-        // ????? ??
+        // 학자금대출 사유
         if (studentLoanScore.compareTo(
                 BigDecimal.ZERO
         ) > 0) {
 
             reason.append(
-                    "?????? ????? ?? ????? ?? ??????. "
+                    "학자금대출은 상대적으로 상환 우선순위를 낮게 적용했습니다. "
             );
         }
 
-        // ?? ??
+        // 기본 사유
         if (reason.isEmpty()) {
             reason.append(
-                    "??? ?? ??? ???? ??? ??????."
+                    "금리와 잔액 비중을 기준으로 순위를 산정했습니다."
             );
         }
 
@@ -376,7 +376,7 @@ public class DebtPriorityCalculator {
     }
 
 
-    // null ?? ??
+    // null 금액 처리
     private BigDecimal defaultZero(
             BigDecimal value
     ) {
@@ -385,4 +385,4 @@ public class DebtPriorityCalculator {
                 ? BigDecimal.ZERO
                 : value;
     }
-}
+}
