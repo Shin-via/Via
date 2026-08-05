@@ -1,7 +1,9 @@
 package com.via.shinvia.finprofile;
 
 import com.via.shinvia.login.security.CustomUserDetails;
+import com.via.shinvia.oauth2.security.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,8 +18,9 @@ public class FinancialProfileController {
     private final FinancialProfileService fProfileService;
 
     @GetMapping
-    public String showFinancialProfile(@AuthenticationPrincipal CustomUserDetails loginUser, Model model) {
-        FinancialProfile fprofile= fProfileService.findFinancialProfileByUserId(loginUser.getUserId());
+    public String showFinancialProfile(Authentication authentication, Model model) {
+        Long userId=getUserId(authentication);
+        FinancialProfile fprofile= fProfileService.findFinancialProfileByUserId(userId);
         model.addAttribute("financialProfile", fprofile);
 
         if (fprofile == null){
@@ -33,8 +36,9 @@ public class FinancialProfileController {
 
     @PostMapping("/new")
     public String createFinancialProfile(FinancialProfileRequestDto request,
-                                         @AuthenticationPrincipal CustomUserDetails loginUser){
-        fProfileService.createFinancialProfile(request,loginUser.getUserId());
+                                        Authentication authentication){
+        Long userId=getUserId(authentication);
+        fProfileService.createFinancialProfile(request,userId);
 
         return "redirect:/financial-profile";
     }
@@ -42,10 +46,31 @@ public class FinancialProfileController {
 
     @PostMapping("/edit")
     public String updateFinancialProfile(FinancialProfileRequestDto request,
-                                         @AuthenticationPrincipal CustomUserDetails loginUser){
-        fProfileService.updateFinancialProfile(request, loginUser.getUserId());
+                                        Authentication authentication){
+        Long userId=getUserId(authentication);
+        fProfileService.updateFinancialProfile(request,userId);
 
         return "redirect:/financial-profile";
     }
 
+
+    private Long getUserId(Authentication authentication) {
+        if (authentication == null) {
+            throw new IllegalStateException("로그인 필요");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getUserId();
+        }
+
+        if (principal instanceof CustomOAuth2User oAuth2User) {
+            return oAuth2User.getUserId();
+        }
+        throw new IllegalStateException(
+                "지원하지 않는 인증 객체입니다: "
+                        + principal.getClass().getName()
+        );
+    }
 }
