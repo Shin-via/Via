@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+</head>
+<body>
+<main>
+    <h1>로그인</h1>
+
+    <p th:if="${param.error}">
+        이메일 또는 비밀번호가 일치하지 않습니다.
+    </p>
+
+    <p th:if="${param.logout}">
+        로그아웃되었습니다.
+    </p>
+
+    <p th:if="${signupMessage}"
+       th:text="${signupMessage}">
+    </p>
+
+    <form th:action="@{/login}" method="post">
+        <div>
+            <label for="loginEmail">이메일</label>
+            <input type="email"
+                   id="loginEmail"
+                   name="loginEmail"
+                   autocomplete="email"
+                   required>
+        </div>
+
+        <div>
+            <label for="password">비밀번호</label>
+            <input type="password"
+                   id="password"
+                   name="password"
+                   autocomplete="current-password"
+                   required>
+        </div>
+
+        <button type="submit">로그인</button>
+
+    </form>
+    <a th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
+    <a th:href="@{/signup/email}">회원가입</a>
+
+    <p th:if="${param.signup}">
+        회원가입이 완료되었습니다.
+        카카오 계정으로 다시 로그인해주세요.
+    </p>
+</main>
+</body>
+</html>

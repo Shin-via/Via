@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>소셜 회원가입</title>
+</head>
+<body>
+<main>
+    <h1>추가 정보 입력</h1>
+
+    <p>
+        카카오 계정 인증이 완료되었습니다.
+        서비스 이용에 필요한 정보를 입력해주세요.
+    </p>
+
+    <form th:action="@{/social/signup}"
+          th:object="${socialSignupRequest}"
+          method="post">
+
+        <div>
+            <label for="loginEmail">이메일</label>
+
+            <input id="loginEmail"
+                   type="email"
+                   th:value="${providerEmail}"
+                   readonly>
+        </div>
+
+        <div>
+            <label for="userName">이름</label>
+
+            <input id="userName"
+                   type="text"
+                   th:field="*{userName}"
+                   autocomplete="name"
+                   required>
+
+            <p th:if="${#fields.hasErrors('userName')}"
+               th:errors="*{userName}">
+                이름 오류
+            </p>
+        </div>
+
+        <div>
+            <label for="phoneNumber">전화번호</label>
+
+            <input id="phoneNumber"
+                   type="tel"
+                   th:field="*{phoneNumber}"
+                   autocomplete="tel"
+                   placeholder="01012345678"
+                   required>
+
+            <p th:if="${#fields.hasErrors('phoneNumber')}"
+               th:errors="*{phoneNumber}">
+                전화번호 오류
+            </p>
+        </div>
+
+        <div>
+            <label for="birthDate">생년월일</label>
+
+            <input id="birthDate"
+                   type="date"
+                   th:field="*{birthDate}"
+                   autocomplete="bday"
+                   required>
+
+            <p th:if="${#fields.hasErrors('birthDate')}"
+               th:errors="*{birthDate}">
+                생년월일 오류
+            </p>
+        </div>
+
+        <p th:if="${signupError}"
+           th:text="${signupError}">
+            회원가입 처리 중 오류가 발생했습니다.
+        </p>
+
+        <button type="submit">
+            가입하기
+        </button>
+    </form>
+
+    <a th:href="@{/login}">
+        취소
+    </a>
+</main>
+</body>
+</html>

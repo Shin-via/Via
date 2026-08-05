@@ -11,10 +11,10 @@
 <main>
     <h1>메인</h1>
 
-    <!-- 로그인하지 않은 경우에만 표시 -->
     <div th:if="${#authorization.expression('isAnonymous()')}">
         <a th:href="@{/signup/email}">회원가입</a>
         <a th:href="@{/login}">로그인</a>
+        <a th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
     </div>
 
     <!-- 로그인한 경우에만 표시 -->
