@@ -10,3 +10,17 @@ spring:
           auth: true
           starttls:
             enable: true
+
+external:
+  shinvia-mock:
+    base-url: http://localhost:9090
+
+finance:
+  api:
+    service-key: ${FINANCE_API_SERVICE_KEY}
+    base-url: https://apis.data.go.kr/B553701/LoanProductSearchingInfo/LoanProductSearchingInfo/getLoanProductSearchingInfo
+    num-of-rows: 100
+    max-pages: 1000
+    connect-timeout: 5s
+    read-timeout: 15s
+    sync-on-startup: false
