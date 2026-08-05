@@ -4,6 +4,7 @@ import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioRequestDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioResponseDTO;
 import com.via.shinvia.loananalysis.service.LoanAnalysisService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class LoanAnalysisApiController {
     public ResponseEntity<
             List<LoanScenarioResponseDTO>
             > analyzeScenarios(
-            @RequestBody
+            @Valid @RequestBody
             LoanScenarioRequestDTO request
     ) {
         return ResponseEntity.ok(
