@@ -1,0 +1,12 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: shinvia2026@gmail.com
+    password: uiiyozhongplxkcm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
