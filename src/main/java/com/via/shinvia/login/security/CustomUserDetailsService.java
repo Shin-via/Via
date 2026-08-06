@@ -1,4 +1,4 @@
-package com.via.shinvia.login.service;
+package com.via.shinvia.login.security;
 
 import com.via.shinvia.user.domain.User;
 import com.via.shinvia.user.domain.UserStatus;
@@ -26,10 +26,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("사용 불가 계정입니다.");
         }
 
-        return org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getLoginEmail())
-                    .password(user.getPasswordHash())
-                    .roles(user.getUserRole().name())
-                    .build();
+        return new CustomUserDetails(user);
     }
 }
