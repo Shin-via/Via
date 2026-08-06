@@ -24,7 +24,8 @@ public class SecurityConfig {
                 // Postman API 테스트용 CSRF 제외
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
-                                "/api/loan-analysis/**"
+                                "/api/loan-analysis/**",
+                                "/api/admin/loan-product-catalogs/**"
                         )
                 )
 
@@ -54,6 +55,11 @@ public class SecurityConfig {
 
                                 // 대출분석 API
                                 "/api/loan-analysis/**",
+
+
+                                // 대출상품 카탈로그
+                                "/api/admin/loan-product-catalogs/**",
+                                "/api/loan-product-catalogs/**",
 
                                 // 정적 리소스
                                 "/css/**",
