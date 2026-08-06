@@ -4,6 +4,7 @@ import com.via.shinvia.policy.dto.FinancialProductDTO;
 import com.via.shinvia.policy.dto.FinancialProductDetailDTO;
 import com.via.shinvia.policy.dto.FinancialProductPageDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -19,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-@RequiredArgsConstructor
 // 서민금융 상품 외부 API 호출 기능
 public class KinfaFinancialProductClient {
 
@@ -42,8 +42,15 @@ public class KinfaFinancialProductClient {
             "name=\"sn\"\\s+value=\"([^\"]+)\""
     );
 
+
+    // 이 부분도 Bean 충돌해결
     private final RestClient restClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    public KinfaFinancialProductClient(
+            @Qualifier("policyRestClient") RestClient restClient
+    ) {
+        this.restClient = restClient;
+    }
 
     public FinancialProductPageDTO findProducts(
             ProductType productType,
