@@ -20,9 +20,9 @@ public class LoanRateSimulationSecurityConfig {
         http.securityMatcher(
                         "/api/loans/**",
                         "/loans/breakeven-rate-test",
-                        "/loan/*/staged-rate-simulation",
-                        "/loan/*/historical-rate-replay",
-                        "/loan/*/market-implied-simulation"
+                        "/loans/*/staged-rate-simulation",
+                        "/loans/*/historical-rate-replay",
+                        "/loans/*/market-implied-simulation"
                 )
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
