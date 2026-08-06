@@ -1,0 +1,55 @@
+package com.via.shinvia.loananalysis.controller;
+
+import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
+import com.via.shinvia.loananalysis.dto.LoanScenarioRequestDTO;
+import com.via.shinvia.loananalysis.dto.LoanScenarioResponseDTO;
+import com.via.shinvia.loananalysis.service.LoanAnalysisService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+// 대출분석 API
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/loan-analysis")
+public class LoanAnalysisApiController {
+
+    private final LoanAnalysisService
+            loanAnalysisService;
+
+
+    // 부채 상환순위 조회
+    @GetMapping("/debt-priority/{userId}")
+    public ResponseEntity<
+            List<DebtPriorityResponseDTO>
+            > getDebtPriorities(
+            @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(
+                loanAnalysisService
+                        .getDebtPriorities(
+                                userId
+                        )
+        );
+    }
+
+
+    // 유지·부분상환·대환·현금보유 비교
+    @PostMapping("/scenarios")
+    public ResponseEntity<
+            List<LoanScenarioResponseDTO>
+            > analyzeScenarios(
+            @Valid @RequestBody
+            LoanScenarioRequestDTO request
+    ) {
+        return ResponseEntity.ok(
+                loanAnalysisService
+                        .analyzeScenarios(
+                                request
+                        )
+        );
+    }
+}

@@ -21,6 +21,14 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                // Postman API 테스트용 CSRF 제외
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                "/api/loan-analysis/**"
+                        )
+                )
+
+                // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -30,14 +38,38 @@ public class SecurityConfig {
                                 "/api/email-verify/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
+                                //rps 부채상환
+                                "/loan-analysis/**",
+                                "/api/loan-analysis/**",
+                                // 금융정책 화면
+                                "/policy-support",
+                                "/policy-support/**",
+                                "/api/policy-support/**",
+                                "/asset-products",
+                                "/social-finance",
+                                "/welfare-support",
+                                "/api/asset-products/**",
+                                "/api/social-finance/**",
+                                "/api/welfare-support/**",
+
+                                // 대출분석 API
+                                "/api/loan-analysis/**",
+
+                                // 정적 리소스
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico",
                                 "/error"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        )
+                        .permitAll()
+
+                        // 나머지 요청은 로그인 필요
+                        .anyRequest()
+                        .authenticated()
                 )
+
+                // 폼 로그인 설정
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -55,6 +87,8 @@ public class SecurityConfig {
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureUrl("/login?oauthError")
                 )
+
+                // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")

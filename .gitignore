@@ -48,7 +48,6 @@ build/
 .sts4-cache
 bin/
 
-
 *.yml
 
 application.properties
