@@ -104,25 +104,51 @@ function createPriorityRow(loan) {
         </article>`;
 }
 
-// 원화 금액 표시
+// 금액 표시
 function formatCurrency(value) {
+    if (value === null || value === undefined || value === "") {
+        return "-";
+    }
+
     const number = Number(value);
+
     if (!Number.isFinite(number)) {
         return "-";
     }
-    return `${new Intl.NumberFormat("ko-KR", {maximumFractionDigits: 0}).format(number)}원`;
+
+    return `${new Intl.NumberFormat("ko-KR", {
+        maximumFractionDigits: 0
+    }).format(number)}원`;
 }
 
 // 금리 표시
 function formatRate(value) {
+    if (value === null || value === undefined || value === "") {
+        return "-";
+    }
+
     const number = Number(value);
-    return Number.isFinite(number) ? `${number.toFixed(2)}%` : "-";
+
+    if (!Number.isFinite(number)) {
+        return "-";
+    }
+
+    return `${number.toFixed(2)}%`;
 }
 
 // 점수 표시
 function formatScore(value) {
+    if (value === null || value === undefined || value === "") {
+        return "-";
+    }
+
     const number = Number(value);
-    return Number.isFinite(number) ? number.toFixed(2) : "-";
+
+    if (!Number.isFinite(number)) {
+        return "-";
+    }
+
+    return number.toFixed(2);
 }
 
 function displayText(value) {
