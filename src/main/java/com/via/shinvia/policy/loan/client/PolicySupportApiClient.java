@@ -3,6 +3,7 @@ package com.via.shinvia.policy.loan.client;
 import com.via.shinvia.policy.loan.dto.api.LoanProductApiItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -23,11 +24,17 @@ import java.util.List;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 // 맞춤대출 공공데이터 API 호출 기능
 public class PolicySupportApiClient {
 
     private final RestClient restClient;
+
+    // Bean 충돌로 인한 생성자 방식으로 변경,  @Qualifier
+    public PolicySupportApiClient(
+            @Qualifier("policyRestClient") RestClient restClient
+    ) {
+        this.restClient = restClient;
+    }
 
     @Value("${finance.api.service-key}")
     private String serviceKey;
