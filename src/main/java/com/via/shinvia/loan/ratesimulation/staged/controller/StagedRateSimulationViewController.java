@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 public class StagedRateSimulationViewController {
 
-    @GetMapping("/loan/{loanId}/staged-rate-simulation")
+    @GetMapping("/loans/{loanId}/staged-rate-simulation")
     public String stagedRateSimulationPage(@PathVariable Long loanId, Model model) {
         model.addAttribute("loanId", loanId);
         return "loan/staged-rate-simulation";
