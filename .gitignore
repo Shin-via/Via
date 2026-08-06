@@ -49,6 +49,8 @@ build/
 bin/
 
 
+*.yml
+
 application.properties
 application-db.yml
 application-mail.yml
