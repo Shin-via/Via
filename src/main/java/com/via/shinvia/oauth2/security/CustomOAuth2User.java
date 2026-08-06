@@ -28,4 +28,7 @@ public class CustomOAuth2User implements OAuth2User{
         return provider.name() + ":" + providerUserId;
     }
 
+    public Long getUserId() {
+        return user.getUserId();
+    }
 }
