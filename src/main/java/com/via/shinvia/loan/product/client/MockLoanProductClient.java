@@ -13,10 +13,11 @@ public class MockLoanProductClient {
     private final RestClient restClient;
 
     public MockLoanProductClient(
-            @Value("${external.shinvia-mock.base-url}")
+            RestClient.Builder restClientBuilder,
+            @Value("${mydata.mock.base-url}")
             String baseUrl
     ) {
-        this.restClient = RestClient.builder()
+        this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .build();
     }
