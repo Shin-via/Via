@@ -54,6 +54,6 @@ public class AssetProductController {
 
     private void normalize(AssetProductSearchDTO search) {
         search.setPage(Math.max(0, search.getPage()));
-        if (search.getSize() != 40 && search.getSize() != 60 && search.getSize() != 80) search.setSize(20);
+        if (search.getSize() < 10 || search.getSize() > 50 || search.getSize() % 10 != 0) search.setSize(20);
     }
 }

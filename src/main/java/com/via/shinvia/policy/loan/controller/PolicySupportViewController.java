@@ -73,10 +73,9 @@ public class PolicySupportViewController {
             page = 0;
         }
 
-        if (size != 20
-                && size != 40
-                && size != 60
-                && size != 80) {
+        if (size < 10
+                || size > 50
+                || size % 10 != 0) {
 
             size = 20;
         }
