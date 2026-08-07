@@ -45,7 +45,7 @@ public class MyDataAuthController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(mockAuthorizeUrl));
-        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
     /**

@@ -14,10 +14,12 @@ import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardInfoDto;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.config.MockServerProperties;
+import com.via.shinvia.mydata.config.MyDataProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,7 +38,7 @@ class CardMydataClientIntegrationTest {
     private static final String BASE_URL = "http://localhost:9090";
     private static final String ACCESS_TOKEN = "mock-access-token-1000000001";
     private static final String ORG_CODE = "004";
-
+    private static final MyDataProperties mydataProp = null;
     private RestTemplate restTemplate;
 
     @BeforeEach
@@ -59,7 +61,7 @@ class CardMydataClientIntegrationTest {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(ACCESS_TOKEN);
             restTemplate.exchange(BASE_URL + "/v2/card/cards?org_code=" + ORG_CODE + "&limit=1",
-                    org.springframework.http.HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                    HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
         } catch (Exception e) {
             assumeTrue(false, "목서버(localhost:9090)가 실행 중이 아니라 테스트를 건너뜀: " + e.getMessage());
         }
@@ -70,7 +72,7 @@ class CardMydataClientIntegrationTest {
         MydataCardListClient client = new MydataCardListClient(restTemplate, mockServerProperties());
 
         CardListResponse response = client.getCards(ACCESS_TOKEN, CardListRequest.builder()
-                .orgCode(ORG_CODE)
+                .orgCode("org")
                 .searchTimestamp("0")
                 .limit(10)
                 .build());

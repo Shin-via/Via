@@ -3,45 +3,53 @@ package com.via.shinvia.client.card.list;
 import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.config.MockServerProperties;
+import com.via.shinvia.mydata.config.MyDataProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.via.shinvia.mydata.client.MyDataAuthClient;
 
 import java.net.URI;
 
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MydataCardListClient {
 
+
+    private final MyDataProperties myDataProperties;
     private final RestTemplate mydataRestTemplate;
     private final MockServerProperties mockServerProperties;
+    private final MyDataAuthClient myDataAuthClient;
 
-    public CardListResponse getCards(String accessToken, CardListRequest request) {
+    public CardListResponse getCards(String accessToken, String type ,CardListRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(mockServerProperties.getBaseUrl())
-                .path("/v2/card/cards")
-                .queryParam("org_code", request.getOrgCode())
+                .path("/v2.0/cards")
+                .queryParam("org_code",myDataProperties.getOrgCode())
                 .queryParam("limit", request.getLimit());
 
         if (StringUtils.hasText(request.getSearchTimestamp())) {
             builder.queryParam("search_timestamp", request.getSearchTimestamp());
         }
-        if (StringUtils.hasText(request.getNextPage())) {
-            builder.queryParam("next_page", request.getNextPage());
-        }
+        String nextPageParam = StringUtils.hasText(request.getNextPage()) ? request.getNextPage() : "";
+        builder.queryParam("next_page", nextPageParam);
 
         URI uri = builder.build().toUri();
-        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken)), CardListResponse.class)
+        log.info("accessToken:" +accessToken );
+        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken, type)), CardListResponse.class)
                 .getBody();
     }
 
-    private HttpHeaders authHeaders(String accessToken) {
+    private HttpHeaders authHeaders(String accessToken,String type) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
+        headers.set("x-api-tran-id",myDataAuthClient.generateTranId());
+        headers.set("x-api-type",type);
         return headers;
     }
 }

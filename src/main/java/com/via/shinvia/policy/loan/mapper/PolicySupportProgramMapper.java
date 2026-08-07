@@ -3,7 +3,7 @@ package com.via.shinvia.policy.loan.mapper;
 import com.via.shinvia.policy.loan.dto.api.LoanProductApiItem;
 import com.via.shinvia.policy.loan.entity.PolicySupportProgram;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;

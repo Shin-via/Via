@@ -10,8 +10,8 @@
 
     <select id="findByExternalCardKey" resultType="com.via.shinvia.client.card.entity.CardAccount">
         SELECT
-            card_account_id, app_user_id, institution_id, mydata_connection_id,
-            external_card_key, card_name, card_number_masked,
+            card_account_id, app_user_id,
+            external_card_key, card_name,institution_id, card_number_masked,
             payment_day, updated_at, issued_at, data_as_of_at
         FROM card_account
         WHERE external_card_key = #{externalCardKey}
@@ -19,11 +19,11 @@
 
     <insert id="insertCardAccount" useGeneratedKeys="true" keyProperty="cardAccountId">
         INSERT INTO card_account (
-            app_user_id, institution_id, mydata_connection_id, external_card_key,
+            app_user_id, institution_id,external_card_key,
             card_name, card_number_masked,
             payment_day, updated_at, issued_at, data_as_of_at
         ) VALUES (
-            #{appUserId}, #{institutionId}, #{mydataConnectionId}, #{externalCardKey},
+            #{appUserId}, #{institutionId}, #{externalCardKey},
             #{cardName}, #{cardNumberMasked},
             #{paymentDay}, #{updatedAt}, #{issuedAt}, #{dataAsOfAt}
         )
@@ -34,7 +34,7 @@
         SET
             app_user_id = #{appUserId},
             institution_id = #{institutionId},
-            mydata_connection_id = #{mydataConnectionId},
+<!--            mydata_connection_id = #{mydataConnectionId},-->
             card_name = #{cardName},
             card_number_masked = #{cardNumberMasked},
             payment_day = #{paymentDay},
