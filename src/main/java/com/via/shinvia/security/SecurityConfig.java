@@ -15,7 +15,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    @Bean
+    /*@Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
@@ -29,6 +29,16 @@ public class SecurityConfig {
                         )
                 )
 
+                // CORS 허용 (Authorization 헤더 포함)
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.addAllowedOriginPattern("*");
+                    config.addAllowedMethod("*");
+                    config.addAllowedHeader("*");
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
+
                 // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -39,6 +49,8 @@ public class SecurityConfig {
                                 "/api/email-verify/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
+                                // Card sync 경로 허용
+                                "/api/cards/sync/**",
                                 //rps 부채상환
                                 "/loan-analysis/**",
                                 "/api/loan-analysis/**",
@@ -105,5 +117,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
+    }*/
 }
