@@ -4,32 +4,20 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <th:block th:fragment="layout(pageTitle, pageContent)">
-
     <head>
         <meta charset="UTF-8">
-
-        <meta name="viewport"
-              content="width=device-width, initial-scale=1.0">
-
-        <title th:replace="${pageTitle}">
-            SHINVIA
-        </title>
-
-        <link rel="stylesheet"
-              th:href="@{/css/policy.css}">
-
-        <script defer
-                th:src="@{/js/policy.js}">
-        </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:replace="${pageTitle}">SHINVIA</title>
+        <link rel="stylesheet" th:href="@{/css/policy.css}">
+        <script defer th:src="@{/js/policy.js}"></script>
     </head>
 
     <body>
-
     <header class="site-header">
         <div class="header-inner">
             <div class="header-brand">
                 <a class="logo" th:href="@{/}">SHINVIA</a>
-                <span class="header-service-name">금융상품 안내</span>
+                <span class="header-service-name">금융 진단센터</span>
             </div>
 
             <div class="header-account">
@@ -51,44 +39,59 @@
     <div class="site-layout">
         <aside class="service-sidebar" aria-label="금융 서비스 메뉴">
             <nav class="sidebar-navigation">
-                <section class="sidebar-menu-group">
-                    <h2>정책지원 안내서비스</h2>
+                <details class="sidebar-menu-group">
+                    <summary>금융 진단센터</summary>
                     <ul>
-                        <li><a th:href="@{/policy-support}">맞춤대출 정책지원</a></li>
+                        <li><span class="sidebar-menu-disabled">현재 금융 현황 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">스트레스 DSR 분석 <small>준비중</small></span></li>
+                    </ul>
+                </details>
+
+                <details class="sidebar-menu-group">
+                    <summary>대출</summary>
+                    <ul>
+                        <li><span class="sidebar-menu-disabled">대출 상품 추천 <small>준비중</small></span></li>
+                        <li><a th:href="@{/loans/breakeven-rate-test}">금리상승 취약도</a></li>
+                        <li><a th:href="@{/loan-analysis/debt-priority}">부채 상환 우선순위</a></li>
+                        <li><a th:href="@{/loan-analysis/scenarios}">대출 대응방안 비교</a></li>
+                    </ul>
+                </details>
+
+                <details class="sidebar-menu-group">
+                    <summary>정책금융상품</summary>
+                    <ul>
+                        <li><a th:href="@{/policy-support}">서민금융상품</a></li>
                         <li><a th:href="@{/asset-products}">자산형성상품</a></li>
                         <li><a th:href="@{/social-finance}">사회연대금융</a></li>
                         <li><a th:href="@{/welfare-support}">복합지원</a></li>
+                        <li><span class="sidebar-menu-disabled">맞춤 정책금융상품 추천<small>준비중</small></span></li>
                     </ul>
-                </section>
+                </details>
 
-                <section class="sidebar-menu-group">
-                    <h2>일반대출 추천서비스</h2>
+                <details class="sidebar-menu-group">
+                    <summary>금융정책 안내</summary>
                     <ul>
-                        <li><span class="sidebar-menu-disabled">전세대출 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">담보대출 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">자동차대출 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">신용대출 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">스트레스 DSR <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">가계대출·DSR 규제 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">주택담보대출 규제 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">전세대출 규제 <small>준비중</small></span></li>
+                        <li><span class="sidebar-menu-disabled">정책대출 제도 <small>준비중</small></span></li>
                     </ul>
-                </section>
+                </details>
             </nav>
         </aside>
 
         <div class="site-content">
-            <main th:replace="${pageContent}">
-                페이지 본문
-            </main>
+            <main th:replace="${pageContent}">페이지 본문</main>
         </div>
     </div>
 
     <footer class="site-footer">
         <div class="footer-inner">
             <p>SHINVIA 금융진단 플랫폼</p>
-            <p>본 서비스의 정책정보는 프로젝트 시연용 데이터입니다.</p>
+            <p>본 서비스의 금융 정보와 분석 결과는 프로젝트 시연용 데이터입니다.</p>
         </div>
     </footer>
-
     </body>
-
 </th:block>
-
 </html>

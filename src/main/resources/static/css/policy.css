@@ -3413,3 +3413,67 @@ body {
 .footer-inner p:first-child {
     color: #536985;
 }
+
+/* Sidebar accordion */
+.sidebar-menu-group summary {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 15px 40px 15px 14px;
+    border-bottom: 1px solid #c9ddf5;
+    background: #eaf4ff;
+    color: #191970;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    list-style: none;
+}
+
+.sidebar-menu-group summary::-webkit-details-marker {
+    display: none;
+}
+
+.sidebar-menu-group summary::after {
+    content: "+";
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    color: #4169e1;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
+.sidebar-menu-group[open] summary {
+    background: #dceeff;
+    color: #000080;
+}
+
+.sidebar-menu-group[open] summary::after {
+    content: "−";
+}
+
+.sidebar-menu-group:not([open]) summary {
+    border-bottom-color: transparent;
+}
+
+.sidebar-menu-group summary:hover {
+    background: #e2f1ff;
+}
+
+.sidebar-menu-group a.active,
+.sidebar-menu-group a[aria-current="page"] {
+    background: #edf6ff;
+    color: #000080;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sidebar-menu-group a.active::before,
+.sidebar-menu-group a[aria-current="page"]::before {
+    width: 4px;
+    height: 4px;
+    background: #1e90ff;
+}

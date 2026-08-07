@@ -60,7 +60,6 @@ public class MyDataAuthController {
             @RequestParam("code") String code) {
         String effectiveUserCi = (state != null && !state.isBlank()) ? state : "1";
 
-
         log.info("[MyData Controller] 인가코드 콜백 수신 - effectiveUserCi: {}, code: {}, state: {}, tranId: {}", effectiveUserCi, code, state, apiTranId);
 
         // 수신받은 인가코드(code)로 Access Token 및 Refresh Token 발급 요청 및 Redis 저장
