@@ -8,16 +8,13 @@
         WHERE p.active = TRUE
 
         <if test="keyword != null and keyword != ''">
-            AND (
-                p.program_name LIKE CONCAT('%', #{keyword}, '%')
-                OR p.target_description LIKE CONCAT('%', #{keyword}, '%')
-                OR p.eligibility_description LIKE CONCAT('%', #{keyword}, '%')
-                OR p.offering_institution_name LIKE CONCAT('%', #{keyword}, '%')
-                OR p.handling_institution LIKE CONCAT('%', #{keyword}, '%')
-                OR p.usage_description LIKE CONCAT('%', #{keyword}, '%')
-                OR p.support_area LIKE CONCAT('%', #{keyword}, '%')
-                OR p.interest_rate_type LIKE CONCAT('%', #{keyword}, '%')
-            )
+            AND CONCAT_WS(' ', p.program_name, p.target_description,
+                p.eligibility_description, p.offering_institution_name,
+                p.handling_institution, p.usage_description,
+                p.support_area, p.interest_rate_type)
+                LIKE CONCAT('%',
+                    REPLACE(REPLACE(REPLACE(#{keyword}, '=', '=='), '%', '=%'), '_', '=_'),
+                    '%') ESCAPE '='
         </if>
 
         <choose>

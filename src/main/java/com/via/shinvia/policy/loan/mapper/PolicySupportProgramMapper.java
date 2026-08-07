@@ -1,15 +1,17 @@
 package com.via.shinvia.policy.loan.mapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.via.shinvia.policy.loan.dto.api.LoanProductApiItem;
 import com.via.shinvia.policy.loan.entity.PolicySupportProgram;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.via.shinvia.policy.util.PolicyProductValues.url;
 
 @Component
 // API 상품정보를 저장 데이터로 변환하는 기능
@@ -428,17 +430,7 @@ public class PolicySupportProgramMapper {
     private String normalizeUrl(
             String value
     ) {
-        if (value == null
-                || value.isBlank()) {
-            return null;
-        }
-
-        if (value.startsWith("http://")
-                || value.startsWith("https://")) {
-            return value;
-        }
-
-        return null;
+        return url(value);
     }
 
     private String firstNotBlank(

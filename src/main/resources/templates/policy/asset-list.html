@@ -20,7 +20,7 @@
                            th:value="${search.keyword}" placeholder="상품명, 지원대상, 기관을 검색하세요"></div>
                 <div class="page-size-group"><label for="size" class="sr-only">페이지당 표시 개수</label>
                     <select id="size" class="page-size-select" name="size" onchange="this.form.submit()">
-                        <option th:each="option : ${ {20,40,60,80} }" th:value="${option}"
+                        <option th:each="option : ${ {10,20,30,40,50} }" th:value="${option}"
                                 th:selected="${search.size == option}" th:text="${option + '개씩 보기'}">20개씩 보기</option>
                     </select></div>
                 <button class="search-button" type="submit">검색</button>

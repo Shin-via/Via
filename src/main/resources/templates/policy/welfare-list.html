@@ -13,7 +13,7 @@
             <div class="policy-filter-form">
                 <div class="search-input-group"><label for="keyword" class="sr-only">지원사업 검색</label><input id="keyword" class="policy-search-input" type="search" name="keyword" th:value="${search.keyword}" placeholder="사업명, 지원대상, 운영기관을 검색하세요"></div>
                 <div class="page-size-group"><label for="size" class="sr-only">페이지당 표시 개수</label><select id="size" class="page-size-select" name="size" onchange="this.form.submit()">
-                    <option th:each="option : ${ {20,40,60,80} }" th:value="${option}" th:selected="${search.size == option}" th:text="${option + '개씩 보기'}">20개씩 보기</option></select></div>
+                    <option th:each="option : ${ {10,20,30,40,50} }" th:value="${option}" th:selected="${search.size == option}" th:text="${option + '개씩 보기'}">20개씩 보기</option></select></div>
                 <button class="search-button" type="submit">검색</button>
             </div>
             <div class="detail-filter-header"><h2>상세검색 필터</h2><button type="button" id="detailFilterToggle" class="detail-filter-toggle collapsed" aria-expanded="false" aria-controls="detailFilterPanel"><span id="filterToggleText">펼치기</span><span class="filter-toggle-icon">▲</span></button></div>

@@ -90,9 +90,19 @@
                                 name="size"
                                 onchange="this.form.submit()">
 
+                            <option value="10"
+                                    th:selected="${size == 10}">
+                                10개씩 보기
+                            </option>
+
                             <option value="20"
                                     th:selected="${size == 20}">
                                 20개씩 보기
+                            </option>
+
+                            <option value="30"
+                                    th:selected="${size == 30}">
+                                30개씩 보기
                             </option>
 
                             <option value="40"
@@ -100,14 +110,9 @@
                                 40개씩 보기
                             </option>
 
-                            <option value="60"
-                                    th:selected="${size == 60}">
-                                60개씩 보기
-                            </option>
-
-                            <option value="80"
-                                    th:selected="${size == 80}">
-                                80개씩 보기
+                            <option value="50"
+                                    th:selected="${size == 50}">
+                                50개씩 보기
                             </option>
 
                         </select>
