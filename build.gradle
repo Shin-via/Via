@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.2'
+    id 'org.springframework.boot' version '4.0.0'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -18,10 +18,11 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
+https://github.com/Shin-via/Via/pull/46/conflict?name=src%252Fmain%252Fjava%252Fcom%252Fvia%252Fshinvia%252Floan%252Fcatalog%252Fclient%252FFinlifeLoanProductClient.java&base_oid=214f2150401ddad9a2d3f2fdd8e9e13fe3508ded&head_oid=4d9325d7a912b0288623e7c42a1463864ebe8315dependencies {
 
     // Spring Web
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Spring Security
@@ -33,7 +34,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // MyBatis
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.0'
 
     // MySQL 실행용 드라이버
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -60,16 +61,17 @@ dependencies {
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 
     // MyBatis 테스트
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.0'
 
     // 테스트 Lombok
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // 스웨거 (Swagger / OpenAPI)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    //스웨거
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 }
 
 tasks.named('test') {

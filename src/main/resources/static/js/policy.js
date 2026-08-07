@@ -1,5 +1,41 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // 사이드바 대주제는 한 번에 하나만 펼칩니다.
+    // 현재 페이지가 속한 대주제는 처음부터 펼치고 소메뉴를 강조합니다.
+    const currentPath = normalizeSidebarPath(window.location.pathname);
+    const sidebarLinks = document.querySelectorAll(
+        ".sidebar-menu-group a[href]"
+    );
+
+    sidebarLinks.forEach((link) => {
+        const linkPath = normalizeSidebarPath(
+            new URL(link.href, window.location.origin).pathname
+        );
+
+        if (linkPath !== currentPath) {
+            return;
+        }
+
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+
+        const currentGroup = link.closest(
+            "details.sidebar-menu-group"
+        );
+
+        if (currentGroup) {
+            currentGroup.open = true;
+        }
+    });
+
+    function normalizeSidebarPath(path) {
+        if (!path || path === "/") {
+            return "/";
+        }
+
+        return path.replace(/\/+$/, "");
+    }
+
     const modal = document.getElementById("programModal");
 
     /*

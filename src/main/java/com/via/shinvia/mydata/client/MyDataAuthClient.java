@@ -172,7 +172,7 @@ public class MyDataAuthClient {
         return response;
     }
 
-    public String generateTranId() {
+    private String generateTranId() {
         return "MOCK_TRAN_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
     }
 }
