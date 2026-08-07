@@ -18,8 +18,6 @@ repositories {
     mavenCentral()
 }
 
-https://github.com/Shin-via/Via/pull/46/conflict?name=src%252Fmain%252Fjava%252Fcom%252Fvia%252Fshinvia%252Floan%252Fcatalog%252Fclient%252FFinlifeLoanProductClient.java&base_oid=214f2150401ddad9a2d3f2fdd8e9e13fe3508ded&head_oid=4d9325d7a912b0288623e7c42a1463864ebe8315dependencies {
-
     // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
