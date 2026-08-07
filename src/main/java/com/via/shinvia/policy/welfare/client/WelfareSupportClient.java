@@ -5,7 +5,10 @@ import com.via.shinvia.policy.dto.FinancialProductDTO;
 import com.via.shinvia.policy.dto.FinancialProductPageDTO;
 import com.via.shinvia.policy.welfare.entity.WelfareSupportProduct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,10 +19,14 @@ import static com.via.shinvia.policy.util.PolicyProductValues.*;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 // 복합지원상품 API 동기화 기능
 public class WelfareSupportClient {
     private static final int FETCH_SIZE = 1000;
     private final KinfaFinancialProductClient client;
+
+    @Value("${finance.api.max-pages:1000}")
+    private int maxPages;
 
     public List<WelfareSupportProduct> fetchAll() {
         List<WelfareSupportProduct> result = new ArrayList<>();
@@ -30,14 +37,34 @@ public class WelfareSupportClient {
             page = client.findProducts(
                     KinfaFinancialProductClient.ProductType.WELFARE,
                     "", pageNumber, FETCH_SIZE);
+            if (page.getProducts().isEmpty()) {
+                break;
+            }
             for (FinancialProductDTO product : page.getProducts()) {
-                result.add(toEntity(product, client.findSourceDetail(
-                        KinfaFinancialProductClient.ProductType.WELFARE, product.getId())));
+                if (!StringUtils.hasText(product.getId())) {
+                    log.warn("복합지원상품 상세 조회 생략: 상품 ID가 비어 있습니다. 상품명={}", product.getTitle());
+                    continue;
+                }
+                result.add(toEntity(product, findDetail(product)));
             }
             pageNumber++;
-        } while (!page.isLast());
+        } while (!page.isLast() && pageNumber < maxPages);
+
+        if (!page.isLast() && pageNumber >= maxPages) {
+            log.warn("복합지원상품 조회를 최대 페이지에서 종료합니다. maxPages={}", maxPages);
+        }
 
         return result;
+    }
+
+    private Map<String, String> findDetail(FinancialProductDTO product) {
+        try {
+            return client.findSourceDetail(
+                    KinfaFinancialProductClient.ProductType.WELFARE, product.getId());
+        } catch (RuntimeException e) {
+            log.warn("복합지원상품 상세 조회 실패, 목록 정보로 저장합니다. productId={}", product.getId(), e);
+            return Map.of();
+        }
     }
 
     private WelfareSupportProduct toEntity(FinancialProductDTO item, Map<String, String> detail) {

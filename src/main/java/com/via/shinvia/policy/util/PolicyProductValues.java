@@ -1,5 +1,7 @@
 package com.via.shinvia.policy.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -41,10 +43,19 @@ public final class PolicyProductValues {
         if (cleaned == null) {
             return null;
         }
-        if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
-            return cleaned;
+        if (cleaned.startsWith("/") || cleaned.contains(":" )
+                && !cleaned.startsWith("http://") && !cleaned.startsWith("https://")) {
+            return null;
         }
-        return "https://" + cleaned;
+        String candidate = cleaned.startsWith("http://") || cleaned.startsWith("https://")
+                ? cleaned : "https://" + cleaned;
+        try {
+            URI uri = new URI(candidate);
+            String host = uri.getHost();
+            return host != null && host.contains(".") ? candidate : null;
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     private static String clean(String value) {

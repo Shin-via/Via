@@ -1,7 +1,9 @@
 package com.via.shinvia.policy.asset.entity;
 
 import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -9,6 +11,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 // 자산형성상품 DB 모델
 public class AssetFormationProduct {
     private Long assetFormationProductId;

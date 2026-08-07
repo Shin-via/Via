@@ -7,7 +7,9 @@
             AND CONCAT_WS(' ', p.product_name, p.institution_name, p.product_category,
                 p.support_target, p.business_type, p.support_method, p.support_amount,
                 p.handling_institution, p.application_method)
-                LIKE CONCAT('%', #{search.keyword}, '%')
+                LIKE CONCAT('%',
+                    REPLACE(REPLACE(REPLACE(#{search.keyword}, '=', '=='), '%', '=%'), '_', '=_'),
+                    '%') ESCAPE '='
         </if>
         <if test="search.categories != null and !search.categories.isEmpty()">
             AND (<foreach collection="search.categories" item="value" separator=" OR ">
