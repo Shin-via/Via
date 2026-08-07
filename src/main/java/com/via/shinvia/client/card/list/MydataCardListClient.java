@@ -6,9 +6,7 @@ import com.via.shinvia.client.card.config.MockServerProperties;
 import com.via.shinvia.mydata.config.MyDataProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -43,7 +41,7 @@ public class MydataCardListClient {
 
         URI uri = builder.build().toUri();
         log.info("accessToken:" +accessToken );
-        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken,type)), CardListResponse.class)
+        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken, type)), CardListResponse.class)
                 .getBody();
     }
 

@@ -23,7 +23,7 @@ public class OpenApiConfig {
                         .bearerFormat("JWT"));
 
         return new OpenAPI()
-                .info(new Info().title("Shinvia API Document").version("v1.0"))
+                .info(new Info().title("Shinvia API Document").version("v4.0.0"))
                 .addSecurityItem(securityRequirement)
                 .components(components);
     }
