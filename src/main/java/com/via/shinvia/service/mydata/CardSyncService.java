@@ -8,9 +8,11 @@ import com.via.shinvia.client.card.entity.CardAccount;
 import com.via.shinvia.client.card.entity.CardTransaction;
 import com.via.shinvia.client.card.mapper.CardMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -28,17 +30,13 @@ public class CardSyncService {
     private static final DateTimeFormatter PAID_DTIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private final CardMapper cardMapper;
+    private final RedisTemplate<Object, Object> redisTemplate;
 
     // TODO(회원인증/OAuth 동의 미구현): appUserId는 로그인 세션에서, mydataConnectionId는
     // MyData 동의(OAuth) 플로우에서 나와야 하는데 아직 둘 다 없어서 호출부가 직접 넘겨주는
     // 임시값이다. 인증/동의 플로우가 생기면 파라미터로 받는 대신 그 결과에서 조회하도록 바꿀 것.
     @Transactional
-    public List<CardAccount> saveCards(Long appUserId, Long mydataConnectionId, String bankCodeStd, CardListResponse response) {
-        Long institutionId = cardMapper.findInstitutionIdByOrgCode(bankCodeStd);
-        if (institutionId == null) {
-            throw new IllegalStateException("등록되지 않은 금융기관 코드입니다: " + bankCodeStd);
-        }
-
+    public List<CardAccount> saveCards(CardListResponse response ,String appUserID) {
         List<CardInfoDto> cardList = response.getCardList();
         if (cardList == null || cardList.isEmpty()) {
             return List.of();
@@ -47,19 +45,19 @@ public class CardSyncService {
         LocalDateTime now = LocalDateTime.now();
         List<CardAccount> saved = new ArrayList<>();
         for (CardInfoDto dto : cardList) {
-            saved.add(upsertCard(appUserId, institutionId, mydataConnectionId, dto, now));
+            saved.add(upsertCard(appUserID, dto));
         }
         return saved;
     }
 
-    private CardAccount upsertCard(Long appUserId, Long institutionId, Long mydataConnectionId, CardInfoDto dto, LocalDateTime now) {
+    private CardAccount upsertCard(String appUserId, CardInfoDto dto) {
         CardAccount existing = cardMapper.findByExternalCardKey(dto.getCardId());
+        LocalDateTime now = LocalDateTime.now();
 
         CardAccount cardAccount = CardAccount.builder()
                 .cardAccountId(existing != null ? existing.getCardAccountId() : null)
                 .appUserId(appUserId) // TODO(회원인증 미구현): 로그인 세션의 실제 사용자 ID로 교체
-                .institutionId(institutionId)
-                .mydataConnectionId(mydataConnectionId) // TODO(OAuth 동의 미구현): 실제 mydata_connection 조회 결과로 교체
+                .institutionId(dto.getInstitution_id())
                 .externalCardKey(dto.getCardId())
                 .cardName(dto.getCardName())
                 .cardNumberMasked(dto.getCardNum())

@@ -61,8 +61,14 @@ public class MyDataAuthService {
 
         log.info("[Redis Token Refresh] 입력된 cleanToken: '{}'", cleanToken);
 
-        // 2. Redis 역방향 키(mydata:rt:ci:{cleanToken})에서 userCi 추출 시도
-        String userCi = redisTemplate.opsForValue().get("mydata:rt:ci:" + cleanToken);
+        // 2. Redis에서 토큰(cleanToken) 자체를 키로 userCi 추출 시도
+        String userCi = redisTemplate.opsForValue().get(cleanToken);
+        if (!StringUtils.hasText(userCi)) {
+            userCi = redisTemplate.opsForValue().get("mydata:rt:ci:" + cleanToken);
+        }
+        if (!StringUtils.hasText(userCi)) {
+            userCi = redisTemplate.opsForValue().get("mydata:at:ci:" + cleanToken);
+        }
 
         // 3. Redis 조회가 안 된 경우 토큰 규격(mock_rt_{ci}_{uuid})에서 userCi 파싱 시도
         if (!StringUtils.hasText(userCi)) {
@@ -113,8 +119,11 @@ public class MyDataAuthService {
             throw new IllegalArgumentException("폐기할 token이 비어있습니다.");
         }
 
-        // 1. 토큰 폐기 전 Redis에서 userCi 및 현재 저장된 Access Token 사전 조회
-        String userCi = redisTemplate.opsForValue().get("mydata:at:ci:" + cleanToken);
+        // 1. 토큰 폐기 전 Redis에서 userCi 사전 조회 (접두어 없는 cleanToken 우선)
+        String userCi = redisTemplate.opsForValue().get(cleanToken);
+        if (!StringUtils.hasText(userCi)) {
+            userCi = redisTemplate.opsForValue().get("mydata:at:ci:" + cleanToken);
+        }
         if (!StringUtils.hasText(userCi)) {
             userCi = redisTemplate.opsForValue().get("mydata:rt:ci:" + cleanToken);
         }
@@ -132,9 +141,9 @@ public class MyDataAuthService {
         // 2. 외부 목 서버로 토큰 폐기 요청
         MyDataCommonResponseDto response = myDataAuthClient.revokeToken(cleanToken, revokeType);
 
-        // 3. Redis에서 입력받은 토큰 및 Access Token 키 (at:ci, ci:at, 목서버 at:ci) 타겟 삭제
+        // 3. Redis에서 입력받은 토큰 키 삭제
+        redisTemplate.delete(cleanToken);
         redisTemplate.delete("mydata:at:ci:" + cleanToken);
-        log.info("cleanToken = '{}'", cleanToken);
         redisTemplate.delete("mydata:rt:ci:" + cleanToken);
 
         if (StringUtils.hasText(currentAt)) {
@@ -169,27 +178,31 @@ public class MyDataAuthService {
         // 1. 기존 Access Token & Refresh Token 역방향 키 삭제 (token:ci Key 2개)
         String oldAccessToken = redisTemplate.opsForValue().get("mydata:ci:at:" + userCi);
         if (StringUtils.hasText(oldAccessToken)) {
+            redisTemplate.delete(oldAccessToken);
             redisTemplate.delete("mydata:at:ci:" + oldAccessToken);
         }
 
         String oldRefreshToken = redisTemplate.opsForValue().get("mydata:ci:rt:" + userCi);
         if (StringUtils.hasText(oldRefreshToken)) {
+            redisTemplate.delete(oldRefreshToken);
             redisTemplate.delete("mydata:rt:ci:" + oldRefreshToken);
         }
 
-        // 2. 신규 Access Token 저장 (ci:at Key 덮어쓰기 & at:ci 신규 생성)
+        // 2. 신규 Access Token 저장 (Key: token 자체, Value: userCi)
         if (StringUtils.hasText(cleanAt)) {
             redisTemplate.opsForValue().set("mydata:ci:at:" + userCi, cleanAt, ACCESS_TOKEN_TTL);
+            redisTemplate.opsForValue().set(cleanAt, userCi, ACCESS_TOKEN_TTL);
             redisTemplate.opsForValue().set("mydata:at:ci:" + cleanAt, userCi, ACCESS_TOKEN_TTL);
         }
 
-        // 3. 신규 Refresh Token 저장 (ci:rt Key 덮어쓰기 & rt:ci 신규 생성)
+        // 3. 신규 Refresh Token 저장 (Key: token 자체, Value: userCi)
         if (StringUtils.hasText(cleanRt)) {
             redisTemplate.opsForValue().set("mydata:ci:rt:" + userCi, cleanRt, REFRESH_TOKEN_TTL);
+            redisTemplate.opsForValue().set(cleanRt, userCi, REFRESH_TOKEN_TTL);
             redisTemplate.opsForValue().set("mydata:rt:ci:" + cleanRt, userCi, REFRESH_TOKEN_TTL);
         }
 
-        log.info("[Redis Token Storage] CI[{}] 토큰 4개 Key-Value 갱신 완료 (Access TTL: 1시간, Refresh TTL: 365일)", userCi);
+        log.info("[Redis Token Storage] CI[{}] 토큰 Key-Value 갱신 완료 (Access TTL: 1시간, Refresh TTL: 365일)", userCi);
     }
 
     /**
