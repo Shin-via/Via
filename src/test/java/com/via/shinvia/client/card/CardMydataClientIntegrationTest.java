@@ -61,7 +61,7 @@ class CardMydataClientIntegrationTest {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(ACCESS_TOKEN);
             restTemplate.exchange(BASE_URL + "/v2/card/cards?org_code=" + ORG_CODE + "&limit=1",
-                    HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                    HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
         } catch (Exception e) {
             assumeTrue(false, "목서버(localhost:9090)가 실행 중이 아니라 테스트를 건너뜀: " + e.getMessage());
         }
