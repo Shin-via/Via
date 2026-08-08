@@ -3477,3 +3477,27 @@ body {
     height: 4px;
     background: #1e90ff;
 }
+
+/* 상품 목록의 긴 원본 정보는 목록에서만 요약 표시 */
+.bank-policy-page .program-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bank-policy-page .program-target {
+    display: -webkit-box;
+    max-height: 3.1em;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.bank-policy-page .program-information dd,
+.bank-policy-page .program-institution strong {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
