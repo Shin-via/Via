@@ -78,7 +78,10 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico",
-                                "/error"
+                                "/error",
+
+                                //dsr 계산
+                                "/dsr","/dsr/**"
                         )
                         .permitAll()
 
