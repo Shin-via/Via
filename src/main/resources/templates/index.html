@@ -1,30 +1,312 @@
-<!doctype html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>메인</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>CloudVia - Main Page</title>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+    <title>Via</title>
+    <!-- 분리된 CSS 파일 -->
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<main>
-    <h1>메인</h1>
 
-    <div th:if="${#authorization.expression('isAnonymous()')}">
-        <a th:href="@{/signup/email}">회원가입</a>
-        <a th:href="@{/login}">로그인</a>
-        <a th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
+<!-- Top Header -->
+<header class="header">
+    <!-- Utility Nav (Top Row) -->
+    <div class="utility-nav">
+        <a href="#" class="utility-link">Inquiry</a>
+        <a href="#" class="utility-link">My Page</a>
+        <div class="user-avatar">
+            <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+        </div>
     </div>
 
-    <!-- 로그인한 경우에만 표시 -->
-    <div th:if="${#authorization.expression('isAuthenticated()')}">
-        <span th:text="${#authentication.name}">로그인 이메일</span>
+    <!-- Main Header (Bottom Row) -->
+    <div class="main-header">
+        <div class="brand-section">
+            <div class="logo">Via</div>
+            <nav class="nav-links">
+                <!-- Loans Mega Menu -->
+                <div class="nav-item mega-menu-container">
+                    <a href="#" class="nav-link">대출</a>
+                    <div class="mega-menu">
+                        <div class="mega-menu-inner">
+                            <div class="mega-menu-grid col-3">
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-secondary">
+                                        <span class="material-symbols-outlined" data-icon="payments">payments</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Personal Finance</h5>
+                                        <p class="card-desc">Flexible personal loans with competitive rates for your everyday needs.</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-secondary">
+                                        <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Credit Loans</h5>
+                                        <p class="card-desc">Quick access to credit lines with manageable repayment terms.</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-secondary">
+                                        <span class="material-symbols-outlined" data-icon="home">home</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Mortgages</h5>
+                                        <p class="card-desc">Home financing solutions to help you purchase your dream property.</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <form th:action="@{/logout}" method="post">
-            <button type="submit">로그아웃</button>
-        </form>
+                <!-- Services Mega Menu -->
+                <div class="nav-item mega-menu-container">
+                    <a href="#" class="nav-link">Services</a>
+                    <div class="mega-menu">
+                        <div class="mega-menu-inner">
+                            <div class="mega-menu-grid col-3">
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-gray">
+                                        <span class="material-symbols-outlined" data-icon="cloud">cloud</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Cloud Hosting</h5>
+                                        <p class="card-desc">Scalable hosting environments designed for enterprise applications.</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-gray">
+                                        <span class="material-symbols-outlined" data-icon="security">security</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Security Audits</h5>
+                                        <p class="card-desc">Comprehensive vulnerability assessments and compliance management.</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-gray">
+                                        <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Data Analytics</h5>
+                                        <p class="card-desc">Advanced BI tools to transform raw data into actionable insights.</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solutions Mega Menu -->
+                <div class="nav-item mega-menu-container">
+                    <a href="#" class="nav-link">Solutions</a>
+                    <div class="mega-menu">
+                        <div class="mega-menu-inner">
+                            <div class="mega-menu-grid col-2">
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-gray">
+                                        <span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Retail &amp; E-commerce</h5>
+                                        <p class="card-desc">Tailored infrastructure for high-traffic online stores and inventory management.</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="mega-menu-card">
+                                    <div class="icon-circle icon-circle-gray">
+                                        <span class="material-symbols-outlined" data-icon="factory">factory</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title">Manufacturing</h5>
+                                        <p class="card-desc">IoT integrations and supply chain optimization solutions.</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Mega Menu -->
+                <div class="nav-item mega-menu-container">
+                    <a href="#" class="nav-link">Pricing</a>
+                    <div class="mega-menu">
+                        <div class="mega-menu-inner">
+                            <div class="pricing-flex">
+                                <div class="pricing-info">
+                                    <h4 class="pricing-title">Transparent Pricing Plans</h4>
+                                    <p class="pricing-desc">Choose the right tier for your organization's needs. Scale up or down at any time.</p>
+                                    <a href="#" class="link-blue">
+                                        <span>View all plans</span>
+                                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+                                    </a>
+                                </div>
+                                <div class="pricing-cards">
+                                    <div class="plan-card plan-starter">
+                                        <h5 class="plan-title">Starter</h5>
+                                        <p class="plan-desc">For small teams and startups.</p>
+                                        <div class="plan-price">Free</div>
+                                    </div>
+                                    <div class="plan-card plan-enterprise">
+                                        <h5 class="plan-title">Enterprise</h5>
+                                        <p class="plan-desc">Unlimited power and dedicated support.</p>
+                                        <div class="plan-price">Contact Us</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="icon-button" aria-label="Search">
+                <span class="material-symbols-outlined" data-icon="search">search</span>
+            </button>
+            <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn-signin">로그인</a>
+
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn-signin">로그아웃</button>
+            </form>
+        </div>
     </div>
+</header>
+
+<!-- Main Content Canvas -->
+<main class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-gradient"></div>
+        <div class="pulse-dot"></div>
+    </section>
+
+    <!-- Layout Section -->
+    <section class="content-container">
+        <!-- Side Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Loan Products</h2>
+                <p>Tailored Recommendations</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active">
+                    <span class="material-symbols-outlined" data-icon="payments">payments</span>
+                    <span>Personal Finance</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+                    <span>Credit Loans</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="home">home</span>
+                    <span>Mortgages</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="business_center">business_center</span>
+                    <span>Business Solutions</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="security">security</span>
+                    <span>Insurance</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-get-started">Get Started</button>
+                <a href="#" class="footer-link">
+                    <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                    <span>Support</span>
+                </a>
+                <a href="#" class="footer-link">
+                    <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                    <span>Documentation</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Product Grid -->
+        <div class="product-area">
+            <div class="product-header">
+                <h3>Recommended Loan Products</h3>
+                <div class="dot-indicators">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+
+            <div class="product-grid">
+                <!-- Card 1 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="product-card card-relative">
+                    <div class="decorative-dot"></div>
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p class="pr-padding">Brief description regarding the credit loan product.</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-logo">Via</div>
+    <nav class="footer-nav">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Legal</a>
+        <a href="#">Security</a>
+    </nav>
+    <div class="copyright">
+        © 2024 CloudVia Services. All rights reserved.
+    </div>
+</footer>
+
+<!-- 분리된 JS 파일 -->
+<script src="script.js"></script>
 </body>
 </html>

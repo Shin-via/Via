@@ -74,8 +74,8 @@ public class MyDataAuthClient {
 
         ResponseEntity<Void> response = restClient.get()
                 .uri(uriBuilder.build().toUriString())
-                .header("x-user-ci", userCi)
                 .header("x-api-tran-id", tranId)
+                .header("x-user-ci",userCi)
                 .retrieve()
                 .toBodilessEntity();
 
@@ -94,11 +94,11 @@ public class MyDataAuthClient {
         String tranId = generateTranId();
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("org_code", myDataProperties.getOrgCode());
         formData.add("grant_type", "authorization_code");
         if (code != null) formData.add("code", code);
         formData.add("client_id", myDataProperties.getClientId());
         if (myDataProperties.getClientSecret() != null) formData.add("client_secret", myDataProperties.getClientSecret());
-        formData.add("org_code", myDataProperties.getOrgCode());
         formData.add("redirect_uri", myDataProperties.getRedirectUri());
 
         log.info("[MyData Client] Access Token 발급 요청 - code: {}, tranId: {}", code, tranId);
@@ -126,8 +126,9 @@ public class MyDataAuthClient {
         formData.add("client_id", myDataProperties.getClientId());
         formData.add("client_secret", myDataProperties.getClientSecret());
         formData.add("org_code", myDataProperties.getOrgCode());
+        formData.add("redirect_uri",myDataProperties.getRedirectUri());
         formData.add("is_refreshed", "N");
-    log.info("{}",formData.toString());
+        log.info("{}",formData.toString());
         log.info("[MyData Client] Access Token 갱신 요청 - refreshToken: {}, tranId: {}", refreshToken, tranId);
 
         MyDataAuthTokenResponseDto response = restClient.post()
