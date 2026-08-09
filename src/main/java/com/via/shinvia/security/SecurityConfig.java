@@ -24,6 +24,7 @@ public class SecurityConfig {
                 // Postman API 테스트용 CSRF 제외
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
+                                "/loans/recommendations/**",
                                 "/api/loan-analysis/**",
                                 "/api/admin/loan-product-catalogs/**"
                         )
@@ -42,6 +43,10 @@ public class SecurityConfig {
                 // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/loans/recommendations",
+                                "/loans/recommendations/**",
+                                "/css/loan-recommendation.css",
+                                "/js/loan-recommendation.js",
                                 "/",
                                 "/login",
                                 "/signup/**",
