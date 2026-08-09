@@ -1,5 +1,6 @@
 package com.via.shinvia.loananalysis.calculator;
 
+import com.via.shinvia.dsr.dto.type.LoanType;
 import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
 import com.via.shinvia.loananalysis.dto.LoanAccountAnalysisDTO;
 import org.springframework.stereotype.Component;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+
+import static com.via.shinvia.dsr.dto.type.LoanType.STUDENT_LOAN;
 
 // 부채 상환 우선순위 계산기
 @Component
@@ -273,7 +276,7 @@ public class DebtPriorityCalculator {
 
     // 학자금대출 점수 계산
     private BigDecimal calculateStudentLoanScore(
-            String loanType
+            LoanType loanType
     ) {
 
         // 대출 종류 없음
@@ -282,7 +285,7 @@ public class DebtPriorityCalculator {
         }
 
         // 학자금대출이면 100점
-        if (loanType.contains("학자금")) {
+        if (loanType==STUDENT_LOAN) {
             return BigDecimal.valueOf(100);
         }
 

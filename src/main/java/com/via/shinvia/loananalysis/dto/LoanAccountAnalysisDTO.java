@@ -1,5 +1,6 @@
 package com.via.shinvia.loananalysis.dto;
 
+import com.via.shinvia.dsr.dto.type.LoanType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +16,7 @@ public class LoanAccountAnalysisDTO {
     private Long loanAccountId;
 
     // 대출 종류
-    private String loanType;
+    private LoanType loanType;
 
     // 최초 대출원금
     private BigDecimal principalAmount;
