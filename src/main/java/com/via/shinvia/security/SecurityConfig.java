@@ -24,8 +24,10 @@ public class SecurityConfig {
                 // Postman API 테스트용 CSRF 제외
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
+                                "/loans/recommendations/**",
                                 "/api/loan-analysis/**",
-                                "/api/admin/loan-product-catalogs/**"
+                                "/api/admin/loan-product-catalogs/**",
+                                "/api/policy/recommendation/**"
                         )
                 )
 
@@ -42,6 +44,10 @@ public class SecurityConfig {
                 // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/loans/recommendations",
+                                "/loans/recommendations/**",
+                                "/css/loan-recommendation.css",
+                                "/js/loan-recommendation.js",
                                 "/",
                                 "/login",
                                 "/signup/**",
@@ -51,6 +57,8 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
                                 // Card sync 경로 허용
                                 "/api/cards/sync/**",
+                                // 정부 규제 안내
+                                "/financial-policy/stress-dsr",
                                 //rps 부채상환
                                 "/loan-analysis/**",
                                 "/api/loan-analysis/**",
@@ -64,7 +72,10 @@ public class SecurityConfig {
                                 "/api/asset-products/**",
                                 "/api/social-finance/**",
                                 "/api/welfare-support/**",
-
+                                // 맞춤 금융지원상품 추천 설문
+                                "/policy/recommendation",
+                                "/policy/recommendation/**",
+                                "/api/policy/recommendation/**",
                                 // 대출분석 API
                                 "/api/loan-analysis/**",
 
@@ -78,7 +89,10 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico",
-                                "/error"
+                                "/error",
+
+                                //dsr 계산
+                                "/dsr","/dsr/**"
                         )
                         .permitAll()
 

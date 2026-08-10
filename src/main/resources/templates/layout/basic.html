@@ -4,12 +4,15 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <th:block th:fragment="layout(pageTitle, pageContent)">
+
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title th:replace="${pageTitle}">SHINVIA</title>
         <link rel="stylesheet" th:href="@{/css/policy.css}">
+        <link rel="stylesheet" th:href="@{/css/loan-recommendation.css}">
         <script defer th:src="@{/js/policy.js}"></script>
+        <script defer th:src="@{/js/loan-recommendation.js}"></script>
     </head>
 
     <body>
@@ -50,7 +53,7 @@
                 <details class="sidebar-menu-group">
                     <summary>대출</summary>
                     <ul>
-                        <li><span class="sidebar-menu-disabled">대출 상품 추천 <small>준비중</small></span></li>
+                        <li><a th:href="@{/loans/recommendations}">대출 상품 추천</a></li>
                         <li><a th:href="@{/loans/breakeven-rate-test}">금리상승 취약도</a></li>
                         <li><a th:href="@{/loan-analysis/debt-priority}">부채 상환 우선순위</a></li>
                         <li><a th:href="@{/loan-analysis/scenarios}">대출 대응방안 비교</a></li>
@@ -64,14 +67,14 @@
                         <li><a th:href="@{/asset-products}">자산형성상품</a></li>
                         <li><a th:href="@{/social-finance}">사회연대금융</a></li>
                         <li><a th:href="@{/welfare-support}">복합지원</a></li>
-                        <li><span class="sidebar-menu-disabled">맞춤 정책금융상품 추천<small>준비중</small></span></li>
+                        <li><a th:href="@{/policy/recommendation}">맞춤 금융지원상품 추천</a></li>
                     </ul>
                 </details>
 
                 <details class="sidebar-menu-group">
                     <summary>금융정책 안내</summary>
                     <ul>
-                        <li><span class="sidebar-menu-disabled">스트레스 DSR <small>준비중</small></span></li>
+                        <li><a th:href="@{/financial-policy/stress-dsr}">스트레스 DSR </a></li>
                         <li><span class="sidebar-menu-disabled">가계대출·DSR 규제 <small>준비중</small></span></li>
                         <li><span class="sidebar-menu-disabled">주택담보대출 규제 <small>준비중</small></span></li>
                         <li><span class="sidebar-menu-disabled">전세대출 규제 <small>준비중</small></span></li>

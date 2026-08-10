@@ -1,8 +1,8 @@
 package com.via.shinvia.policy.welfare.service;
 
-import com.via.shinvia.policy.dto.FinancialProductDTO;
-import com.via.shinvia.policy.dto.FinancialProductDetailDTO;
-import com.via.shinvia.policy.dto.FinancialProductPageDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDetailDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductPageDTO;
 import com.via.shinvia.policy.welfare.dto.WelfareSupportSearchDTO;
 import com.via.shinvia.policy.welfare.entity.WelfareSupportProduct;
 import com.via.shinvia.policy.welfare.repository.WelfareSupportProductRepository;

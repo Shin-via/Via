@@ -34,7 +34,14 @@ public class LoanRepaymentCalculator {
             case EQUAL_PRINCIPAL_INTEREST, GRACE_PERIOD ->
                     calculateEqualPrincipalInterest(p, r, remainingMonths);
             case EQUAL_PRINCIPAL -> calculateEqualPrincipal(p, r, remainingMonths);
+            case BULLET_PAYMENT -> calculateBulletPayment(p, r, remainingMonths);
         };
+    }
+
+    private RepaymentCalculationResult calculateBulletPayment(double p, double r, int n) {
+        double monthlyInterest = p * r;
+        double totalInterest = monthlyInterest * n;
+        return toResult(monthlyInterest, totalInterest);
     }
 
     public int calculateRemainingMonths(LocalDate baseDate, LocalDate maturityAt) {
@@ -69,6 +76,7 @@ public class LoanRepaymentCalculator {
             case EQUAL_PRINCIPAL_INTEREST, GRACE_PERIOD ->
                     calculateEqualPrincipalInterestBalance(p, r, totalMonths, monthsElapsed);
             case EQUAL_PRINCIPAL -> p - (p / totalMonths) * monthsElapsed;
+            case BULLET_PAYMENT -> (monthsElapsed == totalMonths) ? 0.0 : p;
         };
 
         return toMoney(balance);
