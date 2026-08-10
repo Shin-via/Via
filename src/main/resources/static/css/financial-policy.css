@@ -1,0 +1,463 @@
+/* 금융정책 안내 페이지 */
+.financial-policy-page {
+    color: #263e5e;
+    line-height: 1.75;
+}
+
+.financial-policy-header {
+    padding: 0;
+    border: 0;
+
+}
+
+.financial-policy-eyebrow {
+    margin: 0 0 6px;
+    color: #737b8c;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.financial-policy-header h1 {
+    margin: 0;
+    color: #171d2a;
+    font-family: inherit;
+    font-size: 30px;
+    line-height: 1.25;
+    letter-spacing: -1px;
+}
+
+.financial-policy-lead {
+    max-width: 760px;
+    margin: 14px 0 0;
+    color: #737b8c;
+    font-size: 14px;
+}
+
+.financial-policy-index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin: 24px 0 44px;
+    padding: 16px 20px;
+    border: 1px solid #b9d6f8;
+    border-radius: 12px;
+    background: #f1f7ff;
+    font-size: 14px;
+}
+
+.financial-policy-index strong {
+    padding-right: 20px;
+    border-right: 1px solid #c9ddf5;
+    color: #191970;
+}
+
+.financial-policy-index a {
+    color: #405a78;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.financial-policy-index a:hover {
+    color: #1e6fc7;
+}
+
+.policy-anchor {
+    position: relative;
+    top: -20px;
+}
+
+.financial-policy-page section {
+    scroll-margin-top: 24px;
+}
+
+.financial-policy-page .policy-summary-section,
+.financial-policy-page .policy-content-section,
+.financial-policy-page .policy-related-section {
+    margin: 0 0 48px;
+}
+
+.financial-policy-page .policy-section-title {
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #6495ed;
+}
+
+.financial-policy-page .policy-section-title h2 {
+    margin: 0;
+    color: #191970;
+    font-family: inherit;
+    font-size: 23px;
+    line-height: 1.4;
+}
+
+.financial-policy-page .policy-section-title p {
+    margin: 5px 0 0;
+    color: #64717e;
+    font-size: 14px;
+}
+
+.financial-policy-page .policy-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid #b9d6f8;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.financial-policy-page .policy-summary-card {
+    position: relative;
+    min-width: 0;
+    padding: 24px;
+    border-right: 1px solid #d5e4f5;
+}
+
+.financial-policy-page .policy-summary-card:last-child {
+    border-right: 0;
+}
+
+.financial-policy-page .policy-summary-number {
+    display: block;
+    margin-bottom: 12px;
+    color: #243b53;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.financial-policy-page h3 {
+    margin: 0 0 8px;
+    color: #263e5e;
+    font-size: 17px;
+}
+
+.financial-policy-page p {
+    overflow-wrap: break-word;
+}
+
+.financial-policy-page .policy-summary-card p,
+.financial-policy-page .policy-content-box > p,
+.financial-policy-page .policy-impact-card p,
+.financial-policy-page .policy-step-card p,
+.financial-policy-page .policy-example-column p {
+    margin: 0;
+    color: #536985;
+}
+
+.financial-policy-page .policy-content-box,
+.financial-policy-page .policy-list-box {
+    padding: 26px 30px;
+    border: 1px solid #b9d6f8;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.financial-policy-page .policy-content-box > p + p {
+    margin-top: 12px;
+}
+
+.financial-policy-page .policy-example-box {
+    margin-top: 20px;
+    padding: 18px 20px;
+    border-left: 4px solid #191970;
+    border-radius: 8px;
+    background: #dceeff;
+}
+
+.financial-policy-page .policy-example-box strong {
+    color: #344f70;
+}
+
+.financial-policy-page .policy-example-box p {
+    margin: 5px 0 0;
+}
+
+.financial-policy-page .policy-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #b9d6f8;
+    border-top: 2px solid #6495ed;
+    border-radius: 12px;
+}
+
+.financial-policy-page .policy-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 15px;
+}
+
+.financial-policy-page .policy-table th,
+.financial-policy-page .policy-table td {
+    padding: 14px 16px;
+    border-right: 1px solid #d5e4f5;
+    border-bottom: 1px solid #d5e4f5;
+    text-align: left;
+    vertical-align: top;
+}
+
+.financial-policy-page .policy-table tr > :last-child {
+    border-right: 0;
+}
+
+.financial-policy-page .policy-table thead th {
+    background: #dfeeff;
+    color: #191970;
+    text-align: center;
+}
+
+.financial-policy-page .policy-table tbody th {
+    width: 22%;
+    background: #f3f8ff;
+    color: #344f70;
+}
+
+.financial-policy-page .policy-list-box ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.financial-policy-page .policy-list-box li + li {
+    margin-top: 8px;
+}
+
+.financial-policy-page .policy-list-box li::marker {
+    color: #1e90ff;
+}
+
+.financial-policy-page .policy-warning-box {
+    margin-top: 14px;
+    padding: 16px 20px;
+    border: 1px solid #c9ddf5;
+    border-radius: 12px;
+    background: #f1f7ff;
+}
+
+.financial-policy-page .policy-warning-box strong {
+    color: #344f70;
+}
+
+.financial-policy-page .policy-warning-box p {
+    display: inline;
+    margin: 0 0 0 10px;
+}
+
+.financial-policy-page .policy-step-list {
+    margin-top: 22px;
+    border-top: 1px solid #c9ddf5;
+}
+
+.financial-policy-page .policy-step-card {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 20px;
+    padding: 20px 4px;
+    border-bottom: 1px solid #d5e4f5;
+}
+
+.financial-policy-page .policy-step-card > span {
+    color: #1e6fc7;
+    font-weight: 700;
+}
+
+.financial-policy-page .policy-impact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid #b9d6f8;
+    border-left: 1px solid #b9d6f8;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.financial-policy-page .policy-impact-card {
+    padding: 22px 24px;
+    border-right: 1px solid #b9d6f8;
+    border-bottom: 1px solid #b9d6f8;
+    background: #fff;
+}
+
+.financial-policy-page .policy-example-comparison {
+    display: grid;
+    grid-template-columns: auto ;
+    align-items: stretch;
+    border: 1px solid #b9d6f8;
+    background: #fff;
+}
+
+.financial-policy-page .policy-example-column {
+    padding: 24px 26px;
+}
+
+.financial-policy-page .policy-example-label {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: #1e6fc7;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.financial-policy-page .policy-example-arrow {
+    display: grid;
+    place-items: center;
+    padding: 0 12px;
+    background: #eaf4ff;
+    color: #4169e1;
+    font-size: 24px;
+}
+
+.financial-policy-page .policy-example-result {
+    margin: 0;
+    padding: 16px 20px;
+    background: #4169e1;
+    color: #fff;
+    text-align: center;
+}
+
+.financial-policy-page .policy-faq-list {
+    border: 1px solid #b9d6f8;
+    border-top: 2px solid #6495ed;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.financial-policy-page .policy-faq-item {
+    border-bottom: 1px solid #d5e4f5;
+    background: #fff;
+}
+
+.financial-policy-page .policy-faq-item summary {
+    position: relative;
+    padding: 18px 50px 18px 18px;
+    color: #263e5e;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.financial-policy-page .policy-faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.financial-policy-page .policy-faq-item summary::after {
+    content: "+";
+    position: absolute;
+    right: 20px;
+    color: #4169e1;
+    font-size: 22px;
+    font-weight: 400;
+}
+
+.financial-policy-page .policy-faq-item[open] summary::after {
+    content: "−";
+}
+
+.financial-policy-page .policy-faq-answer {
+    padding: 0 50px 18px 18px;
+    color: #536985;
+}
+
+.financial-policy-page .policy-faq-answer p {
+    margin: 0;
+}
+
+.financial-policy-page .policy-related-links {
+    border-top: 1px solid #b9d6f8;
+}
+
+.financial-policy-page .policy-related-link {
+    background: white;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 20px;
+    padding: 17px 16px;
+    border-bottom: 1px solid #d5e4f5;
+    color: #405a78;
+    text-decoration: none;
+}
+
+.financial-policy-page .policy-related-link:hover {
+    background: #edf6ff;
+}
+
+.financial-policy-page .policy-related-link strong {
+    color: #1e6fc7;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.financial-policy-page .policy-notice {
+    margin-top: 54px;
+    padding: 24px 28px;
+    border: 1px solid #c9ddf5;
+    border-left: 5px solid #6495ed;
+    border-radius: 12px;
+    background: #f1f7ff;
+}
+
+.financial-policy-page .policy-notice h2 {
+    margin: 0 0 10px;
+    color: #191970;
+    font-size: 18px;
+}
+
+.financial-policy-page .policy-notice p {
+    margin: 5px 0;
+    color: #536985;
+}
+
+.financial-policy-page .policy-updated-date {
+    padding-top: 8px;
+    font-size: 13px;
+    text-align: right;
+}
+
+@media (max-width: 800px) {
+    .financial-policy-page .policy-summary-grid,
+    .financial-policy-page .policy-impact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .financial-policy-page .policy-summary-card {
+        border-right: 0;
+        border-bottom: 1px solid #d5e4f5;
+    }
+
+    .financial-policy-page .policy-summary-card:last-child {
+        border-bottom: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .financial-policy-index strong {
+        width: 100%;
+        padding: 0 0 8px;
+        border-right: 0;
+        border-bottom: 1px solid #c9ddf5;
+    }
+
+    .financial-policy-page .policy-content-box,
+    .financial-policy-page .policy-list-box {
+        padding: 20px;
+    }
+
+    .financial-policy-page .policy-step-card,
+    .financial-policy-page .policy-related-link {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .financial-policy-page .policy-example-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .financial-policy-page .policy-example-arrow {
+        padding: 5px;
+        transform: rotate(90deg);
+    }
+
+    .financial-policy-page .policy-warning-box p {
+        display: block;
+        margin: 5px 0 0;
+    }
+}
