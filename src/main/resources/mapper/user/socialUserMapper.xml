@@ -29,4 +29,16 @@
             #{providerEmail}
         )
     </insert>
+
+    <select id="findAllByUserId">
+        SELECT
+            social_user_id,
+            user_id,
+            provider,
+            provider_user_id,
+            provider_email,
+            created_at
+        FROM social_user
+        WHERE user_id = #{userId}
+    </select>
 </mapper>
