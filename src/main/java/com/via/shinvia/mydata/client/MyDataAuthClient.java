@@ -3,6 +3,7 @@ package com.via.shinvia.mydata.client;
 import com.via.shinvia.mydata.config.MyDataProperties;
 import com.via.shinvia.mydata.dto.MyDataAuthTokenResponseDto;
 import com.via.shinvia.mydata.dto.MyDataCommonResponseDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 public class MyDataAuthClient {
+
 
     private final RestClient restClient;
     private final MyDataProperties myDataProperties;
@@ -55,8 +57,14 @@ public class MyDataAuthClient {
                 .build();
     }
 
+   /* public MyDataAuthClient(RestClient restClient, MyDataProperties myDataProperties) {
 
-     // 1. 인가 코드 발급 요청 (GET /v2/oauth/2.0/authorize)
+        this.restClient = restClient;
+        this.myDataProperties = myDataProperties;
+    }*/
+
+
+    // 1. 인가 코드 발급 요청 (GET /v2/oauth/2.0/authorize)
     public String requestAuthorize(String userCi) {
         String tranId = generateTranId();
         // state 파라미터에 userCi를 담아서 전송 (목 서버 변경 없이 콜백 시 userCi 복원 가능)

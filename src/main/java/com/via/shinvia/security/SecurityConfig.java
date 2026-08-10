@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+  /*  private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
    @Bean
@@ -125,5 +125,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
+    }*/
 }
