@@ -3,9 +3,9 @@ package com.via.shinvia.policy.asset.service;
 import com.via.shinvia.policy.asset.dto.AssetProductSearchDTO;
 import com.via.shinvia.policy.asset.entity.AssetFormationProduct;
 import com.via.shinvia.policy.asset.repository.AssetFormationProductRepository;
-import com.via.shinvia.policy.dto.FinancialProductDTO;
-import com.via.shinvia.policy.dto.FinancialProductDetailDTO;
-import com.via.shinvia.policy.dto.FinancialProductPageDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDetailDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductPageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

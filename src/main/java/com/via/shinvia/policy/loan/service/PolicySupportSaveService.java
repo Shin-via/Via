@@ -2,7 +2,7 @@ package com.via.shinvia.policy.loan.service;
 
 import com.via.shinvia.policy.loan.dto.api.LoanProductApiItem;
 import com.via.shinvia.policy.loan.entity.PolicySupportProgram;
-import com.via.shinvia.policy.loan.mapper.PolicySupportProgramMapper;
+import com.via.shinvia.policy.loan.converter.PolicySupportProgramConverter;
 import com.via.shinvia.policy.loan.repository.PolicySupportProgramRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.List;
 // 맞춤대출 상품 저장 및 갱신 기능
 public class PolicySupportSaveService {
 
-    private final PolicySupportProgramMapper mapper;
+    private final PolicySupportProgramConverter converter;
 
     private final PolicySupportProgramRepository repository;
 
@@ -46,14 +46,14 @@ public class PolicySupportSaveService {
             if (entity == null) {
 
                 repository.insert(
-                        mapper.toEntity(item)
+                        converter.toEntity(item)
                 );
 
                 insertCount++;
 
             } else {
 
-                mapper.updateEntity(
+                converter.updateEntity(
                         entity,
                         item
                 );

@@ -8,10 +8,21 @@
         WHERE org_code = #{orgCode}
     </select>
 
+    <select id="findMydataConnectionIdByUserId" resultType="long">
+        SELECT connection_id
+        FROM mydata_connection
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertMydataConnection">
+        INSERT INTO mydata_connection (user_id)
+        VALUES (#{userId})
+    </insert>
+
     <select id="findByExternalCardKey" resultType="com.via.shinvia.client.card.entity.CardAccount">
         SELECT
-            card_account_id, app_user_id,
-            external_card_key, card_name,institution_id, card_number_masked,
+            card_account_id, user_id,
+            external_card_key, card_name,institution_id, mydata_connection_id, card_number_masked,
             payment_day, updated_at, issued_at, data_as_of_at
         FROM card_account
         WHERE external_card_key = #{externalCardKey}
@@ -19,11 +30,11 @@
 
     <insert id="insertCardAccount" useGeneratedKeys="true" keyProperty="cardAccountId">
         INSERT INTO card_account (
-            app_user_id, institution_id,external_card_key,
+            user_id, institution_id, mydata_connection_id, external_card_key,
             card_name, card_number_masked,
             payment_day, updated_at, issued_at, data_as_of_at
         ) VALUES (
-            #{appUserId}, #{institutionId}, #{externalCardKey},
+            #{userId}, #{institutionId}, #{mydataConnectionId}, #{externalCardKey},
             #{cardName}, #{cardNumberMasked},
             #{paymentDay}, #{updatedAt}, #{issuedAt}, #{dataAsOfAt}
         )
@@ -32,9 +43,9 @@
     <update id="updateCardAccount">
         UPDATE card_account
         SET
-            app_user_id = #{appUserId},
+            user_id = #{userId},
             institution_id = #{institutionId},
-<!--            mydata_connection_id = #{mydataConnectionId},-->
+            mydata_connection_id = #{mydataConnectionId},
             card_name = #{cardName},
             card_number_masked = #{cardNumberMasked},
             payment_day = #{paymentDay},

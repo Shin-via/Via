@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.via.shinvia.mydata.client.MyDataAuthClient;
 
 import java.net.URI;
 
@@ -25,11 +24,10 @@ public class MydataCardListClient {
     private final MyDataProperties myDataProperties;
     private final RestTemplate mydataRestTemplate;
     private final MockServerProperties mockServerProperties;
-    private final MyDataAuthClient myDataAuthClient;
 
-    public CardListResponse getCards(String accessToken, String type ,CardListRequest request) {
+    public CardListResponse getCards(String accessToken, CardListRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(mockServerProperties.getBaseUrl())
-                .path("/v2.0/cards")
+                .path("/v2/card/cards")
                 .queryParam("org_code",myDataProperties.getOrgCode())
                 .queryParam("limit", request.getLimit());
 
@@ -41,15 +39,13 @@ public class MydataCardListClient {
 
         URI uri = builder.build().toUri();
         log.info("accessToken:" +accessToken );
-        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken, type)), CardListResponse.class)
+        return mydataRestTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(authHeaders(accessToken)), CardListResponse.class)
                 .getBody();
     }
 
-    private HttpHeaders authHeaders(String accessToken,String type) {
+    private HttpHeaders authHeaders(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        headers.set("x-api-tran-id",myDataAuthClient.generateTranId());
-        headers.set("x-api-type",type);
         return headers;
     }
 }

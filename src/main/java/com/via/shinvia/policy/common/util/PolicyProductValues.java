@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.util;
+package com.via.shinvia.policy.common.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;

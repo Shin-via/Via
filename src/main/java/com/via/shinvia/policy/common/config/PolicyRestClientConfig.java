@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.config;
+package com.via.shinvia.policy.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

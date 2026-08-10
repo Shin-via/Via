@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<th:block th:fragment="layout(pageTitle, pageContent)">
+<th:block th:fragment="layout(pageTitle, pageContent, serviceName)">
 
     <head>
         <meta charset="UTF-8">
@@ -20,7 +20,7 @@
         <div class="header-inner">
             <div class="header-brand">
                 <a class="logo" th:href="@{/}">SHINVIA</a>
-                <span class="header-service-name">금융 진단센터</span>
+                <span class="header-service-name" th:text="${serviceName}">금융 진단센터</span>
             </div>
 
             <div class="header-account">
@@ -67,18 +67,18 @@
                         <li><a th:href="@{/asset-products}">자산형성상품</a></li>
                         <li><a th:href="@{/social-finance}">사회연대금융</a></li>
                         <li><a th:href="@{/welfare-support}">복합지원</a></li>
-                        <li><span class="sidebar-menu-disabled">맞춤 정책금융상품 추천<small>준비중</small></span></li>
+                        <li><a th:href="@{/policy/recommendation}">맞춤 금융지원상품 추천</a></li>
                     </ul>
                 </details>
 
                 <details class="sidebar-menu-group">
                     <summary>금융정책 안내</summary>
                     <ul>
-                        <li><span class="sidebar-menu-disabled">스트레스 DSR <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">가계대출·DSR 규제 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">주택담보대출 규제 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">전세대출 규제 <small>준비중</small></span></li>
-                        <li><span class="sidebar-menu-disabled">정책대출 제도 <small>준비중</small></span></li>
+                        <li><a th:href="@{/financial-policy/stress-dsr}">스트레스 DSR </a></li>
+                        <li><a th:href="@{/financial-policy/household-dsr}">가계대출·DSR 규제 </a></li>
+                        <li><a th:href="@{/financial-policy/mortgage-regulation}">주택담보대출 규제 </a></li>
+                        <li><a th:href="@{/financial-policy/jeonse-regulation}">전세대출 규제</a></li>
+                        <li><a th:href="@{/financial-policy/policy-loan}">정책대출 제도 </a></li>
                     </ul>
                 </details>
             </nav>

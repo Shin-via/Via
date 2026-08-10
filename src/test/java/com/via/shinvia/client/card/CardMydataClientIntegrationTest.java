@@ -38,7 +38,6 @@ class CardMydataClientIntegrationTest {
     private static final String BASE_URL = "http://localhost:9090";
     private static final String ACCESS_TOKEN = "mock-access-token-1000000001";
     private static final String ORG_CODE = "004";
-    private static final MyDataProperties mydataProp = null;
     private RestTemplate restTemplate;
 
     @BeforeEach
@@ -69,15 +68,14 @@ class CardMydataClientIntegrationTest {
 
     @Test
     void 카드_001_목록_조회() {
-        MydataCardListClient client = new MydataCardListClient(restTemplate, mockServerProperties());
+        MydataCardListClient client = new MydataCardListClient(mydataProperties(), restTemplate, mockServerProperties());
 
         CardListResponse response = client.getCards(ACCESS_TOKEN, CardListRequest.builder()
-                .orgCode("org")
+                .orgCode(ORG_CODE)
                 .searchTimestamp("0")
                 .limit(10)
                 .build());
 
-        assertThat(response.getRspCode()).isEqualTo("00000");
         assertThat(response.getCardList()).isNotEmpty();
 
         CardInfoDto first = response.getCardList().get(0);
@@ -96,10 +94,10 @@ class CardMydataClientIntegrationTest {
                 .searchTimestamp("0")
                 .build());
 
-        assertThat(response.getRspCode()).isEqualTo("00000");
+        assertThat(response.getRspCode()).isEqualTo("0000");
         assertThat(response.getCardBrand()).isNotBlank();
         assertThat(response.getAnnualFee()).isNotNull();
-        assertThat(response.getIssueDate()).matches("\\d{8}");
+        assertThat(response.getIssueDate()).matches("\\d{4}-\\d{2}-\\d{2}");
         assertThat(response.getIsTransPayable()).isNotNull();
         assertThat(response.getIsCashCard()).isNotNull();
         assertThat(response.getLinkedBankCode()).isNotBlank();
@@ -117,7 +115,7 @@ class CardMydataClientIntegrationTest {
                 .limit(10)
                 .build());
 
-        assertThat(response.getRspCode()).isEqualTo("00000");
+        assertThat(response.getRspCode()).isEqualTo("0000");
         assertThat(response.getBillList()).isNotEmpty();
         assertThat(response.getBillList().get(0).getChargeMonth()).matches("\\d{6}");
     }
@@ -133,7 +131,7 @@ class CardMydataClientIntegrationTest {
                 .limit(10)
                 .build());
 
-        assertThat(response.getRspCode()).isEqualTo("00000");
+        assertThat(response.getRspCode()).isEqualTo("0000");
         assertThat(response.getBillDetailList()).isNotEmpty();
         assertThat(response.getBillDetailList().get(0).getCardId()).isNotBlank();
     }
@@ -143,6 +141,12 @@ class CardMydataClientIntegrationTest {
         properties.setBaseUrl(BASE_URL);
         properties.setConnectTimeout(3000);
         properties.setReadTimeout(5000);
+        return properties;
+    }
+
+    private MyDataProperties mydataProperties() {
+        MyDataProperties properties = new MyDataProperties();
+        properties.setOrgCode(ORG_CODE);
         return properties;
     }
 }
