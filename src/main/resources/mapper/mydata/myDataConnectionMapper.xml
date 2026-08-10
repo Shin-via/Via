@@ -18,4 +18,26 @@
         #{connectionStatus}
         )
     </insert>
+
+    <select id="findByUserId">
+        SELECT *
+        FROM mydata_connection
+        WHERE user_id=#{userId}
+    </select>
+
+    <update id="updateConnected">
+        UPDATE  mydata_connection
+        SET connectionStatus='CONNECTED',
+            connected_at=CURRENT_TIMESTAMP,
+            disconnected_at=NULL,
+            updated_at=CURRENT_TIMESTAMP
+        WHERE connectionId=#{connection_id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE  mydata_connection
+        SET connection_status=#{connectionStatus},
+            updated_at=CURRENT_TIMESTAMP
+        WHERE connection_id=#{connectionId}
+    </update>
 </mapper>
