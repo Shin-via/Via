@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.loan.mapper;
+package com.via.shinvia.policy.loan.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.via.shinvia.policy.loan.dto.api.LoanProductApiItem;
@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.via.shinvia.policy.util.PolicyProductValues.url;
+import static com.via.shinvia.policy.common.util.PolicyProductValues.url;
 
 @Component
 // API 상품정보를 저장 데이터로 변환하는 기능
-public class PolicySupportProgramMapper {
+public class PolicySupportProgramConverter {
 
     private static final Pattern NUMBER_PATTERN =
             Pattern.compile("\\d+(?:\\.\\d+)?");

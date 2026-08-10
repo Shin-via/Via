@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.loader;
+package com.via.shinvia.policy.sync;
 
 import com.via.shinvia.policy.asset.service.AssetProductSyncService;
 import com.via.shinvia.policy.social.service.SocialFinanceSyncService;

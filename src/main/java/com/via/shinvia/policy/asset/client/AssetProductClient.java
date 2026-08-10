@@ -1,9 +1,9 @@
 package com.via.shinvia.policy.asset.client;
 
 import com.via.shinvia.policy.asset.entity.AssetFormationProduct;
-import com.via.shinvia.policy.client.KinfaFinancialProductClient;
-import com.via.shinvia.policy.dto.FinancialProductDTO;
-import com.via.shinvia.policy.dto.FinancialProductPageDTO;
+import com.via.shinvia.policy.common.client.KinfaFinancialProductClient;
+import com.via.shinvia.policy.common.dto.FinancialProductDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductPageDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.via.shinvia.policy.util.PolicyProductValues.*;
+import static com.via.shinvia.policy.common.util.PolicyProductValues.*;
 
 @Component
 @RequiredArgsConstructor
