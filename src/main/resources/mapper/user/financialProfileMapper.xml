@@ -5,7 +5,16 @@
 
 <mapper namespace="com.via.shinvia.finprofile.FinancialProfileMapper">
     <select id="findFinancialProfileByUserId">
-        SELECT *
+        SELECT
+            user_financial_profile_id,
+            user_id,
+            annual_income,
+            income_type,
+            employment_status,
+            credit_score,
+            liquid_asset_amount,
+            created_at,
+            updated_at
         FROM user_financial_profile
         WHERE user_id=#{userId}
     </select>

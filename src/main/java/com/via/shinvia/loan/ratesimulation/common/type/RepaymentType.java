@@ -8,7 +8,8 @@ public enum RepaymentType {
     EQUAL_PRINCIPAL_INTEREST("원리금균등"),
     EQUAL_PRINCIPAL("원금균등"),
     // 거치기간 컬럼이 없어 거치기간 없이 원리금균등과 동일하게 단순화 (거치기간이 이미 지났다고 가정)
-    GRACE_PERIOD("거치식");
+    GRACE_PERIOD("거치식"),
+    BULLET_PAYMENT("만기일시상환");
 
     private final String dbValue;
 
