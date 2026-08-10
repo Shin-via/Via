@@ -3,7 +3,6 @@ package com.via.shinvia.mydata.service;
 import com.via.shinvia.mydata.domain.ConnectionStatus;
 import com.via.shinvia.mydata.domain.MyDataConnection;
 import com.via.shinvia.mydata.mapper.MyDataConnectionMapper;
-import com.via.shinvia.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

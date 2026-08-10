@@ -26,12 +26,12 @@
     </select>
 
     <update id="updateConnected">
-        UPDATE  mydata_connection
-        SET connectionStatus='CONNECTED',
+        UPDATE mydata_connection
+        SET connection_status='CONNECTED',
             connected_at=CURRENT_TIMESTAMP,
             disconnected_at=NULL,
             updated_at=CURRENT_TIMESTAMP
-        WHERE connectionId=#{connection_id}
+        WHERE connection_id=#{connectionId}
     </update>
 
     <update id="updateStatus">
