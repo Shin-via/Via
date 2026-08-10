@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter @Setter
 public class MyDataConnection {
-    private Long mydataConnectionId;
+    private Long connectionId;
     private Long userId;
     private ConnectionStatus connectionStatus;
     private LocalDateTime connectedAt;

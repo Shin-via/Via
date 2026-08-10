@@ -7,8 +7,8 @@
     <insert id="insertMyDataConnection"
             parameterType="MyDataConnection"
             useGeneratedKeys="true"
-            keyProperty="mydataConnectionId"
-            keyColumn="mydata_connection_id">
+            keyProperty="connectionId"
+            keyColumn="connection_id">
         INSERT INTO mydata_connection (
         user_id,
         connection_status
