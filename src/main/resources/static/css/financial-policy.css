@@ -279,7 +279,7 @@
 
 .financial-policy-page .policy-example-comparison {
     display: grid;
-    grid-template-columns: auto ;
+    grid-template-columns: 1fr auto 1fr;
     align-items: stretch;
     border: 1px solid #b9d6f8;
     background: #fff;
@@ -365,25 +365,18 @@
     border-top: 1px solid #b9d6f8;
 }
 
-.financial-policy-page .policy-related-link {
+.financial-policy-page .policy-related-item {
     background: white;
     display: grid;
     grid-template-columns: 210px 1fr;
     gap: 20px;
     padding: 17px 16px;
     border-bottom: 1px solid #d5e4f5;
+    color: #536985;
+}
+
+.financial-policy-page .policy-related-item strong {
     color: #405a78;
-    text-decoration: none;
-}
-
-.financial-policy-page .policy-related-link:hover {
-    background: #edf6ff;
-}
-
-.financial-policy-page .policy-related-link strong {
-    color: #1e6fc7;
-    text-decoration: underline;
-    text-underline-offset: 3px;
 }
 
 .financial-policy-page .policy-notice {
@@ -442,7 +435,7 @@
     }
 
     .financial-policy-page .policy-step-card,
-    .financial-policy-page .policy-related-link {
+    .financial-policy-page .policy-related-item {
         grid-template-columns: 1fr;
         gap: 4px;
     }
