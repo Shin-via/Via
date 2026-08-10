@@ -15,7 +15,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-   @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
@@ -58,7 +58,7 @@ public class SecurityConfig {
                                 // Card sync 경로 허용
                                 "/api/cards/sync/**",
                                 // 정부 규제 안내
-                                "/financial-policy/stress-dsr",
+                                "/financial-policy/**",
                                 //rps 부채상환
                                 "/loan-analysis/**",
                                 "/api/loan-analysis/**",

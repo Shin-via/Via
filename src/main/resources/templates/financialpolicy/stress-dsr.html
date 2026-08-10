@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/basic :: layout(~{::title}, ~{::main})}">
+      th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
 
 <head>
     <title>스트레스 DSR | SHINVIA</title>
@@ -513,37 +513,40 @@
 
         <div class="policy-related-links">
 
-            <div class="policy-related-item">
+            <a th:href="@{/financial-policy/household-dsr}"
+               class="policy-related-link">
 
                 <strong>가계대출·DSR 규제</strong>
 
                 <span>
-                            준비중 · DSR 적용 대상과 주요 심사기준 안내
+                            DSR 적용 대상과 주요 심사기준을 확인합니다.
                         </span>
 
-            </div>
+            </a>
 
 
-            <div class="policy-related-item">
+            <a th:href="@{/loans/breakeven-rate-test}"
+               class="policy-related-link">
 
-                <strong>주택담보대출 규제</strong>
+                <strong>금리상승 취약도</strong>
 
                 <span>
-                            준비중 · LTV·DTI·지역·주택 수 관련 규제 안내
+                            금리가 올랐을 때 대출 부담이 얼마나 커지는지 점검합니다.
                         </span>
 
-            </div>
+            </a>
 
 
-            <div class="policy-related-item">
+            <a th:href="@{/loan-analysis/scenarios}"
+               class="policy-related-link">
 
-                <strong>전세대출 규제</strong>
+                <strong>대출 대응방안 비교</strong>
 
                 <span>
-                            준비중 · 전세대출 보증과 주택 보유 관련 기준 안내
+                            금리 변화에 따른 상환 대응방안을 비교합니다.
                         </span>
 
-            </div>
+            </a>
 
         </div>
 
