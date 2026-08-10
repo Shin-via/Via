@@ -9,10 +9,7 @@ public class CardInfoDto {
     @JsonProperty("card_id")
     private String cardId;
 
-    @JsonProperty("bank_code_std")
-    private Long institution_id;
-
-    @JsonProperty("card_number_masked")
+    @JsonProperty("card_num")
     private String cardNum;
 
     @JsonProperty("is_consent")

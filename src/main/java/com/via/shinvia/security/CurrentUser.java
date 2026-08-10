@@ -29,4 +29,22 @@ public class CurrentUser {
                         + principal.getClass().getName()
         );
     }
+
+    public Long getUserIdOrNull(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getUserId();
+        }
+
+        if (principal instanceof CustomOAuth2User oAuth2User) {
+            return oAuth2User.getUserId();
+        }
+
+        return null;
+    }
 }

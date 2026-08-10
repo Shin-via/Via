@@ -1,8 +1,8 @@
 package com.via.shinvia.policy.social.service;
 
-import com.via.shinvia.policy.dto.FinancialProductDTO;
-import com.via.shinvia.policy.dto.FinancialProductDetailDTO;
-import com.via.shinvia.policy.dto.FinancialProductPageDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDetailDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductPageDTO;
 import com.via.shinvia.policy.social.dto.SocialFinanceSearchDTO;
 import com.via.shinvia.policy.social.entity.SocialFinanceProduct;
 import com.via.shinvia.policy.social.repository.SocialFinanceProductRepository;
