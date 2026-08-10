@@ -93,10 +93,10 @@ public class SecurityConfig {
 
                                 //dsr 계산
                                 "/dsr","/dsr/**",
-                                "/error",
 
-                                //아이디,비밀번호 찾기
-                                "/find/**"
+                                //id, pw 찾기
+                                "/find/id/**","/find/pw/**"
+
                         )
                         .permitAll()
 
