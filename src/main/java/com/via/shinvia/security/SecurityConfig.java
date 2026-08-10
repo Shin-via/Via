@@ -56,6 +56,8 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
                                 // Card sync 경로 허용
                                 "/api/cards/sync/**",
+                                // 정부 규제 안내
+                                "/financial-policy/stress-dsr",
                                 //rps 부채상환
                                 "/loan-analysis/**",
                                 "/api/loan-analysis/**",
