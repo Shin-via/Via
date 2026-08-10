@@ -12,5 +12,5 @@ public interface UserMapper {
     boolean existsByLoginEmail(@Param("loginEmail") String loginEmail);
     User findByUserId(@Param("userId") Long userId);
     User findByLoginEmail(@Param("loginEmail") String loginEmail);
-    List<User> findActiveUserByNameAndPhone(@Param("userName") String userName, @Param("phoneNumber") String phoneNumber);
+    User findActiveUserByNameAndPhone(@Param("userName") String userName, @Param("phoneNumber") String phoneNumber);
 }
