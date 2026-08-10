@@ -26,7 +26,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers(
                                 "/loans/recommendations/**",
                                 "/api/loan-analysis/**",
-                                "/api/admin/loan-product-catalogs/**"
+                                "/api/admin/loan-product-catalogs/**",
+                                "/api/policy/recommendation/**"
                         )
                 )
 
@@ -71,7 +72,10 @@ public class SecurityConfig {
                                 "/api/asset-products/**",
                                 "/api/social-finance/**",
                                 "/api/welfare-support/**",
-
+                                // 맞춤 금융지원상품 추천 설문
+                                "/policy/recommendation",
+                                "/policy/recommendation/**",
+                                "/api/policy/recommendation/**",
                                 // 대출분석 API
                                 "/api/loan-analysis/**",
 

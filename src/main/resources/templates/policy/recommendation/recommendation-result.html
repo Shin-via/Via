@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>맞춤 정책금융상품 추천 결과 | SHINVIA</title>
+</head>
+<body>
+<th:block th:replace="~{layout/basic :: layout(~{::title}, ~{::main})}">
+    <main class="recommendation-page">
+        <link rel="stylesheet" th:href="@{/css/policy-recommendation.css}">
+        <h1>맞춤 금융지원상품 추천</h1>
+        <p>설문이 정상적으로 저장되었습니다.</p>
+        <p>저장된 정보를 금융지원상품 조건과 비교하여 추천 결과를 제공합니다.</p>
+        <a th:href="@{/policy/recommendation}">설문 수정하기</a>
+    </main>
+</th:block>
+</body>
+</html>
