@@ -17,7 +17,7 @@ public class CardAccount {
     private Long cardAccountId;
     private Long userId;
     private Long institutionId;
-    private Long mydataConnectionId;
+    private Long connectionId;
     private String externalCardKey;
     private String cardName;
     private String cardNumberMasked;
