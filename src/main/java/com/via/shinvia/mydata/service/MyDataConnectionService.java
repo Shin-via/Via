@@ -62,4 +62,17 @@ public class MyDataConnectionService {
             throw new IllegalStateException("마이데이터 연동 철회 실패");
         }
     }
+
+    public Long getConnectedConnectionId(Long userId) {
+        MyDataConnection connection = myDataConnectionMapper.findByUserId(userId);
+
+        if (connection == null) {
+            throw new IllegalStateException("마이데이터 연동 정보가 없습니다.");
+        }
+        if (connection.getConnectionStatus() != ConnectionStatus.CONNECTED) {
+            throw new IllegalStateException("마이데이터가 연결된 상태가 아닙니다.");
+        }
+
+        return connection.getConnectionId();
+    }
 }
