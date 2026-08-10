@@ -4,7 +4,7 @@
     <title>맞춤 정책금융상품 추천 결과 | SHINVIA</title>
 </head>
 <body>
-<th:block th:replace="~{layout/basic :: layout(~{::title}, ~{::main})}">
+<th:block th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
     <main class="recommendation-page">
         <link rel="stylesheet" th:href="@{/css/policy-recommendation.css}">
         <h1>맞춤 금융지원상품 추천</h1>
