@@ -1,9 +1,9 @@
-package com.via.shinvia.policy.client;
+package com.via.shinvia.policy.common.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.via.shinvia.policy.dto.FinancialProductDTO;
-import com.via.shinvia.policy.dto.FinancialProductPageDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductDTO;
+import com.via.shinvia.policy.common.dto.FinancialProductPageDTO;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;

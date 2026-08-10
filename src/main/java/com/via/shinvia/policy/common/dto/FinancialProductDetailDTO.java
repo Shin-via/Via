@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.dto;
+package com.via.shinvia.policy.common.dto;
 
 import lombok.Builder;
 import lombok.Getter;
