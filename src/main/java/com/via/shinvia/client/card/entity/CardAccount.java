@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 public class CardAccount {
 
     private Long cardAccountId;
-    private String appUserId; // TODO(회원인증 미구현): 현재는 CardSyncService 호출부가 파라미터로 채워줌
+    private Long userId;
     private Long institutionId;
-    //private Long mydataConnectionId;
+    private Long mydataConnectionId;
     private String externalCardKey;
     private String cardName;
     private String cardNumberMasked;

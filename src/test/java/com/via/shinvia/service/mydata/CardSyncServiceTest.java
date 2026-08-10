@@ -7,6 +7,7 @@ import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.entity.CardAccount;
 import com.via.shinvia.client.card.entity.CardTransaction;
 import com.via.shinvia.client.card.mapper.CardMapper;
+import com.via.shinvia.mydata.config.MyDataProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -36,11 +37,15 @@ class CardSyncServiceTest {
     @Mock
     private CardMapper cardMapper;
 
+    @Mock
+    private MyDataProperties myDataProperties;
+
     @InjectMocks
     private CardSyncService cardSyncService;
 
     @Test
     void 카드_목록_동기화_신규카드는_insert() {
+        when(myDataProperties.getOrgCode()).thenReturn("004");
         when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
         when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(null);
 
@@ -54,14 +59,14 @@ class CardSyncServiceTest {
         CardListResponse response = new CardListResponse();
         response.setCardList(List.of(dto));
 
-        cardSyncService.saveCards(response);
+        cardSyncService.saveCards(response, 100L);
 
         ArgumentCaptor<CardAccount> captor = ArgumentCaptor.forClass(CardAccount.class);
         verify(cardMapper).insertCardAccount(captor.capture());
         verify(cardMapper, never()).updateCardAccount(any());
 
         CardAccount saved = captor.getValue();
-        assertThat(saved.getAppUserId()).isEqualTo(100L);
+        assertThat(saved.getUserId()).isEqualTo(100L);
         //assertThat(saved.getInstitutionId()).isEqualTo(1L);
         //assertThat(saved.getMydataConnectionId()).isEqualTo(200L);
         assertThat(saved.getExternalCardKey()).isEqualTo("CARD00000001");
@@ -71,6 +76,7 @@ class CardSyncServiceTest {
 
     @Test
     void 카드_목록_동기화_기존카드는_update() {
+        when(myDataProperties.getOrgCode()).thenReturn("004");
         when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
         CardAccount existing = CardAccount.builder().cardAccountId(10L).build();
         when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(existing);
@@ -83,7 +89,7 @@ class CardSyncServiceTest {
         CardListResponse response = new CardListResponse();
         response.setCardList(List.of(dto));
 
-        cardSyncService.saveCards(response);
+        cardSyncService.saveCards(response, 100L);
 
         ArgumentCaptor<CardAccount> captor = ArgumentCaptor.forClass(CardAccount.class);
         verify(cardMapper).updateCardAccount(captor.capture());
@@ -93,12 +99,13 @@ class CardSyncServiceTest {
 
     @Test
     void 카드_목록_동기화_미등록_금융기관코드는_예외() {
+        when(myDataProperties.getOrgCode()).thenReturn("999");
         when(cardMapper.findInstitutionIdByOrgCode("999")).thenReturn(null);
 
         CardListResponse response = new CardListResponse();
         response.setCardList(List.of(new CardInfoDto()));
 
-        assertThatThrownBy(() -> cardSyncService.saveCards(response))
+        assertThatThrownBy(() -> cardSyncService.saveCards(response, 100L))
                 .isInstanceOf(IllegalStateException.class);
     }
 
