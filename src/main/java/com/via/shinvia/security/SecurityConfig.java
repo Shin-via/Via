@@ -15,7 +15,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-   @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
@@ -92,7 +92,11 @@ public class SecurityConfig {
                                 "/error",
 
                                 //dsr 계산
-                                "/dsr","/dsr/**"
+                                "/dsr","/dsr/**",
+                                "/error",
+
+                                //아이디,비밀번호 찾기
+                                "/find/**"
                         )
                         .permitAll()
 
