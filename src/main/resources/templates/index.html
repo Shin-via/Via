@@ -4,184 +4,64 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Via - Main Page</title>
+    <title>Via | 금융생활을 한 번에</title>
 
     <!-- Google Fonts & Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
-    <title>Via</title>
     <!-- 분리된 CSS 파일 -->
     <link rel="stylesheet" th:href="@{/css/frame.css}"/>
     <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
 
-<!-- Top Header -->
-<header class="header">
-    <!-- Utility Nav (Top Row) -->
-    <div class="utility-nav">
-        <a href="#" class="utility-link">Inquiry</a>
-        <a href="#" class="utility-link">My Page</a>
-
-        <div class="user-avatar-container">
-            <div class="user-avatar" id="userAvatarBtn" role="button" aria-expanded="false" aria-label="User Profile Menu">
-                <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-            </div>
-
-            <!-- Profile Popover Dropdown Card -->
-            <div class="profile-popover" id="profilePopover">
-                <div class="popover-header">
-                    <div class="popover-user-info">
-                        <div class="popover-avatar-large">
-                            <span class="material-symbols-outlined">account_circle</span>
-                        </div>
-                        <div>
-                            <div class="user-name">김신한 님 <span class="user-badge">VIP</span></div>
-                            <div class="user-email">shinhan@via.com</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="popover-body">
-                    <a href="#" class="popover-item">
-                        <span class="material-symbols-outlined">person</span>
-                        <span>내 프로필 관리</span>
-                    </a>
-                    <a href="#" class="popover-item">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <span>대출 신청 현황</span>
-                    </a>
-                    <a href="#" class="popover-item">
-                        <span class="material-symbols-outlined">settings</span>
-                        <span>계정 및 보안 설정</span>
-                    </a>
-                    <a href="#" class="popover-item">
-                        <span class="material-symbols-outlined">help</span>
-                        <span>고객센터 문의</span>
-                    </a>
-                </div>
-                <div class="popover-footer">
-                    <a sec:authorize="isAnonymous()" th:href="@{/login}" class="popover-btn-logout">로그인</a>
-                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                        <button type="submit" class="popover-btn-logout">로그아웃</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Header (Bottom Row) -->
-    <div class="main-header">
-        <div class="brand-section">
-            <div class="logo">Via</div>
-            <nav class="nav-links">
-                <!-- Loans Mega Menu -->
-                <div class="nav-item mega-menu-container">
-                    <a href="#" class="nav-link">대출</a>
-                    <div class="mega-menu">
-                        <div class="mega-menu-inner">
-                            <div class="mega-menu-grid col-3">
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-secondary">
-                                        <span class="material-symbols-outlined" data-icon="payments">payments</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">대출 상품 추천</h5>
-                                        <p class="card-desc">대출상품 추천 설명~~~</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-secondary">
-                                        <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">정책 상품 조회 및 맞춤 추천</h5>
-                                        <p class="card-desc">정책 상품 조회</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-secondary">
-                                        <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">개인화 재무설계</h5>
-                                        <p class="card-desc">개인화 재무 설계</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-secondary">
-                                        <span class="material-symbols-outlined" data-icon="home">home</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">금융 정책 안내</h5>
-                                        <p class="card-desc">금융 정책 안내</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Services Mega Menu -->
-                <div class="nav-item mega-menu-container">
-                    <a href="#" class="nav-link">자산관리</a>
-                    <div class="mega-menu">
-                        <div class="mega-menu-inner">
-                            <div class="mega-menu-grid col-3">
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-gray">
-                                        <span class="material-symbols-outlined" data-icon="cloud">cloud</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">Cloud Hosting</h5>
-                                        <p class="card-desc">Scalable hosting environments designed for enterprise applications.</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-gray">
-                                        <span class="material-symbols-outlined" data-icon="security">security</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">Security Audits</h5>
-                                        <p class="card-desc">Comprehensive vulnerability assessments and compliance management.</p>
-                                    </div>
-                                </a>
-                                <a href="#" class="mega-menu-card">
-                                    <div class="icon-circle icon-circle-gray">
-                                        <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title">Data Analytics</h5>
-                                        <p class="card-desc">Advanced BI tools to transform raw data into actionable insights.</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <button class="icon-button" aria-label="Search">
-                <span class="material-symbols-outlined" data-icon="search">search</span>
-            </button>
-            <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn-signin">로그인</a>
-
-            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="btn-signin">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
+<th:block th:replace="~{fragments/main-header :: mainHeader}"></th:block>
 
 <!-- Main Content Canvas -->
 <main class="main-content">
     <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-gradient"></div>
-        <div class="pulse-dot"></div>
+    <section class="hero-section" aria-label="VIA 주요 서비스">
+        <div class="hero-carousel" data-carousel>
+            <div class="hero-slides" aria-live="off">
+                <figure class="hero-slide active">
+                    <img th:src="@{/img/loan.png}" src="/img/loan.png"
+                         alt="내 대출을 더 똑똑하게 관리하는 VIA 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/analsyis.png}" src="/img/analsyis.png"
+                         alt="한눈에 보는 맞춤형 대출 진단 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/rate.png}" src="/img/rate.png"
+                         alt="금리 상승 시나리오와 스트레스 DSR 분석 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/finance.png}" src="/img/finance.png"
+                         alt="대출 상환 전략 비교 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/ana.png}" src="/img/ana.png"
+                         alt="대출과 자산관리를 한 번에 제공하는 서비스">
+                </figure>
+            </div>
+
+            <button class="hero-control hero-control-prev" type="button"
+                    data-carousel-prev aria-label="이전 배너">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button class="hero-control hero-control-next" type="button"
+                    data-carousel-next aria-label="다음 배너">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+
+            <div class="hero-pagination" role="group" aria-label="배너 선택">
+                <button class="hero-page active" type="button" data-carousel-page="0" aria-label="1번 배너" aria-current="true"></button>
+                <button class="hero-page" type="button" data-carousel-page="1" aria-label="2번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="2" aria-label="3번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="3" aria-label="4번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="4" aria-label="5번 배너"></button>
+            </div>
+        </div>
     </section>
 
     <!-- Layout Section -->
@@ -361,134 +241,8 @@
     </section>
 </main>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="footer-logo">Via</div>
-    <nav class="footer-nav">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Legal</a>
-        <a href="#">Security</a>
-    </nav>
-    <div class="copyright">
-        © 2024 Via Services. All rights reserved.
-    </div>
-</footer>
+<th:block th:replace="~{fragments/main-footer :: mainFooter}"></th:block>
 
-<script>
-    // 1. 헤더 스크롤 감지 자동 숨김
-    let lastScrollY = window.scrollY;
-    const header = document.querySelector('.header');
-
-    window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        if (currentScrollY > lastScrollY && currentScrollY > 50) {
-            header.classList.add('nav-hidden');
-        } else {
-            header.classList.remove('nav-hidden');
-        }
-        lastScrollY = currentScrollY;
-    });
-
-    // 2. PPT 슬라이드쇼 등장 효과 (IntersectionObserver)
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-            } else {
-                entry.target.classList.remove('active');
-            }
-        });
-    }, { threshold: 0.15 });
-
-    document.querySelectorAll('.product-area, .sidebar').forEach(el => {
-        el.classList.add('reveal-element');
-        observer.observe(el);
-    });
-
-    // 3. 케이뱅크/토스 스타일 부드러운 럭셔리 스크롤 (1.3초 감속)
-    let isScrolling = false;
-    const snapSections = document.querySelectorAll('.hero-section, .content-container, .footer');
-
-    window.addEventListener('wheel', (e) => {
-        if (e.target.closest('input, select, textarea, .mega-menu')) return;
-        
-        e.preventDefault();
-        if (isScrolling) return;
-
-        const direction = e.deltaY > 0 ? 1 : -1;
-        let currentIndex = 0;
-        
-        snapSections.forEach((sec, idx) => {
-            const rect = sec.getBoundingClientRect();
-            if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-                currentIndex = idx;
-            }
-        });
-
-        let targetIndex = currentIndex + direction;
-        if (targetIndex < 0) targetIndex = 0;
-        if (targetIndex >= snapSections.length) targetIndex = snapSections.length - 1;
-
-        if (targetIndex !== currentIndex) {
-            isScrolling = true;
-            const targetTop = snapSections[targetIndex].offsetTop;
-            
-            // 1300ms (1.3초) 동안 럭셔리 감속 곡선으로 매우 부드럽게 스크롤 이동
-            smoothScrollTo(targetTop, 100, () => {
-                isScrolling = false;
-            });
-        }
-    }, { passive: false });
-
-    function smoothScrollTo(targetPosition, duration, callback) {
-        const startPosition = window.pageYOffset;
-        const distance = targetPosition - startPosition;
-        let startTime = null;
-
-        function animation(currentTime) {
-            if (startTime === null) startTime = currentTime;
-            const timeElapsed = currentTime - startTime;
-            const run = easeOutQuart(timeElapsed, startPosition, distance, duration);
-            window.scrollTo(0, run);
-            if (timeElapsed < duration) {
-                requestAnimationFrame(animation);
-            } else {
-                window.scrollTo(0, targetPosition);
-                if (callback) callback();
-            }
-        }
-
-        // 럭셔리 4차 감속 곡선 (easeOutQuart)
-        function easeOutQuart(t, b, c, d) {
-            t /= d;
-            t--;
-            return -c * (t * t * t * t - 1) + b;
-        }
-
-        requestAnimationFrame(animation);
-    }
-
-    // 4. 유저 프로필 아바타 팝오버 토글
-    const userAvatarBtn = document.getElementById('userAvatarBtn');
-    const profilePopover = document.getElementById('profilePopover');
-
-    if (userAvatarBtn && profilePopover) {
-        userAvatarBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isActive = profilePopover.classList.toggle('active');
-            userAvatarBtn.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!profilePopover.contains(e.target) && !userAvatarBtn.contains(e.target)) {
-                profilePopover.classList.remove('active');
-                userAvatarBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-</script>
-<!-- 분리된 JS 파일 -->
-<script src="script.js"></script>
+<script th:src="@{/js/script.js}" src="/js/script.js"></script>
 </body>
 </html>
