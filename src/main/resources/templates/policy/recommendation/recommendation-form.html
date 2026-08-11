@@ -9,7 +9,8 @@
 
 <body>
 
-        <main class="recommendation-page">
+        <main class="recommendation-page"
+              th:attr="data-employment-status=${hasFinancialProfile and financialProfile.employmentStatus != null ? financialProfile.employmentStatus : ''}">
         <link rel="stylesheet"
               th:href="@{/css/policy-recommendation.css}">
 
@@ -27,24 +28,36 @@
                 </p>
             </header>
 
-
-            <!-- ============================= -->
-            <!-- 진행률 -->
-            <!-- ============================= -->
-            <div class="survey-progress">
-
-                <div class="progress-bar">
-                    <div id="progressValue"
-                         class="progress-value">
+            <section class="recommendation-financial-profile"
+                     th:classappend="${hasFinancialProfile} ? ' profile-complete' : ' profile-empty'">
+                <div class="recommendation-profile-heading">
+                    <div>
+                        <span class="recommendation-optional-label">선택 입력</span>
+                        <h2>금융프로필</h2>
+                        <p>
+                            소득·고용·신용 정보를 등록하면 상품 조건을 더 정확하게 비교할 수 있습니다.
+                            등록하지 않아도 아래 설문은 작성할 수 있습니다.
+                        </p>
                     </div>
+                    <a class="recommendation-profile-link"
+                       th:href="@{/financial-profile(returnTo='/policy/recommendation')}"
+                       th:text="${hasFinancialProfile} ? '금융프로필 수정' : '금융프로필 입력'">
+                        금융프로필 입력
+                    </a>
                 </div>
 
-                <p>
-                    <span id="currentStepText">1</span>
-                    / 5 단계
-                </p>
+                <div class="recommendation-profile-values" th:if="${hasFinancialProfile}">
+                    <div><span>연 소득</span><strong th:text="${financialProfile.annualIncome != null ? #numbers.formatInteger(financialProfile.annualIncome, 1, 'COMMA') + '원' : '미입력'}">미입력</strong></div>
+                    <div><span>소득 유형</span><strong th:text="${financialProfile.incomeType != null ? financialProfile.incomeType.label : '미입력'}">근로소득</strong></div>
+                    <div><span>고용 상태</span><strong th:text="${financialProfile.employmentStatus != null ? financialProfile.employmentStatus.label : '미입력'}">정규직</strong></div>
+                    <div><span>신용점수</span><strong th:text="${financialProfile.creditScore != null ? financialProfile.creditScore + '점' : '미입력'}">미입력</strong></div>
+                    <div><span>현금성 자산</span><strong th:text="${financialProfile.liquidAssetAmount != null ? #numbers.formatInteger(financialProfile.liquidAssetAmount, 1, 'COMMA') + '원' : '미입력'}">미입력</strong></div>
+                </div>
 
-            </div>
+                <p class="recommendation-profile-empty-message" th:unless="${hasFinancialProfile}">
+                    등록된 금융프로필이 없습니다. 추천 정확도를 높이려면 먼저 입력해 주세요.
+                </p>
+            </section>
 
 
             <!-- ============================= -->
@@ -171,34 +184,6 @@
                     </p>
 
 
-                    <!-- 고용형태 -->
-                    <div class="form-group">
-
-                        <label for="employmentType">
-                            현재 고용 형태
-                        </label>
-
-                        <select id="employmentType">
-
-                            <option value="">
-                                선택해 주세요
-                            </option>
-
-                            <option value="REGULAR">정규직</option>
-                            <option value="CONTRACT">계약직</option>
-                            <option value="DISPATCH">파견직</option>
-                            <option value="DAILY">일용근로자</option>
-                            <option value="FREELANCER">프리랜서</option>
-                            <option value="BUSINESS">개인사업자</option>
-                            <option value="STUDENT">학생</option>
-                            <option value="UNEMPLOYED">무직</option>
-                            <option value="OTHER">기타</option>
-
-                        </select>
-
-                    </div>
-
-
                     <!-- 재직기간 -->
                     <div class="form-group"
                          id="employmentMonthsArea">
@@ -231,6 +216,7 @@
                         <label>
                             <input type="radio"
                                    name="hasIncome"
+                                   required
                                    value="true">
                             예
                         </label>
@@ -238,6 +224,7 @@
                         <label>
                             <input type="radio"
                                    name="hasIncome"
+                                   required
                                    value="false">
                             아니요
                         </label>
@@ -246,7 +233,9 @@
 
 
                     <!-- 소득 증빙 -->
-                    <fieldset class="form-group">
+                    <fieldset id="incomeVerifiableArea"
+                              class="form-group conditional-field"
+                              hidden>
 
                         <legend>
                             소득을 서류로 증빙할 수 있나요?
@@ -266,14 +255,34 @@
                             아니요
                         </label>
 
-                        <label>
-                            <input type="radio"
-                                   name="incomeVerifiable"
-                                   value="UNKNOWN">
-                            잘 모르겠어요
-                        </label>
-
                     </fieldset>
+
+                    <div class="form-group">
+                        <label for="householdAnnualIncome">가구 합산 연소득</label>
+                        <div class="input-unit">
+                            <input id="householdAnnualIncome"
+                                   type="number"
+                                   min="0"
+                                   step="10000"
+                                   required
+                                   placeholder="예: 50000000">
+                            <span>원</span>
+                        </div>
+                        <p class="form-help">배우자 등 가구원의 소득을 합산한 연간 금액입니다. 미혼 1인 가구는 본인의 연소득을 입력해 주세요.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="householdNetAssetAmount">본인·배우자 합산 순자산</label>
+                        <div class="input-unit">
+                            <input id="householdNetAssetAmount"
+                                   type="number"
+                                   min="0"
+                                   step="10000"
+                                   placeholder="예: 300000000">
+                            <span>원</span>
+                        </div>
+                        <p class="form-help">부동산·금융자산 등에서 부채를 제외한 순자산을 알고 있는 경우 입력해 주세요.</p>
+                    </div>
 
                 </section>
 
@@ -303,6 +312,8 @@
                             <input id="householdSize"
                                    type="number"
                                    min="1"
+                                   max="20"
+                                   required
                                    placeholder="예: 3">
 
                             <span>명</span>
@@ -310,6 +321,31 @@
                         </div>
 
                     </div>
+
+                    <fieldset class="form-group">
+                        <legend>본인과 배우자를 포함한 가구가 무주택인가요?</legend>
+                        <label><input type="radio" name="homelessHousehold" value="true">예, 무주택입니다</label>
+                        <label><input type="radio" name="homelessHousehold" value="false">아니요, 주택을 보유하고 있습니다</label>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <legend>현재 주민등록상 세대주인가요?</legend>
+                        <label><input type="radio" name="householdHead" value="true">예</label>
+                        <label><input type="radio" name="householdHead" value="false">아니요</label>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <legend>현재 세대주는 아니지만 대출 실행 후 세대주가 될 예정인가요?</legend>
+                        <label><input type="radio" name="prospectiveHouseholdHead" value="true">예, 예비세대주입니다</label>
+                        <label><input type="radio" name="prospectiveHouseholdHead" value="false">아니요</label>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <legend>본인과 배우자 모두 과거에 주택을 구입한 적이 없나요?</legend>
+                        <label><input type="radio" name="firstTimeHomeBuyer" value="true">예, 생애최초 주택구입에 해당합니다</label>
+                        <label><input type="radio" name="firstTimeHomeBuyer" value="false">아니요, 과거 주택 구입 이력이 있습니다</label>
+                        <p class="form-help">분양권·입주권 등은 상품별 인정 기준이 다를 수 있어 최종 심사에서 추가 확인됩니다.</p>
+                    </fieldset>
 
 
                     <!-- 혼인상태 -->
@@ -319,7 +355,7 @@
                             혼인 상태
                         </label>
 
-                        <select id="maritalStatus">
+                        <select id="maritalStatus" required>
 
                             <option value="">
                                 선택해 주세요
@@ -351,39 +387,95 @@
 
                         <label>
                             <input id="basicLivelihoodRecipient"
+                                   class="welfare-option"
                                    type="checkbox">
                             기초생활수급자
                         </label>
 
                         <label>
                             <input id="nearPoverty"
+                                   class="welfare-option"
                                    type="checkbox">
                             차상위계층
                         </label>
 
                         <label>
                             <input id="singleParentHousehold"
+                                   class="welfare-option"
                                    type="checkbox">
                             한부모가구
                         </label>
 
                         <label>
                             <input id="disabled"
+                                   class="welfare-option"
                                    type="checkbox">
                             장애인
                         </label>
 
                         <label>
                             <input id="selfRelianceYouth"
+                                   class="welfare-option"
                                    type="checkbox">
                             자립준비청년
                         </label>
 
                         <label>
                             <input id="multiculturalHousehold"
+                                   class="welfare-option"
                                    type="checkbox">
                             다문화가구
                         </label>
+
+                        <label>
+                            <input id="northKoreanDefector"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            북한이탈주민
+                        </label>
+
+                        <label>
+                            <input id="childHeadedHousehold"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            소년소녀가장
+                        </label>
+
+                        <label>
+                            <input id="earnedIncomeTaxCreditRecipient"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            근로장려금 수급자
+                        </label>
+
+                        <label>
+                            <input id="basicPensionRecipient"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            기초연금 수급자
+                        </label>
+
+                        <label>
+                            <input id="disabilityBenefitRecipient"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            장애인연금·수당 수급자
+                        </label>
+
+                        <label>
+                            <input id="jeonseFraudVictim"
+                                   class="welfare-option"
+                                   type="checkbox">
+                            전세사기 피해자로 결정·인정받은 사람
+                        </label>
+
+                        <label>
+                            <input id="welfareNone"
+                                   type="checkbox">
+                            해당 없음
+                        </label>
+
+                        <p class="form-help">복지 자격이 없으면 ‘해당 없음’을 선택해 주세요.</p>
 
                     </fieldset>
 
@@ -425,7 +517,8 @@
 
                             <input id="childrenCount"
                                    type="number"
-                                   min="1">
+                                   min="1"
+                                   max="20">
 
                             <span>명</span>
 
@@ -459,6 +552,7 @@
                         <label>
                             <input type="radio"
                                    name="debtDefaultStatus"
+                                   required
                                    value="NO">
                             아니요
                         </label>
@@ -466,6 +560,7 @@
                         <label>
                             <input type="radio"
                                    name="debtDefaultStatus"
+                                   required
                                    value="YES">
                             예
                         </label>
@@ -473,9 +568,12 @@
                         <label>
                             <input type="radio"
                                    name="debtDefaultStatus"
+                                   required
                                    value="UNKNOWN">
-                            잘 모르겠어요
+                            해당 여부 확인 필요
                         </label>
+
+                        <p class="form-help">채무불이행 등록 여부가 명확하지 않은 경우 선택해 주세요.</p>
 
                     </fieldset>
 
@@ -490,6 +588,7 @@
                         <label>
                             <input type="radio"
                                    name="overdueStatus"
+                                   required
                                    value="NO">
                             없음
                         </label>
@@ -497,6 +596,7 @@
                         <label>
                             <input type="radio"
                                    name="overdueStatus"
+                                   required
                                    value="YES">
                             있음
                         </label>
@@ -504,9 +604,12 @@
                         <label>
                             <input type="radio"
                                    name="overdueStatus"
+                                   required
                                    value="UNKNOWN">
-                            잘 모르겠어요
+                            해당 여부 확인 필요
                         </label>
+
+                        <p class="form-help">현재 미납·연체 여부를 확인하지 못한 경우 선택해 주세요.</p>
 
                     </fieldset>
 
@@ -518,7 +621,7 @@
                             정책서민금융 이용 경험
                         </label>
 
-                        <select id="policyFinanceUsage">
+                        <select id="policyFinanceUsage" required>
 
                             <option value="">
                                 선택해 주세요
@@ -536,10 +639,6 @@
                                 과거 이용
                             </option>
 
-                            <option value="UNKNOWN">
-                                잘 모르겠음
-                            </option>
-
                         </select>
 
                     </div>
@@ -555,6 +654,7 @@
                         <label>
                             <input type="radio"
                                    name="financialEducationStatus"
+                                   required
                                    value="YES">
                             예
                         </label>
@@ -562,15 +662,9 @@
                         <label>
                             <input type="radio"
                                    name="financialEducationStatus"
+                                   required
                                    value="NO">
                             아니요
-                        </label>
-
-                        <label>
-                            <input type="radio"
-                                   name="financialEducationStatus"
-                                   value="UNKNOWN">
-                            잘 모르겠어요
                         </label>
 
                     </fieldset>
@@ -725,23 +819,8 @@
                 </section>
 
 
-                <!-- ========================= -->
-                <!-- 이전 / 다음 / 제출 -->
-                <!-- ========================= -->
+                <!-- 제출 -->
                 <div class="survey-buttons">
-
-                    <button id="prevButton"
-                            class="secondary-button"
-                            type="button">
-                        이전
-                    </button>
-
-                    <button id="nextButton"
-                            class="primary-button"
-                            type="button">
-                        다음
-                    </button>
-
                     <button id="submitButton"
                             class="primary-button"
                             type="submit">

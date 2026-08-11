@@ -25,3 +25,16 @@ button {
     padding: 10px 20px;
     cursor: pointer;
 }
+
+.financial-profile-back {
+    display: inline-flex;
+    margin-bottom: 18px;
+    color: #1e6fc7;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.financial-profile-back:hover {
+    text-decoration: underline;
+}
