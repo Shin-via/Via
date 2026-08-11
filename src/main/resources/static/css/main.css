@@ -19,6 +19,7 @@
     --color-action-orange: #FF9900;
     --color-outline-variant: #c5c6cb;
     --color-link-blue: #0073BB;
+    /*--color-border-dim: rgb(0,35,110);*/
     --color-border-dim: rgba(192, 199, 211, 0.2);
 
     --font-family-body: 'Inter', sans-serif;
@@ -29,6 +30,45 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+*:focus,
+*:focus-visible,
+button:focus,
+a:focus,
+div:focus,
+[role="button"]:focus {
+    outline: none !important;
+    box-shadow: none;
+}
+
+/* 아이콘, 버튼, 아바타 클릭 시 텍스트 커서(|) 깜빡임 및 선택 방지 */
+.material-symbols-outlined,
+.user-avatar,
+.user-avatar-container,
+.nav-link,
+.logo,
+.btn-signin,
+.product-card,
+.sidebar-link,
+button,
+[role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    caret-color: transparent;
+}
+
+html {
+    scroll-behavior: smooth;
+    -ms-overflow-style: none; /* IE, Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera 스크롤바 숨기기 */
 }
 
 body {
@@ -40,6 +80,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 a {
@@ -59,317 +101,7 @@ button {
     vertical-align: middle;
 }
 
-/* ==========================================================================
-   Header Styles
-   ========================================================================== */
-.header {
-    width: 100%;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background-color: var(--color-interface-navy);
-    color: var(--color-on-primary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.utility-nav {
-    height: 40px;
-    border-bottom: 1px solid var(--color-border-dim);
-    padding: 0 24px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 24px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.utility-link:hover {
-    color: var(--color-on-primary);
-    transition: color 0.2s;
-}
-
-.user-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: var(--color-surface-container-high);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.user-avatar .material-symbols-outlined {
-    font-size: 16px;
-    color: var(--color-primary);
-}
-
-.main-header {
-    height: 64px;
-    padding: 0 24px;
-    background-color: var(--color-surface-container-lowest);
-    color: var(--color-primary);
-    border-bottom: 1px solid var(--color-outline-variant);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-}
-
-.brand-section {
-    display: flex;
-    align-items: center;
-    gap: 48px;
-    height: 100%;
-}
-
-.logo {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--color-interface-navy);
-    letter-spacing: -0.02em;
-}
-
-.nav-links {
-    display: none;
-    height: 100%;
-}
-
-@media (min-width: 768px) {
-    .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 32px;
-    }
-}
-
-.nav-item {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-.nav-link {
-    color: var(--color-on-surface-variant);
-    transition: color 0.2s;
-}
-
-.nav-link {
-    color: var(--color-on-surface-variant);
-    transition: color 0.2s, border-color 0.2s;
-    padding-bottom: 4px;
-    border-bottom: 2px solid transparent; /* 밑줄 자리를 미리 확보해 글자 흔들림 방지 */
-}
-.nav-item:hover .nav-link {
-    color: var(--color-action-orange);
-    border-bottom-color: var(--color-action-orange);
-    font-weight: 500;
-}
-
-/* Mega Menu Dropdowns */
-.mega-menu {
-    position: absolute;
-    left: 0;
-    top: 104px;
-    width: 100%;
-    background-color: var(--color-surface-container-lowest);
-    border-bottom: 1px solid var(--color-outline-variant);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition: all 0.3s ease-out;
-    z-index: 50;
-    cursor: default;
-}
-
-.mega-menu-container:hover .mega-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.mega-menu-inner {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 32px 24px;
-}
-
-.mega-menu-grid {
-    display: grid;
-    gap: 32px;
-}
-
-.mega-menu-grid.col-3 {
-    grid-template-columns: repeat(1, 1fr);
-}
-
-.mega-menu-grid.col-2 {
-    grid-template-columns: repeat(1, 1fr);
-}
-
-@media (min-width: 768px) {
-    .mega-menu-grid.col-3 { grid-template-columns: repeat(3, 1fr); }
-    .mega-menu-grid.col-2 { grid-template-columns: repeat(2, 1fr); }
-}
-
-.mega-menu-card {
-    display: flex;
-    gap: 16px;
-    padding: 16px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.mega-menu-card:hover {
-    background-color: var(--color-surface-container-low);
-    border-color: var(--color-outline-variant);
-}
-
-.icon-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.icon-circle-secondary {
-    background-color: var(--color-secondary-container);
-    color: var(--color-on-secondary-container);
-}
-
-.icon-circle-gray {
-    background-color: var(--color-surface-container-highest);
-    color: var(--color-on-background);
-}
-
-.card-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-primary);
-    margin-bottom: 4px;
-}
-
-.card-desc {
-    font-size: 14px;
-    color: var(--color-on-surface-variant);
-}
-
-/* Pricing Mega Menu Specific */
-.pricing-flex {
-    display: flex;
-    gap: 48px;
-}
-
-.pricing-info {
-    flex: 1;
-}
-
-.pricing-title {
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--color-primary);
-    margin-bottom: 16px;
-}
-
-.pricing-desc {
-    color: var(--color-on-surface-variant);
-    margin-bottom: 24px;
-}
-
-.link-blue {
-    color: var(--color-link-blue);
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.link-blue:hover {
-    text-decoration: underline;
-}
-
-.pricing-cards {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-}
-
-.plan-card {
-    padding: 16px;
-    border-radius: 8px;
-}
-
-.plan-starter {
-    background-color: var(--color-surface-container-low);
-}
-
-.plan-enterprise {
-    background-color: var(--color-interface-navy);
-    color: var(--color-on-primary);
-}
-
-.plan-title {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 4px;
-}
-
-.plan-starter .plan-title { color: var(--color-primary); }
-
-.plan-desc {
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-.plan-starter .plan-desc { color: var(--color-on-surface-variant); }
-.plan-enterprise .plan-desc { color: rgba(255, 255, 255, 0.8); }
-
-.plan-price {
-    font-weight: 700;
-}
-
-.plan-starter .plan-price { color: var(--color-primary); }
-
-/* Header Actions */
-.action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.icon-button {
-    padding: 8px;
-    color: var(--color-on-surface-variant);
-    border-radius: 50%;
-    transition: background-color 0.2s;
-}
-
-.icon-button:hover {
-    background-color: var(--color-surface-container-low);
-}
-
-.btn-signin {
-    background-color: var(--color-interface-navy);
-    color: var(--color-on-primary);
-    padding: 8px 24px;
-    border-radius: 2px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    transition: background-color 0.2s;
-}
-
-.btn-signin:hover {
-    background-color: rgba(22, 29, 38, 0.9);
-}
+/* Header & Navigation Bar styles moved to navbar.css */
 
 /* ==========================================================================
    Main Content & Hero
@@ -383,7 +115,9 @@ button {
 .hero-section {
     width: 100%;
     background-color: var(--color-secondary-fixed);
-    height: 400px;
+    height: calc(100vh - 104px); /* 화면 1개 높이에 딱 맞춤 */
+    scroll-snap-align: start;     /* 스크롤 시 이 지점에 자석처럼 착! 붙음 */
+    scroll-snap-stop: always;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -417,7 +151,10 @@ button {
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
-    padding: 48px 24px;
+    padding: 104px 24px 48px; /* 네비게이션 바 높이(104px)에 위치 정확히 맞춤 */
+    min-height: calc(100vh - 104px);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     display: flex;
     gap: 24px;
 }
@@ -427,8 +164,8 @@ button {
     display: none;
     flex-direction: column;
     position: sticky;
-    top: 120px;
-    height: calc(100vh - 120px);
+    top: 104px;
+    height: calc(100vh - 104px);
     width: 256px;
     border-right: 1px solid var(--color-outline-variant);
     background-color: #f9f9fd;
@@ -526,8 +263,17 @@ button {
     transition: color 0.2s;
 }
 
-.footer-link:hover {
-    color: var(--color-primary);
+/* Slideshow Reveal Effect */
+.reveal-element {
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+    transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-element.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 /* Product Area */
@@ -650,52 +396,4 @@ button {
     padding-right: 32px;
 }
 
-/* ==========================================================================
-   Footer Styles
-   ========================================================================== */
-.footer {
-    width: 100%;
-    padding: 32px 16px;
-    background-color: var(--color-interface-navy);
-    color: var(--color-on-primary);
-    border-top: 1px solid var(--color-border-dim);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-@media (min-width: 768px) {
-    .footer {
-        padding: 32px 48px;
-        flex-direction: row;
-    }
-}
-
-.footer-logo {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.footer-nav {
-    display: flex;
-    gap: 24px;
-}
-
-.footer-nav a {
-    color: var(--color-on-primary-container);
-    text-decoration: underline;
-    opacity: 0.8;
-    transition: opacity 0.2s, color 0.2s;
-}
-
-.footer-nav a:hover {
-    color: var(--color-on-primary);
-    opacity: 1;
-}
-
-.copyright {
-    color: var(--color-on-primary-container);
-    font-size: 14px;
-}
+/* Footer styles moved to frame.css */
