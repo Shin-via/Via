@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>아이디 찾기</title>
+</head>
+
+<body>
+
+<h1>아이디 찾기</h1>
+
+<p>
+  가입할 때 입력한 이름과 휴대폰 번호를 입력해주세요.
+</p>
+
+<form th:action="@{/find/id}"
+      th:object="${findLoginEmailRequest}"
+      method="post">
+
+  <div>
+    <label for="userName">이름</label>
+
+    <input type="text"
+           id="userName"
+           th:field="*{userName}"
+           autocomplete="name">
+
+    <p th:if="${#fields.hasErrors('userName')}"
+       th:errors="*{userName}">
+    </p>
+  </div>
+
+  <div>
+    <label for="phoneNumber">휴대폰 번호</label>
+
+    <input type="tel"
+           id="phoneNumber"
+           th:field="*{phoneNumber}"
+           placeholder="01012345678"
+           autocomplete="tel">
+
+    <p th:if="${#fields.hasErrors('phoneNumber')}"
+       th:errors="*{phoneNumber}">
+    </p>
+  </div>
+
+  <button type="submit">아이디 찾기</button>
+</form>
+
+<section th:if="${searched==true}">
+
+  <div  th:if="${result != null}">
+    <p>입력한 정보와 일치하는 계정을 찾을 수 없습니다.</p>
+  </div>
+
+  <div th:unless="${#lists.isEmpty(result)}">
+    <h2>아이디 찾기 결과</h2>
+
+    <ul>
+      <p>
+        가입 아이디:
+        <strong th:text="${result.maskedEmail}"></strong>
+      </p>
+
+      <p th:if="${result.providers != null}">
+        소셜 로그인:
+        <span th:text="${result.providers}"></span>
+      </p>
+
+    </ul>
+
+    <a th:href="@{/login}">로그인하기</a>
+    <a th:href="@{/login/password}">
+      비밀번호 재설정
+    </a>
+  </div>
+
+</section>
+
+</body>
+</html>
