@@ -1,32 +1,44 @@
 package com.via.shinvia.policy.recommendation.service;
 
-import com.via.shinvia.policy.recommendation.dto.PolicyRecommendationProfileDTO;
-import com.via.shinvia.policy.recommendation.mapper.PolicyRecommendationMapper;
+import com.via.shinvia.policy.recommendation.asset.service.AssetRecommendationService;
+import com.via.shinvia.policy.recommendation.common.dto.RecommendationResultDTO;
+import com.via.shinvia.policy.recommendation.common.dto.RecommendationUserDTO;
+import com.via.shinvia.policy.recommendation.common.mapper.RecommendationUserMapper;
+import com.via.shinvia.policy.recommendation.policyloan.service.PolicyLoanRecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+// 상품 유형별 추천 결과 통합 기능
 public class PolicyRecommendationService {
 
-    private final PolicyRecommendationMapper recommendationMapper;
+    private final RecommendationUserMapper recommendationUserMapper;
+    private final PolicyLoanRecommendationService policyLoanRecommendationService;
+    private final AssetRecommendationService assetRecommendationService;
 
+    public List<RecommendationResultDTO> recommend(Long userId) {
+        RecommendationUserDTO user = recommendationUserMapper.findByUserId(userId);
 
-    // 기존 설문 조회
-    @Transactional(readOnly = true)
-    public PolicyRecommendationProfileDTO getProfile(Long userId) {
+        if (user == null) {
+            throw new IllegalArgumentException("추천에 필요한 회원 정보를 찾을 수 없습니다.");
+        }
 
-        return recommendationMapper.findByUserId(userId);
-    }
+        if (user.getResidenceSido() == null || user.getResidenceSido().isBlank()) {
+            throw new IllegalArgumentException("맞춤 금융지원상품 설문을 먼저 완료해 주세요.");
+        }
 
+        List<RecommendationResultDTO> results = new ArrayList<>();
+        results.addAll(policyLoanRecommendationService.recommend(user));
+        results.addAll(assetRecommendationService.recommend(user));
 
-    // 설문 저장 또는 수정
-    @Transactional
-    public void saveProfile(
-            PolicyRecommendationProfileDTO profile
-    ) {
+        // 추후 SocialFinanceRecommendationService / WelfareRecommendationService를 여기서 합치면 됨
+        results.sort(Comparator.comparingInt(RecommendationResultDTO::getMatchScore).reversed());
 
-        recommendationMapper.upsertProfile(profile);
+        return results;
     }
 }
