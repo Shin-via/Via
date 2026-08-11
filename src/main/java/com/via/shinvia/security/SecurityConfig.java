@@ -84,6 +84,7 @@ public class SecurityConfig {
                                 // 정적 리소스
                                 "/css/**",
                                 "/js/**",
+                                "/img/**",
                                 "/images/**",
                                 "/favicon.ico",
                                 "/error",

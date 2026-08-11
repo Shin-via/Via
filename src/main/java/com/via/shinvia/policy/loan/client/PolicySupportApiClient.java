@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
@@ -571,7 +572,7 @@ public class PolicySupportApiClient {
             return null;
         }
 
-        String cleaned = value.trim();
+        String cleaned = HtmlUtils.htmlUnescape(value).trim();
 
         if (cleaned.isBlank()
                 || "-".equals(cleaned)) {

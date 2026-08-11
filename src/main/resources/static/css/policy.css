@@ -1348,7 +1348,7 @@ body.modal-open {
 
 .bank-policy-page .policy-notice {
     border-left: 3px solid var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-search-input:focus,
@@ -1390,7 +1390,7 @@ body.modal-open {
 .bank-policy-page .program-card:hover,
 .bank-policy-page .policy-modal-header,
 .bank-policy-page .policy-modal-footer {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-badge {
@@ -1415,65 +1415,65 @@ body.modal-open {
 
 .site-layout + .site-footer {
     border-top-color: var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 
 /* Pastel pink surfaces */
 body {
-    background: #fff8ff;
-    color: #40233f;
+    background: #f7f7f8;
+    color: #363a40;
 }
 
 .site-header {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .header-service-name,
 .header-account a,
 .header-account-user span,
 .header-account-user button {
-    color: #6d456b;
+    color: #5b6068;
 }
 
 .header-account-user button {
-    border-color: #edb9eb;
-    background: #fff8ff;
+    border-color: #d1d3d7;
+    background: #f7f7f8;
 }
 
 .service-sidebar {
-    border-right-color: #efc9ed;
-    border-bottom-color: #efc9ed;
-    border-left-color: #efc9ed;
-    background: #fffaff;
+    border-right-color: #d7d9dc;
+    border-bottom-color: #d7d9dc;
+    border-left-color: #d7d9dc;
+    background: #fafafa;
 }
 
 .sidebar-menu-group + .sidebar-menu-group,
 .sidebar-menu-group h2 {
-    border-color: #edb9eb;
+    border-color: #d1d3d7;
 }
 
 .sidebar-menu-group h2 {
-    background: #fde8fc;
+    background: #eeeeef;
 }
 
 .sidebar-menu-group a,
 .sidebar-menu-disabled {
-    color: #684966;
+    color: #565b63;
 }
 
 .sidebar-menu-group a:hover {
-    background: #fbdff9;
+    background: #e9eaec;
 }
 
 .bank-policy-page {
-    color: #40233f;
+    color: #363a40;
 }
 
 .bank-policy-page .page-header h1,
 .bank-policy-page .detail-filter-header h2,
 .bank-policy-page .detail-filter-label,
 .bank-policy-page .program-title {
-    color: #4b2949;
+    color: #42464d;
 }
 
 .bank-policy-page .page-description,
@@ -1482,19 +1482,19 @@ body {
 .bank-policy-page .program-information dt,
 .bank-policy-page .program-information dd,
 .bank-policy-page .program-institution {
-    color: #765774;
+    color: #656a72;
 }
 
 .bank-policy-page .policy-notice {
-    border-color: #efc9ed;
+    border-color: #d7d9dc;
     border-left-color: var(--policy-orchid-3);
-    background: #fff3fe;
+    background: #f7f7f8;
 }
 
 .bank-policy-page .policy-search-area,
 .bank-policy-page .policy-filter-section {
     border-color: #eab7e7;
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-search-area {
@@ -1503,7 +1503,7 @@ body {
     padding: 0;
     border: 1px solid #eab7e7;
     border-radius: 0;
-    background: #fffaff;
+    background: #fafafa;
     overflow: hidden;
 }
 
@@ -1513,20 +1513,20 @@ body {
 }
 
 .bank-policy-page .policy-filter-form {
-    border-bottom-color: #edc5eb;
+    border-bottom-color: #d7d9dc;
     background: #fce6fb;
 }
 
 .bank-policy-page .policy-search-input,
 .bank-policy-page .page-size-select {
-    border-color: #dfa9dc;
-    background: #fffaff;
-    color: #4b2949;
+    border-color: #c7c9ce;
+    background: #fafafa;
+    color: #42464d;
 }
 
 .bank-policy-page .detail-filter-header {
-    border-bottom-color: #edc5eb;
-    background: #fff3fe;
+    border-bottom-color: #d7d9dc;
+    background: #f7f7f8;
 }
 
 .bank-policy-page .detail-filter-row,
@@ -1542,7 +1542,7 @@ body {
 .bank-policy-page .detail-filter-options,
 .bank-policy-page .detail-filter-actions,
 .bank-policy-page .filter-notice {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .filter-chip span,
@@ -1551,13 +1551,13 @@ body {
 }
 
 .bank-policy-page .filter-reset-button {
-    border-color: #dfa9dc;
-    background: #fff8ff;
+    border-color: #c7c9ce;
+    background: #f7f7f8;
     color: #603b5e;
 }
 
 .bank-policy-page .program-list-head {
-    border-bottom-color: #dfa9dc;
+    border-bottom-color: #c7c9ce;
     background: #f8d9f6;
 }
 
@@ -1571,7 +1571,7 @@ body {
 }
 
 .bank-policy-page .program-card {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .program-card:nth-child(even) {
@@ -1584,26 +1584,26 @@ body {
 
 .bank-policy-page .page-button {
     border-color: #e5b4e2;
-    background: #fffaff;
-    color: #684966;
+    background: #fafafa;
+    color: #565b63;
 }
 
 .bank-policy-page .empty-result,
 .bank-policy-page .policy-modal-dialog {
     border-color: #e8bce5;
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-modal-header,
 .bank-policy-page .policy-modal-footer,
 .site-layout + .site-footer {
-    background: #fdeffc;
+    background: #f0f1f2;
 }
 
 .site-layout + .site-footer,
 .footer-inner p,
 .footer-inner p:first-child {
-    color: #765774;
+    color: #656a72;
 }
 
 /* =========================================================
@@ -1672,7 +1672,7 @@ body {
 .bank-policy-page .policy-search-input,
 .bank-policy-page .page-size-select {
     height: 46px;
-    border: 1px solid #aeb8c5;
+    border: 1px solid #b9bdc3;
     border-radius: 2px;
     background-color: #ffffff;
     font-size: 14px;
@@ -1692,9 +1692,9 @@ body {
     height: 46px;
     min-width: 92px;
     padding: 0 22px;
-    border: 1px solid #173b66;
+    border: 1px solid #343a42;
     border-radius: 2px;
-    background: #173b66;
+    background: #343a42;
     font-size: 14px;
     font-weight: 700;
 }
@@ -1799,13 +1799,13 @@ body {
 .bank-policy-page .filter-chip input:checked + span {
     border: 0;
     background: transparent;
-    color: #173f6d;
+    color: #3c424a;
     box-shadow: none;
     font-weight: 700;
 }
 
 .bank-policy-page .filter-chip input:focus-visible + span {
-    outline: 1px dotted #173f6d;
+    outline: 1px dotted #3c424a;
     outline-offset: 3px;
 }
 
@@ -1834,13 +1834,13 @@ body {
 }
 
 .bank-policy-page .filter-reset-button {
-    border-color: #aeb8c5;
+    border-color: #b9bdc3;
     background: #ffffff;
 }
 
 .bank-policy-page .filter-submit-button {
-    border-color: #173b66;
-    background: #173b66;
+    border-color: #343a42;
+    background: #343a42;
 }
 
 .bank-policy-page .policy-result-summary,
@@ -1866,7 +1866,7 @@ body {
 
 .bank-policy-page .program-card:hover {
     border-color: #91a2b6;
-    border-top-color: #173f6d;
+    border-top-color: #3c424a;
 }
 
 .bank-policy-page .policy-badge,
@@ -1916,9 +1916,9 @@ body {
 .bank-policy-page .detail-button {
     width: 100%;
     height: 42px;
-    border: 1px solid #173b66;
+    border: 1px solid #343a42;
     border-radius: 2px;
-    background: #173b66;
+    background: #343a42;
 }
 
 .bank-policy-page .pagination {
@@ -1935,8 +1935,8 @@ body {
 }
 
 .bank-policy-page .page-button.active {
-    border-color: #173b66;
-    background: #173b66;
+    border-color: #343a42;
+    background: #343a42;
     font-weight: 700;
 }
 
@@ -2000,8 +2000,8 @@ body {
     grid-template-columns: 110px minmax(260px, 1.6fr) minmax(210px, 1fr) minmax(170px, 0.8fr) 92px;
     align-items: center;
     min-height: 52px;
-    border-top: 2px solid #173b66;
-    border-bottom: 1px solid #aeb8c5;
+    border-top: 2px solid #343a42;
+    border-bottom: 1px solid #b9bdc3;
     background: #f2f5f8;
 }
 
@@ -2141,12 +2141,12 @@ body {
     height: 36px;
     padding: 0 12px;
     background: #ffffff;
-    color: #173b66;
+    color: #343a42;
     font-size: 12px;
 }
 
 .bank-policy-page .detail-button:hover {
-    background: #173b66;
+    background: #343a42;
     color: #ffffff;
 }
 
@@ -2156,7 +2156,7 @@ body {
     }
 
     .bank-policy-page .program-grid {
-        border-top: 2px solid #173b66;
+        border-top: 2px solid #343a42;
     }
 
     .bank-policy-page .program-card {
@@ -2251,7 +2251,7 @@ body {
     --policy-orchid-8: #FD93F9;
     --policy-orchid-9: #FF98FE;
     --policy-orchid-10: #FF9DFF;
-    --policy-orchid-text: #40233f;
+    --policy-orchid-text: #363a40;
 }
 
 .site-header {
@@ -2289,7 +2289,7 @@ body {
 
 .bank-policy-page .policy-notice {
     border-left: 3px solid var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-search-input:focus,
@@ -2333,7 +2333,7 @@ body {
 }
 
 .bank-policy-page .program-card:hover {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .bank-policy-page .policy-badge {
@@ -2363,12 +2363,12 @@ body {
 
 .bank-policy-page .policy-modal-header,
 .bank-policy-page .policy-modal-footer {
-    background: #fffaff;
+    background: #fafafa;
 }
 
 .site-layout + .site-footer {
     border-top-color: var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 
 /* 클래식 인터넷뱅킹형 최종 보정 */
@@ -2382,7 +2382,7 @@ body {
 .bank-policy-page .page-header {
     margin-bottom: 22px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #263e5e;
+    border-bottom: 1px solid #414750;
 }
 
 .bank-policy-page .page-label {
@@ -2447,7 +2447,7 @@ body {
     min-width: 72px;
     padding: 0 16px;
     border-radius: 0;
-    background: #294d73;
+    background: #454b54;
     font-size: 13px;
 }
 
@@ -2535,8 +2535,8 @@ body {
 }
 
 .bank-policy-page .filter-submit-button {
-    border-color: #294d73;
-    background: #294d73;
+    border-color: #454b54;
+    background: #454b54;
 }
 
 .bank-policy-page .policy-result-summary,
@@ -2551,7 +2551,7 @@ body {
 .bank-policy-page .program-list-head {
     grid-template-columns: 82px minmax(220px, 1.6fr) minmax(170px, 1fr) minmax(135px, 0.8fr) 90px;
     min-height: 42px;
-    border-top: 2px solid #294d73;
+    border-top: 2px solid #454b54;
     border-bottom-color: #999999;
     background: #e9edf1;
 }
@@ -2672,8 +2672,8 @@ body {
 }
 
 .bank-policy-page .detail-button:hover {
-    border-color: #294d73;
-    background: #294d73;
+    border-color: #454b54;
+    background: #454b54;
 }
 
 .bank-policy-page .pagination {
@@ -2690,8 +2690,8 @@ body {
 }
 
 .bank-policy-page .page-button.active {
-    border-color: #294d73;
-    background: #294d73;
+    border-color: #454b54;
+    background: #454b54;
 }
 
 .bank-policy-page * {
@@ -2707,7 +2707,7 @@ body {
     top: 0;
     z-index: 1000;
     height: 64px;
-    border-bottom: 1px solid #263e5e;
+    border-bottom: 1px solid #414750;
     background: #ffffff;
     backdrop-filter: none;
 }
@@ -2727,7 +2727,7 @@ body {
 }
 
 .logo {
-    color: #173b66;
+    color: #343a42;
     font-size: 21px;
     font-weight: 700;
     letter-spacing: -0.4px;
@@ -2767,12 +2767,12 @@ body {
 }
 
 .header-account a:hover {
-    color: #173b66;
+    color: #343a42;
     text-decoration: underline;
 }
 
 .header-account-user strong {
-    color: #173b66;
+    color: #343a42;
     font-weight: 600;
 }
 
@@ -2807,7 +2807,7 @@ body {
     position: sticky;
     top: 84px;
     margin-top: 38px;
-    border-top: 2px solid #294d73;
+    border-top: 2px solid #454b54;
     border-right: 1px solid #cccccc;
     border-bottom: 1px solid #cccccc;
     border-left: 1px solid #cccccc;
@@ -2871,7 +2871,7 @@ body {
 
 .sidebar-menu-group a:hover {
     background: #f2f5f8;
-    color: #173b66;
+    color: #343a42;
     text-decoration: underline;
 }
 
@@ -3013,7 +3013,7 @@ body {
 .bank-policy-page .page-header { border-bottom-color: var(--policy-orchid-1); }
 .bank-policy-page .policy-notice {
     border-left: 3px solid var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 .bank-policy-page .policy-search-input:focus,
 .bank-policy-page .page-size-select:focus { border-color: var(--policy-orchid-1); }
@@ -3037,7 +3037,7 @@ body {
 .bank-policy-page .program-list-head span { color: var(--policy-orchid-text); }
 .bank-policy-page .program-card:hover,
 .bank-policy-page .policy-modal-header,
-.bank-policy-page .policy-modal-footer { background: #fffaff; }
+.bank-policy-page .policy-modal-footer { background: #fafafa; }
 .bank-policy-page .policy-badge { color: #a63fa2; }
 .bank-policy-page .detail-button {
     border-color: var(--policy-orchid-1);
@@ -3052,66 +3052,66 @@ body {
 .bank-policy-page .policy-modal-dialog { border-color: var(--policy-orchid-2); }
 .site-layout + .site-footer {
     border-top-color: var(--policy-orchid-3);
-    background: #fffaff;
+    background: #fafafa;
 }
 
 /* Pastel surfaces: final cascade */
-body { background: #fff8ff; color: #40233f; }
-.site-header { background: #fffaff; }
+body { background: #f7f7f8; color: #363a40; }
+.site-header { background: #fafafa; }
 .header-service-name,
 .header-account a,
 .header-account-user span,
-.header-account-user button { color: #6d456b; }
+.header-account-user button { color: #5b6068; }
 .header-account-user button {
-    border-color: #edb9eb;
-    background: #fff8ff;
+    border-color: #d1d3d7;
+    background: #f7f7f8;
 }
 .service-sidebar {
-    border-right-color: #efc9ed;
-    border-bottom-color: #efc9ed;
-    border-left-color: #efc9ed;
-    background: #fffaff;
+    border-right-color: #d7d9dc;
+    border-bottom-color: #d7d9dc;
+    border-left-color: #d7d9dc;
+    background: #fafafa;
 }
 .sidebar-menu-group + .sidebar-menu-group,
-.sidebar-menu-group h2 { border-color: #edb9eb; }
-.sidebar-menu-group h2 { background: #fde8fc; }
+.sidebar-menu-group h2 { border-color: #d1d3d7; }
+.sidebar-menu-group h2 { background: #eeeeef; }
 .sidebar-menu-group a,
-.sidebar-menu-disabled { color: #684966; }
-.sidebar-menu-group a:hover { background: #fbdff9; }
+.sidebar-menu-disabled { color: #565b63; }
+.sidebar-menu-group a:hover { background: #e9eaec; }
 .bank-policy-page,
 .bank-policy-page .page-header h1,
 .bank-policy-page .detail-filter-header h2,
 .bank-policy-page .detail-filter-label,
-.bank-policy-page .program-title { color: #4b2949; }
+.bank-policy-page .program-title { color: #42464d; }
 .bank-policy-page .page-description,
 .bank-policy-page .policy-notice p,
 .bank-policy-page .program-target,
 .bank-policy-page .program-information dt,
 .bank-policy-page .program-information dd,
-.bank-policy-page .program-institution { color: #765774; }
+.bank-policy-page .program-institution { color: #656a72; }
 .bank-policy-page .policy-notice {
-    border-color: #efc9ed;
+    border-color: #d7d9dc;
     border-left-color: var(--policy-orchid-3);
-    background: #fff3fe;
+    background: #f7f7f8;
 }
 .bank-policy-page .policy-search-area,
 .bank-policy-page .policy-filter-section {
     border-color: #eab7e7;
-    background: #fffaff;
+    background: #fafafa;
 }
 .bank-policy-page .policy-filter-form {
-    border-bottom-color: #edc5eb;
+    border-bottom-color: #d7d9dc;
     background: #fce6fb;
 }
 .bank-policy-page .policy-search-input,
 .bank-policy-page .page-size-select {
-    border-color: #dfa9dc;
-    background: #fffaff;
-    color: #4b2949;
+    border-color: #c7c9ce;
+    background: #fafafa;
+    color: #42464d;
 }
 .bank-policy-page .detail-filter-header {
-    border-bottom-color: #edc5eb;
-    background: #fff3fe;
+    border-bottom-color: #d7d9dc;
+    background: #f7f7f8;
 }
 .bank-policy-page .detail-filter-row,
 .bank-policy-page .detail-filter-label,
@@ -3119,16 +3119,16 @@ body { background: #fff8ff; color: #40233f; }
 .bank-policy-page .detail-filter-label { background: #fae2f8; }
 .bank-policy-page .detail-filter-options,
 .bank-policy-page .detail-filter-actions,
-.bank-policy-page .filter-notice { background: #fffaff; }
+.bank-policy-page .filter-notice { background: #fafafa; }
 .bank-policy-page .filter-chip span,
 .bank-policy-page .filter-chip input:checked + span { color: #654263; }
 .bank-policy-page .filter-reset-button {
-    border-color: #dfa9dc;
-    background: #fff8ff;
+    border-color: #c7c9ce;
+    background: #f7f7f8;
     color: #603b5e;
 }
 .bank-policy-page .program-list-head {
-    border-bottom-color: #dfa9dc;
+    border-bottom-color: #c7c9ce;
     background: #f8d9f6;
 }
 .bank-policy-page .program-list-head span + span,
@@ -3137,55 +3137,55 @@ body { background: #fff8ff; color: #40233f; }
 .bank-policy-page .program-information,
 .bank-policy-page .program-institution,
 .bank-policy-page .program-card-actions { border-color: #f0d1ee; }
-.bank-policy-page .program-card { background: #fffaff; }
+.bank-policy-page .program-card { background: #fafafa; }
 .bank-policy-page .program-card:nth-child(even) { background: #fff5fe; }
 .bank-policy-page .program-card:hover { background: #fce8fa; }
 .bank-policy-page .page-button {
     border-color: #e5b4e2;
-    background: #fffaff;
-    color: #684966;
+    background: #fafafa;
+    color: #565b63;
 }
 .bank-policy-page .empty-result,
 .bank-policy-page .policy-modal-dialog {
     border-color: #e8bce5;
-    background: #fffaff;
+    background: #fafafa;
 }
 .bank-policy-page .policy-modal-header,
 .bank-policy-page .policy-modal-footer,
-.site-layout + .site-footer { background: #fdeffc; }
+.site-layout + .site-footer { background: #f0f1f2; }
 .site-layout + .site-footer,
 .footer-inner p,
-.footer-inner p:first-child { color: #765774; }
+.footer-inner p:first-child { color: #656a72; }
 
 /* Shinhan-style blue theme: final cascade */
 :root {
-    --policy-orchid-1: #1E90FF;
-    --policy-orchid-2: #4169E1;
-    --policy-orchid-3: #6495ED;
-    --policy-orchid-4: #00BFFF;
-    --policy-orchid-5: #1E90FF;
-    --policy-orchid-6: #6495ED;
-    --policy-orchid-7: #8bb8f3;
-    --policy-orchid-8: #b9d6f8;
-    --policy-orchid-9: #d8eaff;
-    --policy-orchid-10: #edf6ff;
-    --policy-orchid-text: #191970;
+    --policy-orchid-1: #30343b;
+    --policy-orchid-2: #505761;
+    --policy-orchid-3: #747b85;
+    --policy-orchid-4: #9aa0a8;
+    --policy-orchid-5: #30343b;
+    --policy-orchid-6: #747b85;
+    --policy-orchid-7: #b2b6bc;
+    --policy-orchid-8: #c9cdd2;
+    --policy-orchid-9: #e6e7e9;
+    --policy-orchid-10: #f4f5f6;
+    --policy-orchid-text: #20242a;
 }
 
 body {
-    background: #f7fbff;
-    color: #191970;
+    background: #f8f8f9;
+    color: #20242a;
 }
 
 .site-header {
-    border-bottom-color: #1E90FF;
+    border-bottom-color: #30343b;
     background: #ffffff;
 }
 
 .logo,
 .header-account-user strong,
 .header-account a:hover {
-    color: #1E90FF;
+    color: #30343b;
 }
 
 .header-service-name,
@@ -3196,41 +3196,41 @@ body {
 }
 
 .header-account-user button {
-    border-color: #b9d6f8;
-    background: #f7fbff;
+    border-color: #c9cdd2;
+    background: #f8f8f9;
 }
 
 .service-sidebar {
-    border-top-color: #1E90FF;
-    border-right-color: #c9ddf5;
-    border-bottom-color: #c9ddf5;
-    border-left-color: #c9ddf5;
+    border-top-color: #30343b;
+    border-right-color: #d5d8dc;
+    border-bottom-color: #d5d8dc;
+    border-left-color: #d5d8dc;
     background: #ffffff;
 }
 
 .sidebar-menu-group + .sidebar-menu-group,
 .sidebar-menu-group h2 {
-    border-color: #c9ddf5;
+    border-color: #d5d8dc;
 }
 
 .sidebar-menu-group h2 {
-    background: #eaf4ff;
-    color: #191970;
+    background: #f0f1f3;
+    color: #20242a;
 }
 
 .sidebar-menu-group a,
 .sidebar-menu-disabled {
-    color: #40536d;
+    color: #555b64;
 }
 
 .sidebar-menu-group a:hover {
-    background: #edf6ff;
+    background: #f4f5f6;
     color: #000080;
 }
 
 .sidebar-menu-group a::before,
 .sidebar-menu-disabled::before {
-    background: #6495ED;
+    background: #747b85;
 }
 
 .bank-policy-page,
@@ -3238,11 +3238,11 @@ body {
 .bank-policy-page .detail-filter-header h2,
 .bank-policy-page .detail-filter-label,
 .bank-policy-page .program-title {
-    color: #191970;
+    color: #20242a;
 }
 
 .bank-policy-page .page-header {
-    border-bottom-color: #1E90FF;
+    border-bottom-color: #30343b;
 }
 
 .bank-policy-page .page-description,
@@ -3251,64 +3251,64 @@ body {
 .bank-policy-page .program-information dt,
 .bank-policy-page .program-information dd,
 .bank-policy-page .program-institution {
-    color: #536985;
+    color: #626973;
 }
 
 .bank-policy-page .policy-notice {
-    border-color: #c9ddf5;
-    border-left-color: #6495ED;
-    background: #f1f7ff;
+    border-color: #d5d8dc;
+    border-left-color: #747b85;
+    background: #f3f4f5;
 }
 
 .bank-policy-page .policy-search-area,
 .bank-policy-page .policy-filter-section {
-    border-color: #b9d6f8;
+    border-color: #c9cdd2;
     background: #ffffff;
 }
 
 .bank-policy-page .policy-filter-form {
-    border-bottom-color: #c9ddf5;
-    background: #eaf4ff;
+    border-bottom-color: #d5d8dc;
+    background: #f0f1f3;
 }
 
 .bank-policy-page .policy-search-input,
 .bank-policy-page .page-size-select {
-    border-color: #9fbfe5;
+    border-color: #b5bac1;
     background: #ffffff;
-    color: #263e5e;
+    color: #414750;
 }
 
 .bank-policy-page .policy-search-input:focus,
 .bank-policy-page .page-size-select:focus {
-    border-color: #1E90FF;
+    border-color: #30343b;
 }
 
 .bank-policy-page .search-button,
 .bank-policy-page .filter-submit-button {
-    border-color: #1E90FF;
-    background: #1E90FF;
+    border-color: #30343b;
+    background: #30343b;
     color: #ffffff;
 }
 
 .bank-policy-page .search-button:hover,
 .bank-policy-page .filter-submit-button:hover {
-    border-color: #4169E1;
-    background: #4169E1;
+    border-color: #505761;
+    background: #505761;
 }
 
 .bank-policy-page .detail-filter-header {
-    border-bottom-color: #c9ddf5;
-    background: #f3f8ff;
+    border-bottom-color: #d5d8dc;
+    background: #f3f4f5;
 }
 
 .bank-policy-page .detail-filter-row,
 .bank-policy-page .detail-filter-label,
 .bank-policy-page .filter-notice {
-    border-color: #d5e4f5;
+    border-color: #dfe1e4;
 }
 
 .bank-policy-page .detail-filter-label {
-    background: #eaf4ff;
+    background: #f0f1f3;
 }
 
 .bank-policy-page .detail-filter-options,
@@ -3318,28 +3318,28 @@ body {
 }
 
 .bank-policy-page .filter-chip input {
-    accent-color: #1E90FF;
+    accent-color: #30343b;
 }
 
 .bank-policy-page .filter-chip span,
 .bank-policy-page .filter-chip input:checked + span {
-    color: #344f70;
+    color: #4d545e;
 }
 
 .bank-policy-page .filter-reset-button {
-    border-color: #9fbfe5;
+    border-color: #b5bac1;
     background: #ffffff;
-    color: #344f70;
+    color: #4d545e;
 }
 
 .bank-policy-page .program-list-head {
-    border-top-color: #1E90FF;
-    border-bottom-color: #9fbfe5;
-    background: #dfeeff;
+    border-top-color: #30343b;
+    border-bottom-color: #b5bac1;
+    background: #e1e3e6;
 }
 
 .bank-policy-page .program-list-head span {
-    color: #191970;
+    color: #20242a;
 }
 
 .bank-policy-page .program-list-head span + span,
@@ -3348,7 +3348,7 @@ body {
 .bank-policy-page .program-information,
 .bank-policy-page .program-institution,
 .bank-policy-page .program-card-actions {
-    border-color: #d5e4f5;
+    border-color: #dfe1e4;
 }
 
 .bank-policy-page .program-card,
@@ -3357,61 +3357,61 @@ body {
 }
 
 .bank-policy-page .program-card:nth-child(even) {
-    background: #f7fbff;
+    background: #f8f8f9;
 }
 
 .bank-policy-page .program-card:hover {
-    background: #edf6ff;
+    background: #f4f5f6;
 }
 
 .bank-policy-page .policy-badge {
-    color: #1E6FC7;
+    color: #505761;
 }
 
 .bank-policy-page .detail-button {
-    border-color: #1E90FF;
+    border-color: #30343b;
     background: #ffffff;
-    color: #1E6FC7;
+    color: #505761;
 }
 
 .bank-policy-page .detail-button:hover {
-    border-color: #4169E1;
-    background: #4169E1;
+    border-color: #505761;
+    background: #505761;
     color: #ffffff;
 }
 
 .bank-policy-page .page-button {
-    border-color: #b9d6f8;
+    border-color: #c9cdd2;
     background: #ffffff;
-    color: #405a78;
+    color: #59606a;
 }
 
 .bank-policy-page .page-button.active {
-    border-color: #4169E1;
-    background: #4169E1;
+    border-color: #505761;
+    background: #505761;
     color: #ffffff;
 }
 
 .bank-policy-page .empty-result,
 .bank-policy-page .policy-modal-dialog {
-    border-color: #b9d6f8;
+    border-color: #c9cdd2;
     background: #ffffff;
 }
 
 .bank-policy-page .policy-modal-header,
 .bank-policy-page .policy-modal-footer {
-    background: #edf6ff;
+    background: #f4f5f6;
 }
 
 .site-layout + .site-footer {
-    border-top-color: #6495ED;
-    background: #edf6ff;
-    color: #536985;
+    border-top-color: #747b85;
+    background: #f4f5f6;
+    color: #626973;
 }
 
 .footer-inner p,
 .footer-inner p:first-child {
-    color: #536985;
+    color: #626973;
 }
 
 /* Sidebar accordion */
@@ -3420,9 +3420,9 @@ body {
     display: block;
     margin: 0;
     padding: 15px 40px 15px 14px;
-    border-bottom: 1px solid #c9ddf5;
-    background: #eaf4ff;
-    color: #191970;
+    border-bottom: 1px solid #d5d8dc;
+    background: #f0f1f3;
+    color: #20242a;
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
@@ -3439,7 +3439,7 @@ body {
     position: absolute;
     top: 50%;
     right: 15px;
-    color: #4169e1;
+    color: #505761;
     font-size: 18px;
     font-weight: 400;
     line-height: 1;
@@ -3447,7 +3447,7 @@ body {
 }
 
 .sidebar-menu-group[open] summary {
-    background: #dceeff;
+    background: #e1e3e6;
     color: #000080;
 }
 
@@ -3465,7 +3465,7 @@ body {
 
 .sidebar-menu-group a.active,
 .sidebar-menu-group a[aria-current="page"] {
-    background: #edf6ff;
+    background: #f4f5f6;
     color: #000080;
     font-weight: 700;
     text-decoration: none;
@@ -3475,7 +3475,7 @@ body {
 .sidebar-menu-group a[aria-current="page"]::before {
     width: 4px;
     height: 4px;
-    background: #1e90ff;
+    background: #30343b;
 }
 
 /* 상품 목록의 긴 원본 정보는 목록에서만 요약 표시 */

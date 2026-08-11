@@ -3,7 +3,7 @@
     margin: 0 auto;
     padding: 54px 34px 80px;
     box-sizing: border-box;
-    color: #1c2c4d;
+    color: #343941;
 }
 
 .loan-recommendation-header {
@@ -13,7 +13,7 @@
 
 .loan-recommendation-eyebrow {
     margin: 0 0 8px;
-    color: #238af8;
+    color: #30343b;
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0.09em;
@@ -21,7 +21,7 @@
 
 .loan-recommendation-header h1 {
     margin: 0;
-    color: #0a2477;
+    color: #242930;
     font-size: 38px;
     line-height: 1.2;
 }
@@ -33,22 +33,24 @@
     line-height: 1.7;
 }
 
-.loan-recommendation-notice,
-.recommendation-error {
-    margin-top: 26px;
-    padding: 18px 20px;
-    border: 1px solid #bdd8fa;
-    border-left: 4px solid #4b90ef;
-    background: #eef6ff;
-    color: #506486;
-    line-height: 1.7;
+.loan-recommendation-notice {
+    margin-top: 22px;
+    padding: 15px 18px;
+    border: 1px solid #d9dde3;
+    background: #f7f8fa;
+    color: #555f6e;
+    font-size: 14px;
+    line-height: 1.65;
 }
 
 .recommendation-error {
-    border-color: #f3bcbc;
-    border-left-color: #d53b3b;
-    background: #fff4f4;
+    margin-top: 22px;
+    padding: 15px 18px;
+    border: 1px solid #efcaca;
+    background: #fff5f5;
     color: #a22828;
+    font-size: 14px;
+    line-height: 1.65;
 }
 
 .loan-profile-panel,
@@ -67,7 +69,7 @@
 
 .section-heading-row h2 {
     margin: 0;
-    color: #0a2477;
+    color: #242930;
     font-size: 25px;
 }
 
@@ -87,8 +89,8 @@
 .data-source-badge {
     padding: 7px 11px;
     border-radius: 999px;
-    background: #eaf4ff;
-    color: #1476db;
+    background: #f0f1f3;
+    color: #4b515b;
     font-weight: 700;
 }
 
@@ -100,9 +102,9 @@
 .recommendation-summary-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 3px solid #238af8;
-    border-right: 1px solid #d2e2f5;
-    border-bottom: 1px solid #d2e2f5;
+    border-top: 3px solid #30343b;
+    border-right: 1px solid #d9dce0;
+    border-bottom: 1px solid #d9dce0;
     background: #ffffff;
 }
 
@@ -110,8 +112,8 @@
 .recommendation-summary-grid > div {
     min-height: 94px;
     padding: 18px 20px;
-    border-top: 1px solid #e1ebf7;
-    border-left: 1px solid #d2e2f5;
+    border-top: 1px solid #e6e7e9;
+    border-left: 1px solid #d9dce0;
     box-sizing: border-box;
 }
 
@@ -125,24 +127,24 @@
 
 .profile-stat strong,
 .recommendation-summary-grid strong {
-    color: #172e70;
+    color: #353b44;
     font-size: 18px;
 }
 
 .loan-profile-empty,
 .recommendation-empty {
     padding: 30px;
-    border: 1px solid #d2e2f5;
-    border-top: 3px solid #238af8;
-    background: #f8fbff;
-    color: #657592;
+    border: 1px solid #d9dce0;
+    border-top: 3px solid #30343b;
+    background: #f5f5f6;
+    color: #62666d;
     text-align: center;
     line-height: 1.7;
 }
 
 .loan-recommendation-form {
-    border: 1px solid #c9dcf4;
-    border-top: 3px solid #238af8;
+    border: 1px solid #d5d8dc;
+    border-top: 3px solid #30343b;
     background: #ffffff;
 }
 
@@ -158,12 +160,12 @@
     gap: 10px 18px;
     min-height: 112px;
     padding: 18px;
-    border-bottom: 1px solid #d7e5f6;
+    border-bottom: 1px solid #dfe1e4;
     box-sizing: border-box;
 }
 
 .recommendation-field:nth-child(odd) {
-    border-right: 1px solid #d7e5f6;
+    border-right: 1px solid #dfe1e4;
 }
 
 .recommendation-field-wide {
@@ -177,8 +179,8 @@
     align-items: center;
     margin: -18px 0 -18px -18px;
     padding: 18px;
-    background: #eaf4ff;
-    color: #20376f;
+    background: #f0f1f3;
+    color: #3f4650;
     font-weight: 800;
 }
 
@@ -195,7 +197,7 @@
     padding: 0 14px;
     border: 1px solid #9fc4ed;
     background: #ffffff;
-    color: #1a356f;
+    color: #3b424c;
     font: inherit;
     box-sizing: border-box;
 }
@@ -203,7 +205,7 @@
 .recommendation-field select:focus,
 .recommendation-field input:focus {
     outline: 2px solid rgba(35, 138, 248, 0.18);
-    border-color: #238af8;
+    border-color: #30343b;
 }
 
 .recommendation-field small {
@@ -230,7 +232,7 @@
     justify-content: center;
     gap: 12px;
     padding: 26px;
-    background: #f8fbff;
+    background: #f5f5f6;
 }
 
 .primary-action,
@@ -241,9 +243,9 @@
     align-items: center;
     justify-content: center;
     padding: 0 24px;
-    border: 1px solid #a9c9ee;
+    border: 1px solid #bcc0c6;
     background: #ffffff;
-    color: #24427d;
+    color: #48505a;
     font-weight: 800;
     text-decoration: none;
     cursor: pointer;
@@ -251,8 +253,8 @@
 }
 
 .primary-action {
-    border-color: #238af8;
-    background: #238af8;
+    border-color: #30343b;
+    background: #30343b;
     color: #ffffff;
 }
 
@@ -280,7 +282,7 @@
     display: grid;
     grid-template-columns: 68px minmax(0, 1fr);
     overflow: hidden;
-    border: 1px solid #cddff2;
+    border: 1px solid #d5d8dc;
     background: #ffffff;
     box-shadow: 0 8px 22px rgba(29, 77, 130, 0.06);
 }
@@ -290,7 +292,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 25px;
-    background: #0e2d80;
+    background: #292e35;
     color: #ffffff;
     font-size: 26px;
     font-weight: 900;
@@ -311,8 +313,8 @@
 .recommendation-badge {
     padding: 6px 10px;
     border-radius: 4px;
-    background: #eaf4ff;
-    color: #1573d2;
+    background: #f0f1f3;
+    color: #525861;
     font-size: 13px;
     font-weight: 800;
 }
@@ -324,7 +326,7 @@
 
 .recommendation-card h3 {
     margin: 14px 0 20px;
-    color: #122d74;
+    color: #30353d;
     font-size: 23px;
     overflow-wrap: anywhere;
 }
@@ -332,14 +334,14 @@
 .recommendation-cost-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    border-top: 1px solid #d9e5f3;
-    border-bottom: 1px solid #d9e5f3;
+    border-top: 1px solid #dfe1e4;
+    border-bottom: 1px solid #dfe1e4;
 }
 
 .recommendation-cost-grid > div {
     min-width: 0;
     padding: 17px 14px;
-    border-right: 1px solid #d9e5f3;
+    border-right: 1px solid #dfe1e4;
 }
 
 .recommendation-cost-grid > div:last-child {
@@ -388,7 +390,7 @@
 
 .recommendation-option-list dd {
     margin: 0;
-    color: #243b70;
+    color: #454c56;
     font-weight: 700;
     overflow-wrap: anywhere;
 }
@@ -397,8 +399,8 @@
 .qualification-note {
     margin-top: 18px;
     padding: 16px 18px;
-    border-left: 4px solid #238af8;
-    background: #f3f8ff;
+    border-left: 4px solid #30343b;
+    background: #f3f4f5;
 }
 
 .qualification-note {
@@ -408,7 +410,7 @@
 
 .recommendation-reason strong,
 .qualification-note strong {
-    color: #143376;
+    color: #343a42;
 }
 
 .recommendation-reason p,
@@ -420,13 +422,13 @@
 
 .recommendation-extra-detail {
     margin-top: 15px;
-    border: 1px solid #d7e4f2;
+    border: 1px solid #dee0e3;
     background: #fbfdff;
 }
 
 .recommendation-extra-detail summary {
     padding: 13px 15px;
-    color: #315083;
+    color: #515965;
     font-weight: 700;
     cursor: pointer;
 }
@@ -449,7 +451,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 17px 20px;
-    color: #263f70;
+    color: #4a515b;
     font-weight: 800;
     cursor: pointer;
 }
@@ -479,7 +481,7 @@
 }
 
 .excluded-product-item > div strong {
-    color: #233b6d;
+    color: #424953;
 }
 
 .excluded-product-item > div span {
@@ -502,12 +504,12 @@
     gap: 24px;
     margin-top: 28px;
     padding: 22px 24px;
-    border: 1px solid #d3e1f1;
-    background: #f7fbff;
+    border: 1px solid #dadddf;
+    background: #f8f8f9;
 }
 
 .recommendation-next-step strong {
-    color: #173674;
+    color: #39404a;
 }
 
 .recommendation-next-step p {
@@ -518,7 +520,7 @@
 
 .next-step-status {
     padding: 8px 12px;
-    border: 1px solid #bad3ef;
+    border: 1px solid #c8ccd1;
     background: #ffffff;
     color: #557198;
     white-space: nowrap;
@@ -551,7 +553,7 @@
     }
 
     .recommendation-cost-grid > div:nth-child(-n + 2) {
-        border-bottom: 1px solid #d9e5f3;
+        border-bottom: 1px solid #dfe1e4;
     }
 }
 
@@ -613,7 +615,7 @@
 
     .recommendation-cost-grid > div {
         border-right: 0;
-        border-bottom: 1px solid #d9e5f3;
+        border-bottom: 1px solid #dfe1e4;
     }
 
     .recommendation-cost-grid > div:last-child {
