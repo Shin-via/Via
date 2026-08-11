@@ -4,11 +4,14 @@ import com.via.shinvia.mydata.config.MyDataProperties;
 import com.via.shinvia.mydata.dto.MyDataAuthTokenResponseDto;
 import com.via.shinvia.mydata.dto.MyDataCommonResponseDto;
 import com.via.shinvia.mydata.service.MyDataAuthService;
+import com.via.shinvia.mydata.service.MyDataConnectionService;
+import com.via.shinvia.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -26,20 +29,23 @@ public class MyDataAuthController {
 
     private final MyDataAuthService myDataAuthService;
     private final MyDataProperties myDataProperties;
-
+    private final CurrentUser currentUser;
+    private final MyDataConnectionService myDataConnectionService;
     /**
      * 1. 마이데이터 인가코드 허용 요청 (HTTP 302 Redirect)
      * 유저의 브라우저를 신한 목 서버의 인가 페이지로 리다이렉트시킵니다.
-     * 예: GET http://localhost:8080/api/mydata/oauth/authorize?userCi=1
+     * 예: GET http://localhost:8080/api/mydata/oauth/authorize
      */
     @GetMapping("/authorize")
-    public ResponseEntity<Void> authorize(
-           @RequestParam(required = false, defaultValue = "1") String userCi)
+    public ResponseEntity<Void> authorize(Authentication authentication)
             {
-        log.info("[MyData Controller] 인가코드 요청 시작 - userCi: {}", userCi);
+                Long userId = currentUser.getUserId(authentication);
+                Long connectionId = myDataConnectionService.startConnection(userId);
+
+        log.info("[MyData Controller] 인가코드 요청 시작 - userCi: {}", connectionId);
 
         // 신한 목 서버 302 Location URL 획득
-        String mockAuthorizeUrl = myDataAuthService.getAuthorizeUrl(userCi);
+        String mockAuthorizeUrl = myDataAuthService.getAuthorizeUrl(String.valueOf(connectionId));
 
         log.info("[MyData Controller] 목 서버 인가 URL로 리다이렉트(302): {}", mockAuthorizeUrl);
 
@@ -56,19 +62,25 @@ public class MyDataAuthController {
     public ResponseEntity<MyDataAuthTokenResponseDto> callback(
             @RequestHeader(value = "api_tran_id", required = false) String apiTranId,
             @RequestParam(value = "org_code", required = false) String orgCode,
-            @RequestParam(value = "state", required = false) String state,
+            @RequestParam(value = "state") String state,
             @RequestParam("code") String code) {
-        String effectiveUserCi = (state != null && !state.isBlank()) ? state : "1";
+        Long connectionId;
 
-        log.info("[MyData Controller] 인가코드 콜백 수신 - effectiveUserCi: {}, code: {}, state: {}, tranId: {}", effectiveUserCi, code, state, apiTranId);
+        try {
+            connectionId=Long.valueOf(state);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("올바르지 않은 마이데이터 연동 정보입니다.");
+        }
 
-        // 수신받은 인가코드(code)로 Access Token 및 Refresh Token 발급 요청 및 Redis 저장
-        MyDataAuthTokenResponseDto tokenResponse = myDataAuthService.issueTokens(effectiveUserCi, code);
+        try {
+            MyDataAuthTokenResponseDto tokenResponse= myDataAuthService.issueTokens(String.valueOf(connectionId), code);
+            myDataConnectionService.completeConnection(connectionId);
+            return ResponseEntity.ok(tokenResponse);
 
-        log.info("[MyData Controller] 토큰 발급 성공 - AccessToken: {}, RefreshToken: {}",
-                tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
-
-        return ResponseEntity.ok(tokenResponse);
+        } catch (Exception e) {
+            myDataConnectionService.failConnection(connectionId);
+            throw e;
+        }
     }
 
     /**

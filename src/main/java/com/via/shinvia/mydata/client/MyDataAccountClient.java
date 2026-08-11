@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 public class MyDataAccountClient {
     private final RestClient restClient;
 
-    public MyDataAccountClient(RestClient.Builder restClientBuilder, @Value("${mydata.mock-server.base-url") String baseUrl) {
+    public MyDataAccountClient(RestClient.Builder restClientBuilder, @Value("${mydata.mock-server.base-url}") String baseUrl) {
         this.restClient = restClientBuilder.baseUrl(baseUrl).build();
     }
 

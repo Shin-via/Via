@@ -68,7 +68,7 @@ class CardSyncServiceTest {
         CardAccount saved = captor.getValue();
         assertThat(saved.getUserId()).isEqualTo(100L);
         //assertThat(saved.getInstitutionId()).isEqualTo(1L);
-        //assertThat(saved.getMydataConnectionId()).isEqualTo(200L);
+        //assertThat(saved.getconnectionId()).isEqualTo(200L);
         assertThat(saved.getExternalCardKey()).isEqualTo("CARD00000001");
         assertThat(saved.getCardName()).isEqualTo("via 신용카드");
         assertThat(saved.getCardNumberMasked()).isEqualTo("1234-****-****-5678");
