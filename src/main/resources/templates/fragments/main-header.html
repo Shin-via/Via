@@ -65,14 +65,60 @@
                     </div>
                 </div>
 
-                <div class="nav-item">
+                <div class="nav-item mega-menu-container">
                     <span class="nav-link">자산관리</span>
+
+                    <div class="mega-menu">
+                        <div class="mega-menu-inner mega-menu-categories">
+                            <section class="mega-menu-category">
+                                <div class="mega-menu-category-heading">
+                    <span class="material-symbols-outlined">
+                        account_balance_wallet
+                    </span>
+                                    <h4>나의 금융정보</h4>
+                                </div>
+
+                                <ul class="mega-menu-list">
+                                    <li>
+                                        <a th:href="@{/mydata}">
+                                            마이데이터 조회
+                                        </a>
+                                    </li>
+                                </ul>
+                                <ul class="mega-menu-list">
+                                    <li>
+                                        <a th:href="@{/financial-profile}">
+                                            금융 프로필
+                                        </a>
+                                    </li>
+                                </ul>
+                            </section>
+                            <section class="mega-menu-category">
+                                <div class="mega-menu-category-heading">
+                    <span class="material-symbols-outlined">
+                        calculate
+                    </span>
+                                    <h4>금융 계산</h4>
+                                </div>
+
+                                <ul class="mega-menu-list">
+                                    <li>
+                                        <a th:href="@{/dsr}">
+                                            스트레스 DSR 계산
+                                        </a>
+                                    </li>
+                                </ul>
+
+                            </section>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </div>
 
         <div class="action-buttons">
-            <button class="icon-button" aria-label="Search"><span class="material-symbols-outlined" data-icon="search">search</span></button>
+            <button class="icon-button" aria-label="Search"><span class="material-symbols-outlined" data-icon="search">search</span>
+            </button>
             <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn-signin">로그인</a>
             <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
                 <button type="submit" class="btn-signin">로그아웃</button>
@@ -84,31 +130,74 @@
         <a href="#" class="utility-link">Inquiry</a>
         <a href="#" class="utility-link">My Page</a>
 
-        <div class="user-avatar-container">
-            <div class="user-avatar" id="userAvatarBtn" role="button" aria-expanded="false" aria-label="User Profile Menu">
-                <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+        <div class="user-avatar-container"
+             sec:authorize="isAuthenticated()">
+
+            <div class="user-avatar"
+                 id="userAvatarBtn"
+                 role="button"
+                 aria-expanded="false"
+                 aria-label="User Profile Menu">
+
+        <span class="material-symbols-outlined"
+              data-icon="account_circle">
+            account_circle
+        </span>
             </div>
 
-            <div class="profile-popover" id="profilePopover">
+            <div class="profile-popover"
+                 id="profilePopover">
+
                 <div class="popover-header">
                     <div class="popover-user-info">
-                        <div class="popover-avatar-large"><span class="material-symbols-outlined">account_circle</span></div>
+                        <div class="popover-avatar-large">
+                    <span class="material-symbols-outlined">
+                        account_circle
+                    </span>
+                        </div>
+
                         <div>
-                            <div class="user-name">김신한 님 <span class="user-badge">VIP</span></div>
-                            <div class="user-email">shinhan@via.com</div>
+                            <div class="user-name"
+                                 th:text="${loginUserName} + ' 님'">
+                                사용자 님
+                            </div>
+
+                            <div class="user-email"
+                                 th:text="${loginUserEmail}">
+                                로그인 사용자
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="popover-body">
-                    <a href="#" class="popover-item"><span class="material-symbols-outlined">person</span><span>내 프로필 관리</span></a>
-                    <a href="#" class="popover-item"><span class="material-symbols-outlined">receipt_long</span><span>대출 신청 현황</span></a>
-                    <a href="#" class="popover-item"><span class="material-symbols-outlined">settings</span><span>계정 및 보안 설정</span></a>
-                    <a href="#" class="popover-item"><span class="material-symbols-outlined">help</span><span>고객센터 문의</span></a>
+                    <a href="#" class="popover-item">
+                        <span class="material-symbols-outlined">person</span>
+                        <span>내 프로필 관리</span>
+                    </a>
+
+                    <a href="#" class="popover-item">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        <span>대출 신청 현황</span>
+                    </a>
+
+                    <a href="#" class="popover-item">
+                        <span class="material-symbols-outlined">settings</span>
+                        <span>계정 및 보안 설정</span>
+                    </a>
+
+                    <a href="#" class="popover-item">
+                        <span class="material-symbols-outlined">help</span>
+                        <span>고객센터 문의</span>
+                    </a>
                 </div>
+
                 <div class="popover-footer">
-                    <a sec:authorize="isAnonymous()" th:href="@{/login}" class="popover-btn-logout">로그인</a>
-                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                        <button type="submit" class="popover-btn-logout">로그아웃</button>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit"
+                                class="popover-btn-logout">
+                            로그아웃
+                        </button>
                     </form>
                 </div>
             </div>

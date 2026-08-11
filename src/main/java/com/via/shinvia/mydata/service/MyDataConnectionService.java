@@ -75,4 +75,14 @@ public class MyDataConnectionService {
 
         return connection.getConnectionId();
     }
+
+    @Transactional(readOnly = true)
+    public boolean isConnected(Long userId) {
+        MyDataConnection connection =
+                myDataConnectionMapper.findByUserId(userId);
+
+        return connection != null
+                && connection.getConnectionStatus()
+                == ConnectionStatus.CONNECTED;
+    }
 }

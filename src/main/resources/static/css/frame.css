@@ -28,6 +28,11 @@
     color: rgba(255, 255, 255, 0.8);
 }
 
+.utility-link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
 .utility-link:hover {
     color: var(--color-on-primary);
     transition: color 0.2s;
