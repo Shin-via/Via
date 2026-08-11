@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 //import com.via.shinvia.mapper.card.CardMapper;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -84,6 +85,7 @@ public class MyDataAuthService {
         log.info("[Redis Token Refresh] 토큰 갱신 진행 - userCi: {}, cleanToken: {}", userCi, cleanToken);
 
         // 5. 목 서버로 토큰 갱신 요청
+        log.info("cleanToken :" + cleanToken);
         MyDataAuthTokenResponseDto response = myDataAuthClient.refreshAccessToken(cleanToken);
 
         // 6. 획득한 userCi와 신규 발급된 토큰 정보로 Redis 갱신
@@ -231,14 +233,28 @@ public class MyDataAuthService {
         String accessToken = redisTemplate.opsForValue().get(
                 "mydata:ci:at:" + connectionId
         );
-
         if (!StringUtils.hasText(accessToken)) {
             throw new IllegalStateException(
                     "마이데이터 Access Token이 없거나 만료되었습니다."
             );
         }
-
         return accessToken;
+    }
+
+    public Long getAccessTokenTtl(Long userId) {
+        String accessTokenKey =  userId.toString();
+
+        // getExpire(key, timeUnit): 남은 시간을 TimeUnit 단위로 반환
+        Long remainingSeconds = redisTemplate.getExpire(accessTokenKey, TimeUnit.SECONDS);
+
+        // 반환값 예외 처리
+        if (remainingSeconds == null || remainingSeconds < 0) {
+            // -2: 키가 존재하지 않음 (만료됨 또는 발급 안 됨)
+            // -1: 키는 존재하지만 만료 시간이 설정되지 않음 (영구 저장)
+            return 0L;
+        }
+
+        return remainingSeconds; // 남은 시간 (초) 반환 (예: 1795)
     }
 }
 

@@ -51,21 +51,16 @@ public class AccountSyncService {
             AccountSyncRequest request
     ) {
         validateRequest(request);
-
         int limit = request.resolvedLimit();
-
         List<AccountItem> accountItems =
                 fetchAllAccounts(
                         request.orgCode(),
                         limit
                 );
-
         int syncedAccounts = 0;
         int skippedAccounts = 0;
         int insertedTransactions = 0;
-
         for (AccountItem accountItem : accountItems) {
-
             // isConset() 값이 true 인 경우에만 처리하는 로직
             if (!Boolean.TRUE.equals(
                     accountItem.isConsent()
@@ -73,7 +68,6 @@ public class AccountSyncService {
                 skippedAccounts++;
                 continue;
             }
-
             DepositBasicResponse basicResponse =
                     mockAccountClient.getDepositBasic(
                             new DepositBasicRequest(

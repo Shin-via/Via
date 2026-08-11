@@ -7,48 +7,59 @@ import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositDetailRequest;
 import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositDetailResponse;
 import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionRequest;
 import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionResponse;
+import com.via.shinvia.mydata.client.MyDataAuthClient;
+import com.via.shinvia.mydata.config.MyDataProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class MockAccountClient {
-
     private static final String SUCCESS_CODE = "00000";
-
+    private final  MyDataAuthClient mydata;
     private final RestClient restClient;
+    private final MyDataProperties myDataProperties;
+    private final StringRedisTemplate redistemplate;
 
     public MockAccountClient(
-            RestClient.Builder restClientBuilder,
+            MyDataAuthClient mydata, RestClient.Builder restClientBuilder,
             @Value("${mock.account.base-url:http://localhost:9090}")
-            String baseUrl
+            String baseUrl, MyDataProperties myDataProperties, StringRedisTemplate redistemplate
     ) {
+        this.mydata = mydata;
+        this.myDataProperties = myDataProperties;
+        this.redistemplate = redistemplate;
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .build();
     }
 
-    public AccountListResponse getAccounts(
-            String orgCode,
-            String nextPage,
-            int limit
-    ) {
+    public AccountListResponse getAccounts(String authorization, String nextPage, int limit) {
         try {
+            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
+            String targetOrgCode = myDataProperties.getOrgCode();
             AccountListResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         var builder = uriBuilder
                                 .path("/v2/bank/accounts")
-                                .queryParam("org_code", orgCode)
-                                .queryParam("search_timestamp", "0")
+                                .queryParam("org_code", targetOrgCode)
+                                .queryParam("search_timestamp","")
                                 .queryParam("limit", limit);
-
                         if (hasText(nextPage)) {
                             builder.queryParam("next_page", nextPage);
                         }
-
                         return builder.build();
                     })
+                    .header("authorization", token)
+                    .header("x-api-tran-id", mydata.generateTranId())
+                    .header("x-api-type"," ")
                     .retrieve()
                     .body(AccountListResponse.class);
 
@@ -67,6 +78,10 @@ public class MockAccountClient {
             );
         }
     }
+
+    /*public AccountListResponse getAccounts(String orgCode, String nextPage, int limit) {
+        return getAccounts(null, nextPage, limit);
+    }*/
 
     public DepositBasicResponse getDepositBasic(
             DepositBasicRequest request
@@ -163,7 +178,6 @@ public class MockAccountClient {
             );
         }
     }
-
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
     }

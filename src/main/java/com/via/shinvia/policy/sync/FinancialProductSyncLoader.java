@@ -25,7 +25,6 @@ public class FinancialProductSyncLoader implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!syncOnStartup) {
-            log.info("자산형성·사회연대·복합지원 상품 자동 동기화 비활성화");
             return;
         }
 

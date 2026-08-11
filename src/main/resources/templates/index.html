@@ -1,30 +1,248 @@
-<!doctype html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>메인</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Via | 금융생활을 한 번에</title>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+    <!-- 분리된 CSS 파일 -->
+    <link rel="stylesheet" th:href="@{/css/frame.css}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
 </head>
 <body>
-<main>
-    <h1>메인</h1>
 
-    <div th:if="${#authorization.expression('isAnonymous()')}">
-        <a th:href="@{/signup/email}">회원가입</a>
-        <a th:href="@{/login}">로그인</a>
-        <a th:href="@{/oauth2/authorization/kakao}">카카오로 시작하기</a>
-    </div>
+<th:block th:replace="~{fragments/main-header :: mainHeader}"></th:block>
 
-    <!-- 로그인한 경우에만 표시 -->
-    <div th:if="${#authorization.expression('isAuthenticated()')}">
-        <span th:text="${#authentication.name}">로그인 이메일</span>
+<!-- Main Content Canvas -->
+<main class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-label="VIA 주요 서비스">
+        <div class="hero-carousel" data-carousel>
+            <div class="hero-slides" aria-live="off">
+                <figure class="hero-slide active">
+                    <img th:src="@{/img/loan.png}" src="/img/loan.png"
+                         alt="내 대출을 더 똑똑하게 관리하는 VIA 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/analsyis.png}" src="/img/analsyis.png"
+                         alt="한눈에 보는 맞춤형 대출 진단 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/rate.png}" src="/img/rate.png"
+                         alt="금리 상승 시나리오와 스트레스 DSR 분석 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/finance.png}" src="/img/finance.png"
+                         alt="대출 상환 전략 비교 서비스">
+                </figure>
+                <figure class="hero-slide">
+                    <img th:src="@{/img/ana.png}" src="/img/ana.png"
+                         alt="대출과 자산관리를 한 번에 제공하는 서비스">
+                </figure>
+            </div>
 
-        <form th:action="@{/logout}" method="post">
-            <button type="submit">로그아웃</button>
-        </form>
-    </div>
+            <button class="hero-control hero-control-prev" type="button"
+                    data-carousel-prev aria-label="이전 배너">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button class="hero-control hero-control-next" type="button"
+                    data-carousel-next aria-label="다음 배너">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+
+            <div class="hero-pagination" role="group" aria-label="배너 선택">
+                <button class="hero-page active" type="button" data-carousel-page="0" aria-label="1번 배너" aria-current="true"></button>
+                <button class="hero-page" type="button" data-carousel-page="1" aria-label="2번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="2" aria-label="3번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="3" aria-label="4번 배너"></button>
+                <button class="hero-page" type="button" data-carousel-page="4" aria-label="5번 배너"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Layout Section -->
+    <section class="content-container">
+        <!-- Side Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>대출</h2>
+                <p>Tailored Recommendations</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active">
+                    <span class="material-symbols-outlined" data-icon="payments">payments</span>
+                    <span>Personal Finance</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+                    <span>Credit Loans</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="home">home</span>
+                    <span>Mortgages</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="business_center">business_center</span>
+                    <span>Business Solutions</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="security">security</span>
+                    <span>Insurance</span>
+                </a>
+            </nav>
+        </aside>
+
+
+        <!-- Main Product Grid -->
+        <div class="product-area">
+            <div class="product-header">
+                <h3>Recommended Loan Products</h3>
+                <div class="dot-indicators">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+
+            <div class="product-grid">
+                <!-- Card 1 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="product-card card-relative">
+                    <div class="decorative-dot"></div>
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p class="pr-padding">Brief description regarding the credit loan product.</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="content-container">
+        <!-- Side Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>자산 관리</h2>
+                <p>Tailored Recommendations</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active">
+                    <span class="material-symbols-outlined" data-icon="payments">payments</span>
+                    <span>Personal Finance</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+                    <span>Credit Loans</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="home">home</span>
+                    <span>Mortgages</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="business_center">business_center</span>
+                    <span>Business Solutions</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <span class="material-symbols-outlined" data-icon="security">security</span>
+                    <span>Insurance</span>
+                </a>
+            </nav>
+        </aside>
+
+
+        <!-- Main Product Grid -->
+        <div class="product-area">
+            <div class="product-header">
+                <h3>Recommended Loan Products</h3>
+                <div class="dot-indicators">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+
+            <div class="product-grid">
+                <!-- Card 1 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="product-card card-relative">
+                    <div class="decorative-dot"></div>
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p class="pr-padding">Brief description regarding the credit loan product.</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="product-card">
+                    <div>
+                        <h4>Credit Loan</h4>
+                        <p>Brief description regarding the credit loan product.</p>
+                    </div>
+                    <div class="card-action">
+                        <span class="material-symbols-outlined arrow-icon" data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </main>
+
+<th:block th:replace="~{fragments/main-footer :: mainFooter}"></th:block>
+
+<script th:src="@{/js/script.js}" src="/js/script.js"></script>
 </body>
 </html>
