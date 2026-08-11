@@ -1,5 +1,11 @@
 package com.via.shinvia.account.controller;
 
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionRequest;
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionResponse;
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositBasicRequest;
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositBasicResponse;
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositDetailRequest;
+import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositDetailResponse;
 import com.via.shinvia.account.client.MockAccountClient;
 import com.via.shinvia.account.dto.mock.MockAccountDtos.AccountListResponse;
 import com.via.shinvia.account.dto.request.AccountSyncRequest;
@@ -34,7 +40,40 @@ public class AccountController {
             @RequestParam(value = "next_page", required = false) String nextPage,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        AccountListResponse response = accountClient.getAccounts(authorization,nextPage, limit);
+        AccountListResponse response = accountClient.getAccounts(authorization, nextPage, limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "수신계좌 기본정보 조회", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/deposit/basic")
+    public ResponseEntity<DepositBasicResponse> getDepositBasic(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody DepositBasicRequest request
+    ) {
+        DepositBasicResponse response = accountClient.getDepositBasic(authorization, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "수신계좌 추가(상세)정보 조회", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/deposit/detail")
+    public ResponseEntity<DepositDetailResponse> getDepositDetail(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody DepositDetailRequest request
+    ) {
+        DepositDetailResponse response = accountClient.getDepositDetail(authorization, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "수신계좌 거래내역 조회", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/deposit/transactions")
+    public ResponseEntity<DepositTransactionResponse> getDepositTransactions(
+            @Parameter(hidden = true)
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody DepositTransactionRequest request
+    ) {
+        DepositTransactionResponse response = accountClient.getDepositTransactions(authorization, request);
         return ResponseEntity.ok(response);
     }
 

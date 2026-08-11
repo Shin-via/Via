@@ -9,16 +9,11 @@ import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionReques
 import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionResponse;
 import com.via.shinvia.mydata.client.MyDataAuthClient;
 import com.via.shinvia.mydata.config.MyDataProperties;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class MockAccountClient {
@@ -86,10 +81,35 @@ public class MockAccountClient {
     public DepositBasicResponse getDepositBasic(
             DepositBasicRequest request
     ) {
+        return getDepositBasic(null, request);
+    }
+
+    public DepositBasicResponse getDepositBasic(
+            String authorization,
+            DepositBasicRequest request
+    ) {
         try {
+            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
+            String effectiveOrgCode = (request != null && hasText(request.orgCode()))
+                    ? request.orgCode()
+                    : myDataProperties.getOrgCode();
+            String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
+                    ? request.searchTimestamp()
+                    : "0";
+
+            DepositBasicRequest finalRequest = new DepositBasicRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    effectiveSearchTimestamp
+            );
+
             DepositBasicResponse response = restClient.post()
                     .uri("/v2/bank/accounts/deposit/basic")
-                    .body(request)
+                    .header("authorization", token)
+                    .header("x-api-tran-id", mydata.generateTranId())
+                    .header("x-api-type", "user")
+                    .body(finalRequest)
                     .retrieve()
                     .body(DepositBasicResponse.class);
 
@@ -112,10 +132,35 @@ public class MockAccountClient {
     public DepositDetailResponse getDepositDetail(
             DepositDetailRequest request
     ) {
+        return getDepositDetail(null, request);
+    }
+
+    public DepositDetailResponse getDepositDetail(
+            String authorization,
+            DepositDetailRequest request
+    ) {
         try {
+            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
+            String effectiveOrgCode = (request != null && hasText(request.orgCode()))
+                    ? request.orgCode()
+                    : myDataProperties.getOrgCode();
+            String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
+                    ? request.searchTimestamp()
+                    : "0";
+
+            DepositDetailRequest finalRequest = new DepositDetailRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    effectiveSearchTimestamp
+            );
+
             DepositDetailResponse response = restClient.post()
                     .uri("/v2/bank/accounts/deposit/detail")
-                    .body(request)
+                    .header("authorization", token)
+                    .header("x-api-tran-id", mydata.generateTranId())
+                    .header("x-api-type", "user")
+                    .body(finalRequest)
                     .retrieve()
                     .body(DepositDetailResponse.class);
 
@@ -138,10 +183,36 @@ public class MockAccountClient {
     public DepositTransactionResponse getDepositTransactions(
             DepositTransactionRequest request
     ) {
+        return getDepositTransactions(null, request);
+    }
+
+    public DepositTransactionResponse getDepositTransactions(
+            String authorization,
+            DepositTransactionRequest request
+    ) {
         try {
+            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
+            String effectiveOrgCode = (request != null && hasText(request.orgCode()))
+                    ? request.orgCode()
+                    : myDataProperties.getOrgCode();
+            int limit = (request != null && request.limit() > 0) ? request.limit() : 20;
+
+            DepositTransactionRequest finalRequest = new DepositTransactionRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    request != null ? request.fromDate() : null,
+                    request != null ? request.toDate() : null,
+                    request != null ? request.nextPage() : null,
+                    limit
+            );
+
             DepositTransactionResponse response = restClient.post()
                     .uri("/v2/bank/accounts/deposit/transactions")
-                    .body(request)
+                    .header("authorization", token)
+                    .header("x-api-tran-id", mydata.generateTranId())
+                    .header("x-api-type", "user")
+                    .body(finalRequest)
                     .retrieve()
                     .body(DepositTransactionResponse.class);
 
