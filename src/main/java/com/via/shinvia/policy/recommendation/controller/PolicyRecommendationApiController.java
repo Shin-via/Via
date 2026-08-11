@@ -1,59 +1,44 @@
 package com.via.shinvia.policy.recommendation.controller;
 
-import com.via.shinvia.policy.recommendation.dto.PolicyRecommendationProfileDTO;
-import com.via.shinvia.policy.recommendation.service.PolicyRecommendationService;
+import com.via.shinvia.policy.recommendation.profile.dto.PolicyRecommendationProfileDTO;
+import com.via.shinvia.policy.recommendation.profile.service.PolicyRecommendationProfileService;
+import com.via.shinvia.security.CurrentUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/policy/recommendation")
 @RequiredArgsConstructor
 public class PolicyRecommendationApiController {
 
-    private final PolicyRecommendationService recommendationService;
+    private final PolicyRecommendationProfileService profileService;
+    private final CurrentUser currentUser;
 
-
-    // ============================
     // 현재 설문 조회
-    // ============================
     @GetMapping
-    public ResponseEntity<PolicyRecommendationProfileDTO> getProfile() {
-
-        /*
-         * TODO
-         * 회원 연동 완료 후 Authentication에서 userId 조회
-         *
-         * 현재는 개발 테스트용 회원 1번 사용
-         */
-        Long userId = 1L;
-
-        PolicyRecommendationProfileDTO profile =
-                recommendationService.getProfile(userId);
-
-        return ResponseEntity.ok(profile);
+    public ResponseEntity<PolicyRecommendationProfileDTO> getProfile(
+            Authentication authentication
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        return ResponseEntity.ok(profileService.getProfile(userId));
     }
 
-
-    // ============================
     // 설문 저장
-    // ============================
     @PostMapping
     public ResponseEntity<Void> saveProfile(
-            @RequestBody PolicyRecommendationProfileDTO request
+            @Valid @RequestBody PolicyRecommendationProfileDTO request,
+            Authentication authentication
     ) {
-
-        /*
-         * TODO
-         * 회원 연동 완료 후 Authentication에서 userId 조회
-         */
-        Long userId = 1L;
-
-        // 프론트에서 userId를 받지 않고 서버에서 지정
+        Long userId = currentUser.getUserId(authentication);
         request.setUserId(userId);
-
-        recommendationService.saveProfile(request);
-
+        profileService.saveProfile(request);
         return ResponseEntity.ok().build();
     }
 }
