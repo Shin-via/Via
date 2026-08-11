@@ -8,23 +8,30 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("jeonseFields");
 
     function updateConditionalFields() {
-        const selectedLoanType = loanType.value;
+        const type = loanType.value;
 
-        mortgageFields.hidden =
-            selectedLoanType !== "MORTGAGE_LOAN";
+        const isMortgage = type === "MORTGAGE_LOAN";
+        const isCredit = type === "CREDIT_LOAN";
+        const isJeonse = type === "JEONSE_LOAN";
 
-        interestRateFields.hidden =
-            selectedLoanType !== "MORTGAGE_LOAN"
-            && selectedLoanType !== "CREDIT_LOAN";
+        mortgageFields.hidden = !isMortgage;
+        interestRateFields.hidden = !(isMortgage || isCredit);
+        jeonseFields.hidden = !isJeonse;
 
-        jeonseFields.hidden =
-            selectedLoanType !== "JEONSE_LOAN";
+        propertyRegion.disabled = !isMortgage;
+        propertyRegion.required = isMortgage;
+
+        interestRateType.disabled = !(isMortgage || isCredit);
+        interestRateType.required = isMortgage || isCredit;
+
+        housingOwnershipType.disabled = !isJeonse;
+        housingOwnershipType.required = isJeonse;
+
+        rentalPropertyRegion.disabled = !isJeonse;
+        rentalPropertyRegion.required = isJeonse;
     }
 
-    loanType.addEventListener(
-        "change",
-        updateConditionalFields
-    );
+    loanType.addEventListener("change", updateConditionalFields);
 
     updateConditionalFields();
 });

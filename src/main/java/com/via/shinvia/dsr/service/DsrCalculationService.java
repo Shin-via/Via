@@ -35,27 +35,28 @@ public class DsrCalculationService {
     private static final BigDecimal CREDIT_LOAN_THRESHOLD = new BigDecimal("100000000");
 
     public DsrCalculationResultDto calculate(Long userId, DsrCalculationRequestDto request){
-        List<LoanAccountAnalysisDTO> existingLoans;
-        if (userId == null) {
-            existingLoans = List.of();
-        } else {
-            existingLoans = loanAccountAnalysisMapper.findActiveLoansByUserId(userId);
-        }
-
         if (request == null) {
             throw new IllegalArgumentException(
                     "DSR 계산 요청 정보가 필요합니다."
             );
         }
 
-        FinancialProfile profile=financialProfileMapper.findFinancialProfileByUserId(userId);
+        FinancialProfile profile=null;
 
-        BigDecimal annualIncome;
-        if (userId == null) {
-            annualIncome = request.getAnnualIncome();
-        } else {
-            annualIncome = determineAnnualIncome(profile, request);
+        List<LoanAccountAnalysisDTO> existingLoans=List.of();
+
+        if (userId != null) {
+            profile = financialProfileMapper.findFinancialProfileByUserId(userId);
+
+            List<LoanAccountAnalysisDTO> foundLoans = loanAccountAnalysisMapper.findActiveLoansByUserId(userId);
+
+            if (foundLoans != null) {
+                existingLoans = foundLoans;
+            }
         }
+
+
+        BigDecimal annualIncome =  determineAnnualIncome(profile, request);;
 
         BigDecimal newLoanAnnualDebtPayment = calculateNewLoanAnnualDebtPayment(request);
 
@@ -112,22 +113,30 @@ public class DsrCalculationService {
 
     }
 
-    private BigDecimal determineAnnualIncome(FinancialProfile profile, DsrCalculationRequestDto request) {
         //금융프로필에 연소득 있으면 우선으로 가져옴
-        if (profile != null && profile.getAnnualIncome() != null && profile.getAnnualIncome().compareTo(BigDecimal.ZERO) > 0) {
-            return profile.getAnnualIncome();
+        private BigDecimal determineAnnualIncome(FinancialProfile profile, DsrCalculationRequestDto request) {
+            if (profile != null
+                    && profile.getAnnualIncome() != null
+                    && profile.getAnnualIncome()
+                    .compareTo(BigDecimal.ZERO) > 0) {
+
+                return profile.getAnnualIncome();
+            }
+
+            BigDecimal requestedAnnualIncome = request.getAnnualIncome();
+
+            if (requestedAnnualIncome != null
+                    && requestedAnnualIncome
+                    .compareTo(BigDecimal.ZERO) > 0) {
+
+                return requestedAnnualIncome;
+            }
+
+            throw new IllegalArgumentException(
+                    "연소득을 입력해주세요."
+            );
         }
 
-        BigDecimal requestedAnnualIncome = request.getAnnualIncome();
-
-        if (requestedAnnualIncome != null && requestedAnnualIncome.compareTo(BigDecimal.ZERO) > 0) {
-            return requestedAnnualIncome;
-        }
-
-        throw new IllegalArgumentException(
-                "금융프로필 또는 요청값에 유효한 연소득이 필요합니다."
-        );
-    }
 
     private BigDecimal calculateDsrRate(BigDecimal annualDebtPayment, BigDecimal annualIncome) {
         if (annualDebtPayment == null || annualDebtPayment.compareTo(BigDecimal.ZERO) < 0) {
