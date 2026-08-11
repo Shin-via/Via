@@ -70,6 +70,9 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
     //스웨거
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+    //프론트 작업용..DevTools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 tasks.named('test') {

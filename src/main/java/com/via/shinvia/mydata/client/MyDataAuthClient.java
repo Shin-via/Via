@@ -3,6 +3,7 @@ package com.via.shinvia.mydata.client;
 import com.via.shinvia.mydata.config.MyDataProperties;
 import com.via.shinvia.mydata.dto.MyDataAuthTokenResponseDto;
 import com.via.shinvia.mydata.dto.MyDataCommonResponseDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 public class MyDataAuthClient {
+
 
     private final RestClient restClient;
     private final MyDataProperties myDataProperties;
@@ -55,8 +57,14 @@ public class MyDataAuthClient {
                 .build();
     }
 
+   /* public MyDataAuthClient(RestClient restClient, MyDataProperties myDataProperties) {
 
-     // 1. 인가 코드 발급 요청 (GET /v2/oauth/2.0/authorize)
+        this.restClient = restClient;
+        this.myDataProperties = myDataProperties;
+    }*/
+
+
+    // 1. 인가 코드 발급 요청 (GET /v2/oauth/2.0/authorize)
     public String requestAuthorize(String userCi) {
         String tranId = generateTranId();
         // state 파라미터에 userCi를 담아서 전송 (목 서버 변경 없이 콜백 시 userCi 복원 가능)
@@ -74,8 +82,8 @@ public class MyDataAuthClient {
 
         ResponseEntity<Void> response = restClient.get()
                 .uri(uriBuilder.build().toUriString())
-                .header("x-user-ci", userCi)
                 .header("x-api-tran-id", tranId)
+                .header("x-user-ci",userCi)
                 .retrieve()
                 .toBodilessEntity();
 
@@ -94,11 +102,11 @@ public class MyDataAuthClient {
         String tranId = generateTranId();
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("org_code", myDataProperties.getOrgCode());
         formData.add("grant_type", "authorization_code");
         if (code != null) formData.add("code", code);
         formData.add("client_id", myDataProperties.getClientId());
         if (myDataProperties.getClientSecret() != null) formData.add("client_secret", myDataProperties.getClientSecret());
-        formData.add("org_code", myDataProperties.getOrgCode());
         formData.add("redirect_uri", myDataProperties.getRedirectUri());
 
         log.info("[MyData Client] Access Token 발급 요청 - code: {}, tranId: {}", code, tranId);
@@ -126,8 +134,9 @@ public class MyDataAuthClient {
         formData.add("client_id", myDataProperties.getClientId());
         formData.add("client_secret", myDataProperties.getClientSecret());
         formData.add("org_code", myDataProperties.getOrgCode());
+        formData.add("redirect_uri",myDataProperties.getRedirectUri());
         formData.add("is_refreshed", "N");
-    log.info("{}",formData.toString());
+        log.info("{}",formData.toString());
         log.info("[MyData Client] Access Token 갱신 요청 - refreshToken: {}, tranId: {}", refreshToken, tranId);
 
         MyDataAuthTokenResponseDto response = restClient.post()
