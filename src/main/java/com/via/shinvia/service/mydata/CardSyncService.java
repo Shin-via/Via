@@ -45,25 +45,25 @@ public class CardSyncService {
         if (institutionId == null) {
             throw new IllegalStateException("등록되지 않은 금융기관 코드입니다: " + myDataProperties.getOrgCode());
         }
-        Long mydataConnectionId = resolveMydataConnectionId(userId);
+        Long connectionId = resolveConnectionId(userId);
 
         List<CardAccount> saved = new ArrayList<>();
         for (CardInfoDto dto : cardList) {
-            saved.add(upsertCard(userId, institutionId, mydataConnectionId, dto));
+            saved.add(upsertCard(userId, institutionId, connectionId, dto));
         }
         return saved;
     }
 
-    private Long resolveMydataConnectionId(Long userId) {
-        Long mydataConnectionId = cardMapper.findMydataConnectionIdByUserId(userId);
-        if (mydataConnectionId != null) {
-            return mydataConnectionId;
+    private Long resolveConnectionId(Long userId) {
+        Long connectionId = cardMapper.findConnectionIdByUserId(userId);
+        if (connectionId != null) {
+            return connectionId;
         }
-        cardMapper.insertMydataConnection(userId);
-        return cardMapper.findMydataConnectionIdByUserId(userId);
+        cardMapper.insertConnection(userId);
+        return cardMapper.findConnectionIdByUserId(userId);
     }
 
-    private CardAccount upsertCard(Long userId, Long institutionId, Long mydataConnectionId, CardInfoDto dto) {
+    private CardAccount upsertCard(Long userId, Long institutionId, Long connectionId, CardInfoDto dto) {
         CardAccount existing = cardMapper.findByExternalCardKey(dto.getCardId());
         LocalDateTime now = LocalDateTime.now();
 
@@ -71,7 +71,7 @@ public class CardSyncService {
                 .cardAccountId(existing != null ? existing.getCardAccountId() : null)
                 .userId(userId)
                 .institutionId(institutionId)
-                .mydataConnectionId(mydataConnectionId)
+                .connectionId(connectionId)
                 .externalCardKey(dto.getCardId())
                 .cardName(dto.getCardName())
                 .cardNumberMasked(dto.getCardNum())

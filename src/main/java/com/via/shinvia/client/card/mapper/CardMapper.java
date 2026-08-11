@@ -12,9 +12,9 @@ public interface CardMapper {
 
     Long findInstitutionIdByOrgCode(@Param("orgCode") String orgCode);
 
-    Long findMydataConnectionIdByUserId(@Param("userId") Long userId);
+    Long findConnectionIdByUserId(@Param("userId") Long userId);
 
-    void insertMydataConnection(@Param("userId") Long userId);
+    void insertConnection(@Param("userId") Long userId);
 
     CardAccount findByExternalCardKey(@Param("externalCardKey") String externalCardKey);
 
