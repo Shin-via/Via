@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이데이터 연동 완료</title>
+</head>
+
+<body>
+<main>
+    <section>
+        <h2>연동된 카드</h2>
+
+        <p th:if="${cards == null or #lists.isEmpty(cards)}">
+            조회된 카드가 없습니다.
+        </p>
+
+        <div th:if="${cards != null}">
+            <div th:each="card : ${cards}">
+                <h3 th:text="${card.cardName}">카드 이름</h3>
+                <p th:text="${card.cardNum}">카드 번호</p>
+                <p th:text="${card.cardType}">카드 종류</p>
+            </div>
+        </div>
+    </section>
+
+    <a th:href="@{/}">
+        홈으로 이동
+    </a>
+</main>
+</body>
+</html>
