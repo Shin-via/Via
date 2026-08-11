@@ -229,6 +229,18 @@ public class MyDataAuthService {
         return cleaned;
     }
 
+    public String getAccessToken(Long connectionId) {
+        String accessToken = redisTemplate.opsForValue().get(
+                "mydata:ci:at:" + connectionId
+        );
+        if (!StringUtils.hasText(accessToken)) {
+            throw new IllegalStateException(
+                    "마이데이터 Access Token이 없거나 만료되었습니다."
+            );
+        }
+        return accessToken;
+    }
+
     public Long getAccessTokenTtl(Long userId) {
         String accessTokenKey =  userId.toString();
 
