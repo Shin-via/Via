@@ -12,10 +12,14 @@ import com.via.shinvia.mydata.config.MyDataProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.UriComponentsBuilder;
+
 @Component
 public class MockAccountClient {
     private static final String SUCCESS_CODE = "00000";
@@ -37,30 +41,25 @@ public class MockAccountClient {
                 .build();
     }
 
-    public AccountListResponse getAccounts(
-            String authorization ,
-            String nextPage,
-            int limit
-    ) {
+    public AccountListResponse getAccounts(String authorization, String nextPage, int limit) {
         try {
+            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
+            String targetOrgCode = myDataProperties.getOrgCode();
             AccountListResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         var builder = uriBuilder
                                 .path("/v2/bank/accounts")
-                                .queryParam("org_code",myDataProperties.getOrgCode())
-                                .queryParam("search_timestamp", "0")
-                                .queryParam("next_page")
+                                .queryParam("org_code", targetOrgCode)
+                                .queryParam("search_timestamp","")
                                 .queryParam("limit", limit);
-
                         if (hasText(nextPage)) {
                             builder.queryParam("next_page", nextPage);
                         }
-
                         return builder.build();
                     })
-                    .header("authorization",authorization)
-                    .header("x-api-tran-id",mydata.generateTranId())
-                    .header("x-api-type", null)
+                    .header("authorization", token)
+                    .header("x-api-tran-id", mydata.generateTranId())
+                    .header("x-api-type"," ")
                     .retrieve()
                     .body(AccountListResponse.class);
 
@@ -79,6 +78,10 @@ public class MockAccountClient {
             );
         }
     }
+
+    /*public AccountListResponse getAccounts(String orgCode, String nextPage, int limit) {
+        return getAccounts(null, nextPage, limit);
+    }*/
 
     public DepositBasicResponse getDepositBasic(
             DepositBasicRequest request
