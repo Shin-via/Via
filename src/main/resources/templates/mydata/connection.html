@@ -5,21 +5,24 @@
     <meta charset="UTF-8">
     <title>마이데이터 연동</title>
     <link rel="stylesheet" th:href="@{/css/mydata-connection.css}">
+    <script th:src="@{/js/mydata.js}" defer></script>
 </head>
 
 <body>
 
 <main>
+    <section id="connection">
     <h1>마이데이터 연동</h1>
 
     <p>
-        흩어져 있는 계좌, 카드, 대출 정보를<br>
-        한 번에 확인해보세요.
+        흩어져 있는 계좌, 카드, 대출 정보를 한 번에 확인해보세요.
     </p>
 
-    <a th:href="@{/api/mydata/oauth/authorize}">
+    <a class="connect-button"
+       th:href="@{/mydata/result}">
         마이데이터 연동하기
     </a>
+    </section>
 </main>
 
 </body>
