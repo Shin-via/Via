@@ -9,6 +9,9 @@
 
 <body>
 
+<a class="financial-profile-back"
+   th:href="${returnTo}">← 이전 화면으로</a>
+
 <h1>금융 프로필</h1>
 
 <p th:if="${isNew}">
@@ -22,6 +25,8 @@
 <form th:object="${financialProfile}"
       th:action="@{${isNew ? '/financial-profile/new' : '/financial-profile/edit'}}"
       method="post">
+
+    <input type="hidden" name="returnTo" th:value="${returnTo}">
 
     <input type="hidden"
            name="userId"
@@ -56,7 +61,7 @@
             <option th:each="status :
                     ${T(com.via.shinvia.finprofile.EmploymentStatus).values()}"
                     th:value="${status}"
-                    th:text="${status}">
+                    th:text="${status.label}">
             </option>
         </select>
     </div>

@@ -121,23 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    const steps =
-        document.querySelectorAll(".survey-step");
-
-    const prevButton =
-        document.getElementById("prevButton");
-
-    const nextButton =
-        document.getElementById("nextButton");
-
     const submitButton =
         document.getElementById("submitButton");
-
-    const currentStepText =
-        document.getElementById("currentStepText");
-
-    const progressValue =
-        document.getElementById("progressValue");
 
     const errorArea =
         document.getElementById("errorArea");
@@ -167,18 +152,22 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("savingCapacityArea");
 
 
-    // 고용형태
-    const employmentType =
-        document.getElementById("employmentType");
+    // 고용형태는 금융프로필을 단일 기준으로 사용한다.
+    const financialEmploymentStatus =
+        document.querySelector(".recommendation-page")
+            ?.dataset.employmentStatus || "";
 
     const employmentMonthsArea =
         document.getElementById("employmentMonthsArea");
 
+    const incomeVerifiableArea =
+        document.getElementById("incomeVerifiableArea");
 
-    let currentStep = 1;
+    const welfareNone =
+        document.getElementById("welfareNone");
 
-    const totalSteps =
-        steps.length;
+    const welfareOptions =
+        document.querySelectorAll(".welfare-option");
 
 
     // ============================================
@@ -259,138 +248,71 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    // ============================================
-    // 단계 화면 표시
-    // ============================================
-    function showStep(step) {
+    // 소득이 있는 경우에만 소득증빙 가능 여부를 묻습니다.
+    document.querySelectorAll('input[name="hasIncome"]').forEach(radio => {
+        radio.addEventListener("change", updateIncomeVerifiableArea);
+    });
 
-        steps.forEach(element => {
+    function updateIncomeVerifiableArea() {
+        const hasIncome = getRadioValue("hasIncome") === "true";
+        const radios = incomeVerifiableArea.querySelectorAll(
+            'input[name="incomeVerifiable"]'
+        );
 
-            const elementStep =
-                Number(element.dataset.step);
-
-            element.classList.toggle(
-                "active",
-                elementStep === step
-            );
+        incomeVerifiableArea.hidden = !hasIncome;
+        radios.forEach(radio => {
+            radio.required = hasIncome;
+            if (!hasIncome) {
+                radio.checked = false;
+            }
         });
-
-
-        currentStepText.textContent =
-            String(step);
-
-
-        progressValue.style.width =
-            `${(step / totalSteps) * 100}%`;
-
-
-        // 첫 단계에서는 이전 버튼 숨김
-        prevButton.style.display =
-            step === 1
-                ? "none"
-                : "inline-block";
-
-
-        // 마지막 단계에서는 다음 버튼 숨김
-        nextButton.style.display =
-            step === totalSteps
-                ? "none"
-                : "inline-block";
-
-
-        // 마지막 단계에서만 제출 버튼 표시
-        submitButton.style.display =
-            step === totalSteps
-                ? "inline-block"
-                : "none";
-
-
-        errorArea.textContent = "";
     }
 
 
-    // ============================================
-    // 현재 단계 필수값 검사
-    // ============================================
-    function validateCurrentStep() {
-
-        // STEP 1
-        if (currentStep === 1) {
-
-            if (!residenceSido.value) {
-
-                errorArea.textContent =
-                    "현재 거주 시·도를 선택해 주세요.";
-
-                residenceSido.focus();
-
-                return false;
+    // 복지 자격과 '해당 없음'은 동시에 선택할 수 없습니다.
+    welfareOptions.forEach(option => {
+        option.addEventListener("change", () => {
+            if (option.checked) {
+                welfareNone.checked = false;
+                updateWelfareOptionState();
             }
+        });
+    });
 
-
-            if (!residenceSigungu.value) {
-
-                errorArea.textContent =
-                    "현재 거주 시·군·구를 선택해 주세요.";
-
-                residenceSigungu.focus();
-
-                return false;
-            }
+    welfareNone.addEventListener("change", () => {
+        if (welfareNone.checked) {
+            welfareOptions.forEach(option => {
+                option.checked = false;
+            });
         }
+        updateWelfareOptionState();
+    });
 
-
-        return true;
+    function updateWelfareNone() {
+        welfareNone.checked = !Array.from(welfareOptions)
+            .some(option => option.checked);
+        updateWelfareOptionState();
     }
 
+    function updateWelfareOptionState() {
+        welfareOptions.forEach(option => {
+            option.disabled = welfareNone.checked;
+        });
+    }
 
-    // ============================================
-    // 다음 버튼
-    // ============================================
-    nextButton.addEventListener(
-        "click",
-        () => {
+    function validateWelfareSelection() {
+        const selected = welfareNone.checked
+            || Array.from(welfareOptions).some(option => option.checked);
 
-            errorArea.textContent = "";
-
-
-            if (!validateCurrentStep()) {
-                return;
-            }
-
-
-            if (currentStep < totalSteps) {
-
-                currentStep++;
-
-                showStep(currentStep);
-
-                scrollToSurveyTop();
-            }
+        if (selected) {
+            return true;
         }
-    );
 
-
-    // ============================================
-    // 이전 버튼
-    // ============================================
-    prevButton.addEventListener(
-        "click",
-        () => {
-
-            errorArea.textContent = "";
-
-
-            if (currentStep > 1) {
-
-                currentStep--;
-
-                showStep(currentStep);
-
-                scrollToSurveyTop();
-            }
-        }
-    );
+        errorArea.textContent =
+            "복지 자격 항목을 선택하거나 ‘해당 없음’을 선택해 주세요.";
+        welfareNone.focus();
+        return false;
+    }
 
 
     // ============================================
@@ -515,19 +437,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // ============================================
     // 무직/학생이면 재직기간 숨김
     // ============================================
-    employmentType.addEventListener(
-        "change",
-        () => {
-
-            updateEmploymentFields();
-        }
-    );
-
-
     function updateEmploymentFields() {
 
-        const value =
-            employmentType.value;
+        const value = financialEmploymentStatus;
 
         const employmentMonths =
             document.getElementById(
@@ -631,11 +543,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // STEP 2
             // =========================
             setValue(
-                "employmentType",
-                data.employmentType
-            );
-
-            setValue(
                 "employmentMonths",
                 data.employmentMonths
             );
@@ -650,6 +557,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 data.incomeVerifiable
             );
 
+            setValue(
+                "householdAnnualIncome",
+                data.householdAnnualIncome
+            );
+
+            setValue(
+                "householdNetAssetAmount",
+                data.householdNetAssetAmount
+            );
+
+            updateIncomeVerifiableArea();
+
 
             // =========================
             // STEP 3
@@ -662,6 +581,26 @@ document.addEventListener("DOMContentLoaded", () => {
             setValue(
                 "maritalStatus",
                 data.maritalStatus
+            );
+
+            setRadio(
+                "homelessHousehold",
+                data.homelessHousehold
+            );
+
+            setRadio(
+                "householdHead",
+                data.householdHead
+            );
+
+            setRadio(
+                "prospectiveHouseholdHead",
+                data.prospectiveHouseholdHead
+            );
+
+            setRadio(
+                "firstTimeHomeBuyer",
+                data.firstTimeHomeBuyer
             );
 
             setRadio(
@@ -704,6 +643,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 "multiculturalHousehold",
                 data.multiculturalHousehold
             );
+
+            setCheckbox(
+                "northKoreanDefector",
+                data.northKoreanDefector
+            );
+
+            setCheckbox(
+                "childHeadedHousehold",
+                data.childHeadedHousehold
+            );
+
+            setCheckbox(
+                "earnedIncomeTaxCreditRecipient",
+                data.earnedIncomeTaxCreditRecipient
+            );
+
+            setCheckbox(
+                "basicPensionRecipient",
+                data.basicPensionRecipient
+            );
+
+            setCheckbox(
+                "disabilityBenefitRecipient",
+                data.disabilityBenefitRecipient
+            );
+
+            setCheckbox(
+                "jeonseFraudVictim",
+                data.jeonseFraudVictim
+            );
+
+            updateWelfareNone();
 
 
             // =========================
@@ -781,6 +752,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             errorArea.textContent = "";
 
+            if (!validateWelfareSelection()) {
+                return;
+            }
+
 
             const request = {
 
@@ -800,9 +775,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 // =====================
                 // 근로/소득
                 // =====================
-                employmentType:
-                    getValue("employmentType"),
-
                 employmentMonths:
                     getNumber("employmentMonths"),
 
@@ -810,9 +782,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     getBooleanRadio("hasIncome"),
 
                 incomeVerifiable:
-                    getRadioValue(
-                        "incomeVerifiable"
-                    ),
+                    getBooleanRadio("hasIncome") === true
+                        ? getRadioValue("incomeVerifiable")
+                        : null,
+
+                householdAnnualIncome:
+                    getNumber("householdAnnualIncome"),
+
+                householdNetAssetAmount:
+                    getNumber("householdNetAssetAmount"),
 
 
                 // =====================
@@ -823,6 +801,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 maritalStatus:
                     getValue("maritalStatus"),
+
+                homelessHousehold:
+                    getBooleanRadio("homelessHousehold"),
+
+                householdHead:
+                    getBooleanRadio("householdHead"),
+
+                prospectiveHouseholdHead:
+                    getBooleanRadio("prospectiveHouseholdHead"),
+
+                firstTimeHomeBuyer:
+                    getBooleanRadio("firstTimeHomeBuyer"),
 
                 hasChildren:
                     getBooleanRadio("hasChildren"),
@@ -862,6 +852,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 multiculturalHousehold:
                     getCheckbox(
                         "multiculturalHousehold"
+                    ),
+
+                northKoreanDefector:
+                    getCheckbox(
+                        "northKoreanDefector"
+                    ),
+
+                childHeadedHousehold:
+                    getCheckbox(
+                        "childHeadedHousehold"
+                    ),
+
+                earnedIncomeTaxCreditRecipient:
+                    getCheckbox(
+                        "earnedIncomeTaxCreditRecipient"
+                    ),
+
+                basicPensionRecipient:
+                    getCheckbox(
+                        "basicPensionRecipient"
+                    ),
+
+                disabilityBenefitRecipient:
+                    getCheckbox(
+                        "disabilityBenefitRecipient"
+                    ),
+
+                jeonseFraudVictim:
+                    getCheckbox(
+                        "jeonseFraudVictim"
                     ),
 
 
@@ -1179,10 +1199,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateChildrenArea();
     updatePurposeFields();
     updateEmploymentFields();
-
-
-    // STEP 1 표시
-    showStep(1);
+    updateIncomeVerifiableArea();
+    updateWelfareNone();
 
 
     // 기존 저장 설문 불러오기

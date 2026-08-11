@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/financial-profile")
@@ -17,9 +18,14 @@ public class FinancialProfileController {
     private final CurrentUser currentUser;
 
     @GetMapping
-    public String showFinancialProfile(Authentication authentication, Model model) {
-        Long userId=currentUser.getUserId(authentication);
+    public String showFinancialProfile(
+            Authentication authentication,
+            Model model,
+            @RequestParam(required = false) String returnTo
+    ) {
+        Long userId = currentUser.getUserId(authentication);
         FinancialProfile fprofile= fProfileService.findFinancialProfileByUserId(userId);
+        model.addAttribute("returnTo", normalizeReturnTo(returnTo));
         model.addAttribute("financialProfile", fprofile);
 
         if (fprofile == null){
@@ -35,20 +41,28 @@ public class FinancialProfileController {
 
     @PostMapping("/new")
     public String createFinancialProfile(FinancialProfileRequestDto request,
-                                        Authentication authentication){
-        Long userId=currentUser.getUserId(authentication);
+                                        Authentication authentication,
+                                        @RequestParam(required = false) String returnTo){
+        Long userId = currentUser.getUserId(authentication);
         fProfileService.createFinancialProfile(request,userId);
 
-        return "redirect:/financial-profile";
+        return "redirect:" + normalizeReturnTo(returnTo);
     }
 
 
     @PostMapping("/edit")
     public String updateFinancialProfile(FinancialProfileRequestDto request,
-                                        Authentication authentication){
-        Long userId=currentUser.getUserId(authentication);
+                                        Authentication authentication,
+                                        @RequestParam(required = false) String returnTo){
+        Long userId = currentUser.getUserId(authentication);
         fProfileService.updateFinancialProfile(request,userId);
 
-        return "redirect:/financial-profile";
+        return "redirect:" + normalizeReturnTo(returnTo);
+    }
+
+    private String normalizeReturnTo(String returnTo) {
+        return "/policy/recommendation".equals(returnTo)
+                ? returnTo
+                : "/";
     }
 }

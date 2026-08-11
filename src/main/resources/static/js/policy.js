@@ -7,25 +7,47 @@ document.addEventListener("DOMContentLoaded", () => {
         ".sidebar-menu-group a[href]"
     );
 
-    sidebarLinks.forEach((link) => {
-        const linkPath = normalizeSidebarPath(
-            new URL(link.href, window.location.origin).pathname
-        );
+    const currentLink = Array.from(sidebarLinks)
+        .map(link => ({
+            link,
+            path: normalizeSidebarPath(
+                new URL(link.href, window.location.origin).pathname
+            )
+        }))
+        .filter(item => item.path !== "/"
+            && (currentPath === item.path
+                || currentPath.startsWith(`${item.path}/`)))
+        .sort((first, second) => second.path.length - first.path.length)[0];
 
-        if (linkPath !== currentPath) {
-            return;
-        }
+    if (currentLink) {
+        currentLink.link.classList.add("active");
+        currentLink.link.setAttribute("aria-current", "page");
 
-        link.classList.add("active");
-        link.setAttribute("aria-current", "page");
-
-        const currentGroup = link.closest(
+        const currentGroup = currentLink.link.closest(
             "details.sidebar-menu-group"
         );
 
         if (currentGroup) {
             currentGroup.open = true;
         }
+    }
+
+    const sidebarGroups = document.querySelectorAll(
+        "details.sidebar-menu-group"
+    );
+
+    sidebarGroups.forEach(group => {
+        group.addEventListener("toggle", () => {
+            if (!group.open) {
+                return;
+            }
+
+            sidebarGroups.forEach(otherGroup => {
+                if (otherGroup !== group) {
+                    otherGroup.open = false;
+                }
+            });
+        });
     });
 
     function normalizeSidebarPath(path) {
