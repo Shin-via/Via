@@ -72,10 +72,6 @@ public class SecurityConfig {
                                 "/api/asset-products/**",
                                 "/api/social-finance/**",
                                 "/api/welfare-support/**",
-                                // 맞춤 금융지원상품 추천 설문
-                                "/policy/recommendation",
-                                "/policy/recommendation/**",
-                                "/api/policy/recommendation/**",
                                 // 대출분석 API
                                 "/api/loan-analysis/**",
 
@@ -99,6 +95,13 @@ public class SecurityConfig {
 
                         )
                         .permitAll()
+
+                        .requestMatchers(
+                                "/policy/recommendation",
+                                "/policy/recommendation/**",
+                                "/api/policy/recommendation/**"
+                        )
+                        .authenticated()
 
                         // 나머지 요청은 로그인 필요
                         .anyRequest()
