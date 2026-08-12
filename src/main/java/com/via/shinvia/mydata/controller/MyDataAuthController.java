@@ -75,7 +75,11 @@ public class MyDataAuthController {
         try {
             MyDataAuthTokenResponseDto tokenResponse= myDataAuthService.issueTokens(String.valueOf(connectionId), code);
             myDataConnectionService.completeConnection(connectionId);
-            return ResponseEntity.ok(tokenResponse);
+
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(URI.create("/mydata/result"))
+                    .build();
 
         } catch (Exception e) {
             myDataConnectionService.failConnection(connectionId);

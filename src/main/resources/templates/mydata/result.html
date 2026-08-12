@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/basic2 :: layout(~{::title}, ~{::main},~{::script}, ${serviceName})}">
 <head>
     <meta charset="UTF-8">
     <title>마이데이터 연동 완료</title>

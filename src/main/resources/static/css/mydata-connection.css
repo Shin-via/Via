@@ -4,13 +4,12 @@
 
 body {
     margin: 0;
-    padding: 40px 20px;
     background-color: #fff;
     color: #000;
     font-family: Arial, sans-serif;
 }
 
-main {
+connection_main {
     width: 100%;
     max-width: 700px;
     margin: 60px auto;
