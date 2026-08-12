@@ -1,14 +1,16 @@
 .loan-recommendation-page {
-    width: min(100%, 1120px);
+    width: 100%;
+    max-width: 700px;
     margin: 0 auto;
-    padding: 54px 34px 80px;
+    padding: 48px 0 70px;
     box-sizing: border-box;
     color: #343941;
 }
 
 .loan-recommendation-header {
-    padding-bottom: 28px;
-    border-bottom: 1px solid #70aef0;
+    margin-bottom: 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #d6e2f1;
 }
 
 .loan-recommendation-eyebrow {
@@ -22,14 +24,15 @@
 .loan-recommendation-header h1 {
     margin: 0;
     color: #242930;
-    font-size: 38px;
-    line-height: 1.2;
+    font-size: 30px;
+    line-height: 1.25;
+    letter-spacing: -1px;
 }
 
 .loan-recommendation-header > p:last-child {
     margin: 12px 0 0;
     color: #62708f;
-    font-size: 17px;
+    font-size: 14px;
     line-height: 1.7;
 }
 
@@ -56,7 +59,13 @@
 .loan-profile-panel,
 .loan-condition-panel,
 .loan-result-panel {
-    margin-top: 34px;
+    margin-top: 30px;
+}
+
+body .loan-recommendation-page .loan-profile-panel,
+body .loan-recommendation-page .loan-condition-panel {
+    background: var(--via-background);
+    box-shadow: none;
 }
 
 .section-heading-row {
@@ -70,7 +79,7 @@
 .section-heading-row h2 {
     margin: 0;
     color: #242930;
-    font-size: 25px;
+    font-size: 20px;
 }
 
 .section-heading-row p {
@@ -101,8 +110,8 @@
 .loan-profile-grid,
 .recommendation-summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 3px solid #30343b;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 2px solid #30343b;
     border-right: 1px solid #d9dce0;
     border-bottom: 1px solid #d9dce0;
     background: #ffffff;
@@ -144,13 +153,13 @@
 
 .loan-recommendation-form {
     border: 1px solid #d5d8dc;
-    border-top: 3px solid #30343b;
+    border-top: 2px solid #30343b;
     background: #ffffff;
 }
 
 .recommendation-form-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
 }
 
 .recommendation-field {
@@ -161,24 +170,27 @@
     min-height: 112px;
     padding: 18px;
     border-bottom: 1px solid #dfe1e4;
+    border-right: 0;
     box-sizing: border-box;
 }
 
 .recommendation-field:nth-child(odd) {
-    border-right: 1px solid #dfe1e4;
+    border-right: 0;
 }
 
 .recommendation-field-wide {
-    grid-column: 1 / -1;
+    grid-column: auto;
     border-right: 0 !important;
 }
 
 .recommendation-field > span {
+    grid-row: 1 / span 2;
     align-self: stretch;
     display: flex;
     align-items: center;
     margin: -18px 0 -18px -18px;
     padding: 18px;
+    border-right: 1px solid #dfe1e4;
     background: #f0f1f3;
     color: #3f4650;
     font-weight: 800;
@@ -239,10 +251,13 @@
 .secondary-action {
     display: inline-flex;
     min-width: 170px;
+    height: 52px;
     min-height: 52px;
+    margin: 0;
     align-items: center;
     justify-content: center;
     padding: 0 24px;
+    border-radius: 0;
     border: 1px solid #bcc0c6;
     background: #ffffff;
     color: #48505a;
@@ -563,7 +578,7 @@
     }
 
     .loan-recommendation-header h1 {
-        font-size: 31px;
+        font-size: 26px;
     }
 
     .section-heading-row,
@@ -585,7 +600,10 @@
     }
 
     .recommendation-field > span {
+        grid-row: auto;
         margin: -18px -18px 0;
+        border-right: 0;
+        border-bottom: 1px solid #dfe1e4;
     }
 
     .recommendation-field small {

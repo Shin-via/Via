@@ -6,12 +6,12 @@
 </head>
 <body>
 <th:block th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
-    <main class="loan-recommendation-page">
-        <section class="loan-recommendation-header">
-            <p class="loan-recommendation-eyebrow">LOAN PRODUCT MATCHING</p>
+    <main class="policy-container bank-policy-page loan-recommendation-page">
+        <section class="page-header loan-recommendation-header">
+            <p class="page-label loan-recommendation-eyebrow">LOAN PRODUCT MATCHING</p>
             <h1>대출 상품 추천</h1>
 
-            <p>
+            <p class="page-description">
                 대출 목적과 확인 가능한 상품 조건으로 후보를 필터링하고,
                 동일한 희망금액과 기간을 기준으로 예상금리, 월 납입액 및 총상환액을 비교합니다.
             </p>
@@ -22,7 +22,7 @@
             금감원 공시정보와 입력조건으로 계산한 비교 결과이며 실제 금리/한도/가입 가능 여부는 금융기관 심사에 따라 달라질 수 있습니다.
         </div>
 
-        <section class="loan-profile-panel">
+        <section class="loan-recommendation-panel loan-profile-panel">
             <div class="section-heading-row">
                 <div>
                     <h2>내 금융정보</h2>
@@ -68,7 +68,7 @@
             </div>
         </section>
 
-        <section class="loan-condition-panel">
+        <section class="loan-recommendation-panel loan-condition-panel">
             <div class="section-heading-row">
                 <div>
                     <h2>추천 조건 입력</h2>
@@ -182,8 +182,8 @@
                 </div>
 
                 <div class="recommendation-form-actions">
-                    <a class="secondary-action" th:href="@{/loans/recommendations}">초기화</a>
-                    <button class="primary-action"
+                    <a class="secondary-button secondary-action" th:href="@{/loans/recommendations}">초기화</a>
+                    <button class="primary-button primary-action"
                             type="submit"
                             th:disabled="${profile == null}">
                         조건에 맞는 상품 비교하기
@@ -198,7 +198,7 @@
             추천 처리 중 오류가 발생했습니다.
         </div>
 
-        <section th:if="${result != null}" class="loan-result-panel">
+        <section th:if="${result != null}" class="loan-recommendation-panel loan-result-panel">
             <div class="section-heading-row">
                 <div>
                     <h2>추천 결과</h2>
@@ -243,7 +243,7 @@
             </div>
 
             <div th:unless="${#lists.isEmpty(result.recommendations)}" class="recommendation-card-list">
-                <article class="recommendation-card"
+                <article class="loan-recommendation-card recommendation-card"
                          th:each="item : ${result.recommendations}">
                     <div class="recommendation-card-rank" th:text="${item.rank}">1</div>
 
