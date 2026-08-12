@@ -21,33 +21,11 @@ public class PolicySupportViewController {
 
     @GetMapping("/policy-support")
     public String supportList(
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
-            )
-            String keyword,
-
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
-            )
-            String target,
-
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
-            )
-            String usage,
-
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
-            )
-            String amount,
-
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "") String target,
+            @RequestParam(required = false, defaultValue = "") String usage,
+            @RequestParam(required = false, defaultValue = "") String amount,
+            @RequestParam(required = false, defaultValue = ""
             )
             String ageGroup,
 
