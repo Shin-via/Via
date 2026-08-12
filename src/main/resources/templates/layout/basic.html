@@ -31,6 +31,7 @@
                     <ul>
                         <li><span class="sidebar-menu-disabled">현재 금융 현황 <small>준비중</small></span></li>
                         <li><span class="sidebar-menu-disabled">스트레스 DSR 분석 <small>준비중</small></span></li>
+                        <li><a th:href="@{/stress-test/personal}">개인 스트레스 DSR 분석</a></li>
                     </ul>
                 </details>
 
@@ -39,6 +40,9 @@
                     <ul>
                         <li><a th:href="@{/loans/recommendations}">대출 상품 추천</a></li>
                         <li><a th:href="@{/loans/breakeven-rate-test}">금리상승 취약도</a></li>
+                        <li><a th:href="@{/loans/1/historical-rate-replay}">과거 금리인상기 재현</a></li>
+                        <li><a th:href="@{/loans/1/market-implied-simulation}">시장 내재 금리 시나리오</a></li>
+                        <li><a th:href="@{/loans/1/staged-rate-simulation}">계단식 금리 시나리오</a></li>
                         <li><a th:href="@{/loan-analysis/debt-priority}">부채 상환 우선순위</a></li>
                         <li><a th:href="@{/loan-analysis/scenarios}">대출 대응방안 비교</a></li>
                     </ul>
