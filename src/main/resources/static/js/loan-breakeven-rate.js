@@ -1,10 +1,17 @@
 const form = document.querySelector('#breakevenForm');
 const submitButton = document.querySelector('#submitButton');
+const resetButton = document.querySelector('#resetButton');
 const errorMessage = document.querySelector('#errorMessage');
 const resultArea = document.querySelector('#resultArea');
 const resultMessage = document.querySelector('#resultMessage');
 const resultExcessTile = document.querySelector('#resultExcessTile');
 const resultStatusBadge = document.querySelector('#resultStatusBadge');
+
+resetButton.addEventListener('click', () => {
+    form.reset();
+    errorMessage.classList.add('hidden');
+    resultArea.classList.add('hidden');
+});
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -40,9 +47,29 @@ async function fetchBreakevenRate(loanId, thresholdType, thresholdValue) {
     return data;
 }
 
+const LOAN_TYPE_LABELS = {
+    MORTGAGE_LOAN: '주택담보대출',
+    CREDIT_LOAN: '신용대출',
+    JEONSE_LOAN: '전세자금대출',
+    STUDENT_LOAN: '학자금대출'
+};
+
+const RATE_TYPE_LABELS = {
+    FIXED: '고정금리',
+    VARIABLE: '변동금리'
+};
+
+function translateLoanType(type) {
+    return LOAN_TYPE_LABELS[type] || type;
+}
+
+function translateRateType(type) {
+    return RATE_TYPE_LABELS[type] || type;
+}
+
 function renderResult(data) {
-    document.querySelector('#resultLoanType').textContent = data.loanType;
-    document.querySelector('#resultRateType').textContent = data.rateType;
+    document.querySelector('#resultLoanType').textContent = translateLoanType(data.loanType);
+    document.querySelector('#resultRateType').textContent = translateRateType(data.rateType);
     document.querySelector('#resultCurrentRate').textContent = data.currentRate;
     document.querySelector('#resultCurrentMonthlyPayment').textContent = formatNumber(data.currentMonthlyPayment);
     document.querySelector('#resultBreakevenRate').textContent =

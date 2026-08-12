@@ -1,20 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
 <head>
-    <meta charset="UTF-8">
-    <title>계단식 금리 시나리오 테스트</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" th:href="@{/css/frame.css}">
-    <link rel="stylesheet" th:href="@{/css/loan-ratesimulation-common.css}">
-    <link rel="stylesheet" th:href="@{/css/staged-rate-simulation.css}">
-    <link rel="stylesheet" th:href="@{/css/via-theme.css}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>계단식 금리 시나리오 테스트 | Via</title>
 </head>
 <body>
-<th:block th:replace="~{fragments/main-header :: mainHeader}"></th:block>
 <main class="page-shell">
+    <link rel="stylesheet" th:href="@{/css/loan-ratesimulation-common.css}">
+    <link rel="stylesheet" th:href="@{/css/staged-rate-simulation.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <header class="page-header">
         <h1>계단식 금리 시나리오 테스트</h1>
         <p class="hint">
@@ -22,33 +18,52 @@
         </p>
     </header>
 
-    <section class="card">
-        <h2 class="card-title">조회 조건</h2>
-        <form id="stagedForm" class="form-grid">
-            <div class="field">
-                <label for="loanId">loanId</label>
-                <input type="number" id="loanId" name="loanId" th:value="${loanId}" required min="1" readonly>
+    <section class="card my-loans-card" id="myLoansSection"
+              data-target-input="loanId"
+              th:attr="data-active-loan-id=${loanId}">
+        <h2 class="card-title">내 보유 대출</h2>
+        <div id="myLoansList" class="my-loans-list">
+            <p class="my-loans-empty">불러오는 중...</p>
+        </div>
+    </section>
+
+    <section class="scenario-section" aria-labelledby="stagedFormTitle">
+        <div class="scenario-section-heading">
+            <div>
+                <h2 id="stagedFormTitle">시나리오 조건 입력</h2>
+                <p>재산정 조건을 입력한 후 실행하기 버튼을 눌러 주세요.</p>
+            </div>
+            <span><b>*</b> 필수 입력</span>
+        </div>
+
+        <form id="stagedForm" class="scenario-form">
+            <input type="hidden" id="loanId" name="loanId" th:value="${loanId}" required min="1">
+
+            <div class="scenario-form-row">
+                <label for="repricingCycleMonths">재산정 주기 <b>*</b></label>
+                <div class="scenario-field field-with-unit">
+                    <input type="number" id="repricingCycleMonths" name="repricingCycleMonths" value="6" required min="1">
+                    <span>개월</span>
+                </div>
+
+                <label for="stepDeltaPercent">재산정 변동폭 <b>*</b></label>
+                <div class="scenario-field field-with-unit">
+                    <input type="number" id="stepDeltaPercent" name="stepDeltaPercent" value="0.25" required step="any">
+                    <span>%p</span>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="repricingCycleMonths">repricingCycleMonths</label>
-                <input type="number" id="repricingCycleMonths" name="repricingCycleMonths" value="6" required min="1">
-                <span class="field-note">재산정 주기(개월)</span>
+            <div class="scenario-form-row single-row">
+                <label for="stepCount">재산정 반복 횟수 <b>*</b></label>
+                <div class="scenario-field">
+                    <input type="number" id="stepCount" name="stepCount" value="5" required min="1">
+                </div>
             </div>
 
-            <div class="field">
-                <label for="stepDeltaPercent">stepDeltaPercent</label>
-                <input type="number" id="stepDeltaPercent" name="stepDeltaPercent" value="0.25" required step="any">
-                <span class="field-note">재산정마다 변동되는 %p</span>
+            <div class="scenario-actions">
+                <button type="button" id="resetButton" class="scenario-button secondary">초기화</button>
+                <button type="submit" id="submitButton" class="scenario-button primary">실행하기</button>
             </div>
-
-            <div class="field">
-                <label for="stepCount">stepCount</label>
-                <input type="number" id="stepCount" name="stepCount" value="5" required min="1">
-                <span class="field-note">재산정 반복 횟수</span>
-            </div>
-
-            <button type="submit" class="btn-primary" id="submitButton">조회</button>
         </form>
 
         <p id="errorMessage" class="banner banner-error hidden"></p>
@@ -96,11 +111,11 @@
                 <table id="resultTable">
                     <thead>
                     <tr>
-                        <th>monthOffset</th>
-                        <th>appliedRate</th>
-                        <th>remainingBalance</th>
-                        <th>monthlyPayment</th>
-                        <th>segmentInterest</th>
+                        <th>경과개월</th>
+                        <th>적용금리</th>
+                        <th>잔액</th>
+                        <th>월상환액</th>
+                        <th>구간이자</th>
                     </tr>
                     </thead>
                     <tbody id="resultTableBody"></tbody>
@@ -108,11 +123,9 @@
             </div>
         </div>
     </section>
+
+    <script th:src="@{/js/my-loans-widget.js}"></script>
+    <script th:src="@{/js/staged-rate-simulation.js}"></script>
 </main>
-
-<th:block th:replace="~{fragments/main-footer :: mainFooter}"></th:block>
-
-<script th:src="@{/js/script.js}"></script>
-<script th:src="@{/js/staged-rate-simulation.js}"></script>
 </body>
 </html>
