@@ -243,7 +243,9 @@
 }
 
 .nav-link {
+    display: block;
     color: var(--color-on-surface-variant);
+    text-decoration: none;
     transition: color 0.2s, border-color 0.2s;
     padding-bottom: 4px;
     border-bottom: 2px solid transparent;
@@ -252,8 +254,9 @@
     white-space: nowrap;
 }
 
-.nav-item:hover .nav-link {
+.nav-item:hover > .nav-link {
     color: var(--color-action-orange);
+    text-decoration: none;
     border-bottom-color: var(--color-action-orange);
     font-weight: 500;
 }
@@ -341,6 +344,7 @@
     padding: 7px 10px;
     border-radius: 7px;
     color: var(--color-on-surface-variant);
+    text-decoration: none;
     font-size: 13px;
     line-height: 1.4;
 }
@@ -349,6 +353,7 @@
     background: #f0f1f3;
     color: #30343b;
     font-weight: 600;
+    text-decoration: none;
 }
 
 .mega-menu-disabled {
