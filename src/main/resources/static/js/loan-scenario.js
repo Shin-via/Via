@@ -59,7 +59,6 @@ async function analyzeScenarios(event) {
 // 입력값 구성
 function collectRequestData() {
     return {
-        userId: numberValue("userId"),
         targetLoanAccountId: numberValue("targetLoanAccountId"),
         desiredRepaymentAmount: numberValue("desiredRepaymentAmount"),
         emergencyFundAmount: numberValue("emergencyFundAmount"),

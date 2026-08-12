@@ -4,9 +4,11 @@ import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioRequestDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioResponseDTO;
 import com.via.shinvia.loananalysis.service.LoanAnalysisService;
+import com.via.shinvia.security.CurrentUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public class LoanAnalysisApiController {
 
     private final LoanAnalysisService
             loanAnalysisService;
+
+    private final CurrentUser currentUser;
 
 
     // 부채 상환순위 조회
@@ -42,12 +46,16 @@ public class LoanAnalysisApiController {
     public ResponseEntity<
             List<LoanScenarioResponseDTO>
             > analyzeScenarios(
+            Authentication authentication,
             @Valid @RequestBody
             LoanScenarioRequestDTO request
     ) {
+        Long userId = currentUser.getUserId(authentication);
+
         return ResponseEntity.ok(
                 loanAnalysisService
                         .analyzeScenarios(
+                                userId,
                                 request
                         )
         );

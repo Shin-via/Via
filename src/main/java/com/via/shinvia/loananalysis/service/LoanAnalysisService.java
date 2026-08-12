@@ -3,6 +3,7 @@ package com.via.shinvia.loananalysis.service;
 import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioRequestDTO;
 import com.via.shinvia.loananalysis.dto.LoanScenarioResponseDTO;
+import com.via.shinvia.loananalysis.dto.LoanAccountAnalysisDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,10 +35,17 @@ public class LoanAnalysisService {
     // 대출 대안 비교
     public List<LoanScenarioResponseDTO>
     analyzeScenarios(
+            Long userId,
             LoanScenarioRequestDTO request
     ) {
         return loanScenarioService.calculate(
+                userId,
                 request
         );
+    }
+
+    // 로그인 사용자의 분석 가능 대출 조회
+    public List<LoanAccountAnalysisDTO> getActiveLoans(Long userId) {
+        return loanScenarioService.findActiveLoans(userId);
     }
 }
