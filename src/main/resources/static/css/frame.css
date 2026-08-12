@@ -243,7 +243,9 @@
 }
 
 .nav-link {
+    display: block;
     color: var(--color-on-surface-variant);
+    text-decoration: none;
     transition: color 0.2s, border-color 0.2s;
     padding-bottom: 4px;
     border-bottom: 2px solid transparent;
@@ -254,6 +256,7 @@
 
 .nav-item:hover .nav-link {
     color: var(--color-action-orange);
+    text-decoration: none;
     border-bottom-color: var(--color-action-orange);
     font-weight: 500;
 }
