@@ -8,7 +8,6 @@ import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.controller.dto.CardListSyncResponse;
 import com.via.shinvia.client.card.controller.dto.CardTransactionSyncResponse;
-import com.via.shinvia.mydata.config.MyDataProperties;
 import com.via.shinvia.security.CurrentUser;
 import com.via.shinvia.service.mydata.CardSyncService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,7 +44,6 @@ public class CardSyncController {
     private final MydataCardBillDetailClient cardBillDetailClient;
     private final CardSyncService cardSyncService;
     private final CurrentUser currentUser;
-    private final MyDataProperties myDataProperties;
     LocalDateTime now = LocalDateTime.now();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     String strTime = now.format(formatter);
@@ -62,9 +60,7 @@ public class CardSyncController {
         log.info(" 수신된 Authorization 헤더: {}, userId: {}", authorization, userId);
 
         CardListResponse response = cardListClient.getCards(extractAccessToken(authorization), CardListRequest.builder()
-                .orgCode(myDataProperties.getOrgCode())
                 .searchTimestamp(strTime)
-                .nextPage(null)
                 .limit(limit)
                 .build());
 

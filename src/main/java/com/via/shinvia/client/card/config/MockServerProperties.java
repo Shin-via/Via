@@ -14,4 +14,5 @@ public class MockServerProperties {
     private String baseUrl;
     private int connectTimeout = 3000;
     private int readTimeout = 5000;
+    private String orgCode;
 }

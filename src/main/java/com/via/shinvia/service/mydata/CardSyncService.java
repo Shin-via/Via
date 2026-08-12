@@ -6,8 +6,8 @@ import com.via.shinvia.client.card.list.response.CardInfoDto;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.entity.CardAccount;
 import com.via.shinvia.client.card.entity.CardTransaction;
+import com.via.shinvia.client.card.config.MockServerProperties;
 import com.via.shinvia.client.card.mapper.CardMapper;
-import com.via.shinvia.mydata.config.MyDataProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class CardSyncService {
     private static final DateTimeFormatter PAID_DTIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private final CardMapper cardMapper;
-    private final MyDataProperties myDataProperties;
+    private final MockServerProperties mockServerProperties;
 
     // TODO(마이데이터 동의 미구현): mydataConnectionId는 userId 기준으로 찾거나 새로 만든 임시값이다.
     // MyData 동의(OAuth) 플로우가 생기면 그 결과에서 나온 connection을 쓰도록 바꿀 것.
@@ -41,9 +41,9 @@ public class CardSyncService {
             return List.of();
         }
 
-        Long institutionId = cardMapper.findInstitutionIdByOrgCode(myDataProperties.getOrgCode());
+        Long institutionId = cardMapper.findInstitutionIdByOrgCode(mockServerProperties.getOrgCode());
         if (institutionId == null) {
-            throw new IllegalStateException("등록되지 않은 금융기관 코드입니다: " + myDataProperties.getOrgCode());
+            throw new IllegalStateException("등록되지 않은 금융기관 코드입니다: " + mockServerProperties.getOrgCode());
         }
         Long connectionId = resolveConnectionId(userId);
 

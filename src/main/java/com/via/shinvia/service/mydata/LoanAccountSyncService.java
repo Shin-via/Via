@@ -26,6 +26,21 @@ public class LoanAccountSyncService {
     private final MyDataLoanClient myDataLoanClient;
     private final LoanAccountMapper loanAccountMapper;
 
+    /**
+     * DB에 이미 저장된 보유 대출 목록만 조회한다 (목서버 재호출 없음).
+     * 마이데이터 연동이 안 돼 있으면 에러 대신 빈 목록을 반환한다 - 대출 시뮬레이션 화면에서
+     * "내 보유 대출" 위젯을 그릴 때, 연동 전 사용자도 화면 자체는 볼 수 있어야 하기 때문.
+     */
+    public List<LoanAccount> getMyLoans(Long userId) {
+        Long connectionId;
+        try {
+            connectionId = myDataConnectionService.getConnectedConnectionId(userId);
+        } catch (IllegalStateException e) {
+            return List.of();
+        }
+        return loanAccountMapper.findAllByConnectionId(connectionId);
+    }
+
     @Transactional
     public List<LoanAccount> syncLoans(Long userId) {
 
