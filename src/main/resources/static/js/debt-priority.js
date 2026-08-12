@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", loadDebtPriorities);
 
 // 부채 상환 우선순위 조회
 async function loadDebtPriorities() {
-    const userId = 1;
     const loadingArea = document.getElementById("loadingArea");
     const errorArea = document.getElementById("errorArea");
     const priorityList = document.getElementById("priorityList");
@@ -12,7 +11,7 @@ async function loadDebtPriorities() {
     }
 
     try {
-        const response = await fetch(`/api/loan-analysis/debt-priority/${userId}`, {
+        const response = await fetch("/api/loan-analysis/debt-priority", {
             method: "GET",
             headers: {"Accept": "application/json"}
         });

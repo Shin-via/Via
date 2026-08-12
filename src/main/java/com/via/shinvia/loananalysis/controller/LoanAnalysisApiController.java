@@ -26,12 +26,14 @@ public class LoanAnalysisApiController {
 
 
     // 부채 상환순위 조회
-    @GetMapping("/debt-priority/{userId}")
+    @GetMapping("/debt-priority")
     public ResponseEntity<
             List<DebtPriorityResponseDTO>
             > getDebtPriorities(
-            @PathVariable Long userId
+            Authentication authentication
     ) {
+        Long userId = currentUser.getUserId(authentication);
+
         return ResponseEntity.ok(
                 loanAnalysisService
                         .getDebtPriorities(
