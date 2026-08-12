@@ -1,6 +1,4 @@
-/* loan/ratesimulation 테스트 화면 공용 디자인 토큰 + 컴포넌트
-   fragments/main-header, main-footer(frame.css/main.css)와 같은 Via 브랜드 톤(네이비 + 오렌지)을 따른다.
-   layout/basic.html + policy.css에 더 이상 의존하지 않고, page-header/policy-notice 등도 여기서 자체 정의한다. */
+/* loan/ratesimulation 화면 공용 디자인 토큰 + 컴포넌트 */
 
 :root {
     --surface-page: #f9f9fd;
@@ -33,11 +31,6 @@
     --shadow-card: none;
 }
 
-/* =========================================================
-   페이지 폭 (policy.css의 ".site-content .bank-policy-page { width:100%; max-width:700px }"가
-   실제로 부채 상환 우선순위 폭을 결정하는 규칙 - 그 값 그대로 맞춤)
-========================================================= */
-
 .site-content .page-shell {
     width: 100%;
     max-width: 700px;
@@ -46,10 +39,6 @@
     font-family: Pretendard, -apple-system, "system-ui", "Segoe UI", sans-serif;
     color: #191f2c;
 }
-
-/* =========================================================
-   페이지 헤더 (부채 상환 우선순위(debt-priority.css)와 박스/글씨 크기 맞춤)
-========================================================= */
 
 .page-shell .page-header {
     margin-bottom: 18px;
@@ -75,10 +64,7 @@
     color: #7b8088;
 }
 
-/* =========================================================
-   내 보유 대출 위젯 (my-loans-widget.js가 채움)
-========================================================= */
-
+/* 내 보유 대출 위젯 */
 .my-loans-card .card-title {
     display: flex;
     align-items: center;
@@ -455,11 +441,7 @@ details summary {
     display: none;
 }
 
-/* =========================================================
-   시나리오 조건 입력 (대출 대응방안 비교 - loan-scenario.css의
-   .scenario-* 컴포넌트를 그대로 맞춤)
-========================================================= */
-
+/* 시나리오 조건 입력 */
 .scenario-section-heading {
     display: flex;
     align-items: flex-end;
