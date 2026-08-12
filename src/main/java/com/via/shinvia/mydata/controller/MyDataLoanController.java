@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +44,17 @@ public class MyDataLoanController {
                         .syncLoans(userId);
 
         return ResponseEntity.ok(loans);
+    }
+
+    /**
+     * 이미 동기화되어 저장된 보유 대출 목록 조회 (목서버 재호출 없음).
+     * 대출 시뮬레이션 화면의 "내 보유 대출" 위젯에서 사용한다.
+     */
+    @GetMapping
+    public ResponseEntity<List<LoanAccount>> myLoans(
+            Authentication authentication
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        return ResponseEntity.ok(loanAccountSyncService.getMyLoans(userId));
     }
 }
