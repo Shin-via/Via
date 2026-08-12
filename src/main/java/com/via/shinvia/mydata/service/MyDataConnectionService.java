@@ -3,7 +3,9 @@ package com.via.shinvia.mydata.service;
 import com.via.shinvia.mydata.domain.ConnectionStatus;
 import com.via.shinvia.mydata.domain.MyDataConnection;
 import com.via.shinvia.mydata.mapper.MyDataConnectionMapper;
+import com.via.shinvia.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MyDataConnectionService {
     private final MyDataConnectionMapper myDataConnectionMapper;
+    private final CurrentUser currentUser;
+
+    public Long getConnectionId(Long userId) {
+        Long connectionId = myDataConnectionMapper.findConnectionIdByUserId(userId);
+        return connectionId;
+    }
 
     public Long startConnection(Long userId){
         MyDataConnection existingConnection = myDataConnectionMapper.findByUserId(userId);
@@ -19,9 +27,9 @@ public class MyDataConnectionService {
         //최초 연동
         if(existingConnection==null) {
             MyDataConnection newConnection = MyDataConnection.builder()
-                                                             .userId(userId)
-                                                             .connectionStatus(ConnectionStatus.PENDING)
-                                                             .build();
+                    .userId(userId)
+                    .connectionStatus(ConnectionStatus.PENDING)
+                    .build();
             int result = myDataConnectionMapper.insertMyDataConnection(newConnection);
 
             if(result!=1 || newConnection.getConnectionId()==null) {
@@ -74,15 +82,5 @@ public class MyDataConnectionService {
         }
 
         return connection.getConnectionId();
-    }
-
-    @Transactional(readOnly = true)
-    public boolean isConnected(Long userId) {
-        MyDataConnection connection =
-                myDataConnectionMapper.findByUserId(userId);
-
-        return connection != null
-                && connection.getConnectionStatus()
-                == ConnectionStatus.CONNECTED;
     }
 }
