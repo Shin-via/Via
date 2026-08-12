@@ -63,6 +63,6 @@ public class FinancialProfileController {
     private String normalizeReturnTo(String returnTo) {
         return "/policy/recommendation".equals(returnTo)
                 ? returnTo
-                : "/";
+                : "/financial-profile";
     }
 }

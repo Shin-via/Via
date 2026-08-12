@@ -113,6 +113,26 @@
                     </div>
                 </div>
 
+                <div class="form-field">
+                    <label for="creditScore">신용점수</label>
+
+                    <div class="input-area">
+                        <input type="number"
+                               id="creditScore"
+                               th:field="*{creditScore}"
+                               min="1"
+                               max="1000"
+                               data-editable
+                               th:disabled="${!isNew}"
+                               placeholder="신용점수를 입력해주세요">
+
+                        <p class="field-error"
+                           th:if="${#fields.hasErrors('creditScore')}"
+                           th:errors="*{creditScore}">
+                        </p>
+                    </div>
+                </div>
+
                 <!-- 신규 등록 -->
                 <button type="submit"
                         class="primary-button"
