@@ -60,9 +60,9 @@ public class SecurityConfig {
                                 "/api/cards/sync/**",
                                 // 정부 규제 안내
                                 "/financial-policy/**",
-                                //rps 부채상환
-                                "/loan-analysis/**",
-                                "/api/loan-analysis/**",
+                                // 부채 상환순위 임시 공개 경로
+                                "/loan-analysis/debt-priority",
+                                "/api/loan-analysis/debt-priority/**",
                                 // 금융정책 화면
                                 "/policy-support",
                                 "/policy-support/**",
@@ -73,10 +73,6 @@ public class SecurityConfig {
                                 "/api/asset-products/**",
                                 "/api/social-finance/**",
                                 "/api/welfare-support/**",
-                                // 대출분석 API
-                                "/api/loan-analysis/**",
-
-
                                 // 대출상품 카탈로그
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/loan-product-catalogs/**",

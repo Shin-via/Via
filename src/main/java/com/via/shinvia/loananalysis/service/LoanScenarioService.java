@@ -29,6 +29,7 @@ public class LoanScenarioService {
 
     // 네 가지 대안 비교
     public List<LoanScenarioResponseDTO> calculate(
+            Long userId,
             LoanScenarioRequestDTO request
     ) {
         // 요청값 확인
@@ -38,7 +39,7 @@ public class LoanScenarioService {
         LoanAccountAnalysisDTO loan =
                 loanAccountAnalysisMapper
                         .findLoanById(
-                                request.getUserId(),
+                                userId,
                                 request.getTargetLoanAccountId()
                         );
 
@@ -53,7 +54,7 @@ public class LoanScenarioService {
         FinancialCapacityDTO financial =
                 financialCapacityMapper
                         .findFinancialCapacityByUserId(
-                                request.getUserId()
+                                userId
                         );
 
         // 재무정보 없음 처리
@@ -104,16 +105,15 @@ public class LoanScenarioService {
             );
         }
 
-        if (request.getUserId() == null) {
-            throw new IllegalArgumentException(
-                    "회원번호가 필요합니다."
-            );
-        }
-
         if (request.getTargetLoanAccountId() == null) {
             throw new IllegalArgumentException(
                     "분석할 대출번호가 필요합니다."
             );
         }
+    }
+
+    // 로그인 사용자의 분석 가능 대출 조회
+    public List<LoanAccountAnalysisDTO> findActiveLoans(Long userId) {
+        return loanAccountAnalysisMapper.findActiveLoansByUserId(userId);
     }
 }
