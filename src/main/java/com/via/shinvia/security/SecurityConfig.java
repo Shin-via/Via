@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  /*  private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
@@ -27,7 +27,10 @@ public class SecurityConfig {
                                 "/loans/recommendations/**",
                                 "/api/loan-analysis/**",
                                 "/api/admin/loan-product-catalogs/**",
-                                "/api/policy/recommendation/**"
+                                "/api/policy/recommendation/**",
+                                "/api/mydata/oauth/**", //일단 임시허용
+                                "/api/auth/token/**", // 일단 임시허용
+                                "/api/accounts/**" // 계좌 조회 및 동기화 API 임시 허용
                         )
                 )
 
@@ -57,6 +60,8 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
                                 // Card sync 경로 허용
                                 "/api/cards/sync/**",
+                                // 계좌 조회 및 동기화 경로 허용
+                                "/api/accounts/**",
                                 // 정부 규제 안내
                                 "/financial-policy/**",
                                 //rps 부채상환
@@ -138,5 +143,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }*/
+    }
 }
