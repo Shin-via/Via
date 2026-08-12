@@ -45,4 +45,9 @@ public class AccountRecoveryController {
 
         return "user/find-id";
     }
+
+    @GetMapping("/pw")
+    public String findPasswordPage() {
+        return "user/find-pw";
+    }
 }

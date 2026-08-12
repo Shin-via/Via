@@ -1,95 +1,170 @@
-/* loan/ratesimulation 테스트 화면 공용 디자인 토큰 + 컴포넌트 */
+/* loan/ratesimulation 테스트 화면 공용 디자인 토큰 + 컴포넌트
+   fragments/main-header, main-footer(frame.css/main.css)와 같은 Via 브랜드 톤(네이비 + 오렌지)을 따른다.
+   layout/basic.html + policy.css에 더 이상 의존하지 않고, page-header/policy-notice 등도 여기서 자체 정의한다. */
 
 :root {
-    --surface-page: #f9f9f7;
-    --surface-card: #fcfcfb;
-    --surface-subtle: #f4f5f3;
-    --ink-primary: #0b0b0b;
-    --ink-secondary: #52514e;
-    --ink-muted: #898781;
-    --border-hairline: rgba(11, 11, 11, 0.10);
-    --grid-hairline: #e1e0d9;
+    --surface-page: #f9f9fd;
+    --surface-card: #ffffff;
+    --surface-subtle: #f3f3f7;
+    --ink-primary: #161D26;
+    --ink-secondary: #45474b;
+    --ink-muted: #7e8590;
+    --border-hairline: #e2e2e6;
+    --grid-hairline: #e8e8ec;
 
-    --accent: #2a78d6;
-    --accent-dark: #184f95;
-    --accent-tint: #e8f0fc;
+    --accent: #FF9900;
+    --accent-dark: #e08600;
+    --accent-tint: #fff4e0;
 
-    --status-good: #0ca30c;
-    --status-good-tint: #e6f7e6;
+    --status-good: #1a8a4a;
+    --status-good-tint: #e3f6ea;
     --status-warning: #b5790a;
     --status-warning-tint: #fff3d6;
     --status-serious: #c85a34;
     --status-serious-tint: #fdece3;
     --status-critical: #d03b3b;
     --status-critical-tint: #fbe6e6;
-    --status-neutral: #52514e;
-    --status-neutral-tint: #eeeeec;
+    --status-neutral: #45474b;
+    --status-neutral-tint: #e8e8ec;
 
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --shadow-card: 0 1px 2px rgba(11, 11, 11, 0.04), 0 8px 24px rgba(11, 11, 11, 0.06);
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --shadow-card: none;
 }
 
-* {
-    box-sizing: border-box;
-}
+/* =========================================================
+   페이지 폭 (policy.css의 ".site-content .bank-policy-page { width:100%; max-width:700px }"가
+   실제로 부채 상환 우선순위 폭을 결정하는 규칙 - 그 값 그대로 맞춤)
+========================================================= */
 
-body {
-    margin: 0;
-    background-color: var(--surface-page);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    color: var(--ink-primary);
-    line-height: 1.5;
-}
-
-.page-shell {
+.site-content .page-shell {
     width: 100%;
-    max-width: 760px;
-    margin: 48px auto 80px;
-    padding: 0 20px;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 38px 0 10px;
+    font-family: Pretendard, -apple-system, "system-ui", "Segoe UI", sans-serif;
+    color: #191f2c;
 }
 
-.page-header {
-    text-align: center;
-    margin-bottom: 24px;
+/* =========================================================
+   페이지 헤더 (부채 상환 우선순위(debt-priority.css)와 박스/글씨 크기 맞춤)
+========================================================= */
+
+.page-shell .page-header {
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #dcdfe3;
 }
 
-.page-header h1 {
-    margin: 0 0 8px;
+.page-shell .page-header h1 {
+    margin: 0;
     font-size: 26px;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -1px;
+    color: #20242a;
 }
 
-.page-header .hint {
+.page-shell .page-header .hint {
+    max-width: 760px;
+    margin: 9px 0 0;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #7b8088;
+}
+
+/* =========================================================
+   내 보유 대출 위젯 (my-loans-widget.js가 채움)
+========================================================= */
+
+.my-loans-card .card-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.my-loans-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.my-loan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    min-width: 200px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface-subtle);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.my-loan-item:hover {
+    border-color: var(--accent);
+}
+
+.my-loan-item.active {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+}
+
+.my-loan-type {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-primary);
+}
+
+.my-loan-detail {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.my-loans-empty {
     margin: 0;
     font-size: 13px;
     color: var(--ink-muted);
 }
 
-.page-header .hint + .hint {
-    margin-top: 4px;
+.my-loans-empty a {
+    color: var(--accent-dark);
+    font-weight: 600;
+    text-decoration: none;
 }
 
-.card {
+.my-loans-empty a:hover {
+    text-decoration: underline;
+}
+
+body .page-shell .card {
     background-color: var(--surface-card);
-    border: 1px solid var(--border-hairline);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    padding: 28px 32px;
+    border: 1px solid #cfd4da;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 28px 30px;
 }
 
-.card + .card {
+.card + .card,
+.card + .scenario-section,
+.scenario-section + .card {
     margin-top: 20px;
 }
 
 .card-title {
     margin: 0 0 18px;
-    font-size: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--grid-hairline);
+    font-size: 16px;
     font-weight: 700;
-    color: var(--ink-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    color: var(--ink-primary);
+    letter-spacing: -0.2px;
 }
 
 /* form */
@@ -268,13 +343,14 @@ input[readonly] {
 
 .stat-tile {
     background-color: var(--surface-subtle);
-    border-radius: var(--radius-md);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
     padding: 14px 16px;
 }
 
 .stat-tile .stat-label {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--ink-muted);
     text-transform: uppercase;
@@ -377,4 +453,178 @@ details summary {
 
 .hidden {
     display: none;
+}
+
+/* =========================================================
+   시나리오 조건 입력 (대출 대응방안 비교 - loan-scenario.css의
+   .scenario-* 컴포넌트를 그대로 맞춤)
+========================================================= */
+
+.scenario-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.scenario-section-heading h2 {
+    margin: 0 0 4px;
+    color: #20242a;
+    font-size: 18px;
+}
+
+.scenario-section-heading p,
+.scenario-section-heading > span {
+    margin: 0;
+    color: #74869e;
+    font-size: 11px;
+}
+
+.scenario-section-heading b {
+    color: #d94a4a;
+}
+
+.scenario-form {
+    border-top: 2px solid #30343b;
+    border-right: 1px solid #d5d8dc;
+    border-bottom: 1px solid #d5d8dc;
+    border-left: 1px solid #d5d8dc;
+    background: #ffffff;
+}
+
+.scenario-form-row {
+    display: grid;
+    grid-template-columns: 125px minmax(0, 1fr) 125px minmax(0, 1fr);
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.scenario-form-row:last-child {
+    border-bottom: 0;
+}
+
+.scenario-form-row > label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 12px;
+    border-right: 1px solid #e2e4e7;
+    background: #f0f1f3;
+    color: #4d545e;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.scenario-field {
+    min-width: 0;
+    padding: 10px 12px;
+    border-right: 1px solid #e2e4e7;
+}
+
+.scenario-field:last-child {
+    border-right: 0;
+}
+
+.scenario-field input,
+.scenario-field select {
+    width: 100%;
+    height: 34px;
+    padding: 0 9px;
+    border: 1px solid #b5bac1;
+    border-radius: 0;
+    background: #ffffff;
+    color: #414750;
+    font-size: 12px;
+    outline: none;
+}
+
+.scenario-field input:focus,
+.scenario-field select:focus {
+    border-color: #30343b;
+    box-shadow: inset 0 0 0 1px #30343b;
+}
+
+.scenario-field small {
+    display: block;
+    margin-top: 5px;
+    color: #8292a7;
+    font-size: 10px;
+}
+
+.field-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.field-with-unit span {
+    flex: 0 0 auto;
+    color: #647992;
+    font-size: 11px;
+}
+
+.single-row .scenario-field {
+    grid-column: 2 / 3;
+}
+
+.scenario-actions {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    padding: 18px;
+    background: #f9fcff;
+}
+
+.scenario-button {
+    min-width: 120px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.scenario-button.secondary {
+    border: 1px solid #b5bac1;
+    background: #ffffff;
+    color: #405b7c;
+}
+
+.scenario-button.primary {
+    border: 1px solid #30343b;
+    background: #30343b;
+    color: #ffffff;
+}
+
+.scenario-button.primary:hover {
+    border-color: #505761;
+    background: #505761;
+}
+
+.scenario-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+    .scenario-form-row {
+        grid-template-columns: 110px minmax(0, 1fr);
+    }
+
+    .scenario-form-row > label:nth-of-type(2) {
+        border-top: 1px solid #e2e4e7;
+    }
+
+    .scenario-form-row > .scenario-field:nth-of-type(2) {
+        border-top: 1px solid #e2e4e7;
+    }
+
+    .single-row .scenario-field {
+        grid-column: auto;
+    }
+
+    .scenario-field {
+        border-right: 0;
+    }
 }

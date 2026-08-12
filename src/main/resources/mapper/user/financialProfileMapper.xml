@@ -45,12 +45,29 @@
 
     <update id="updateFinancialProfile">
         UPDATE user_financial_profile
-        SET
-            annual_income = #{annualIncome},
-            income_type= #{incomeType},
-            employment_status= #{employmentStatus},
-            credit_score= #{creditScore},
-            liquid_asset_amount= #{liquidAssetAmount}
+
+        <set>
+            <if test="annualIncome != null">
+                annual_income = #{annualIncome},
+            </if>
+
+            <if test="incomeType != null">
+                income_type = #{incomeType},
+            </if>
+
+            <if test="employmentStatus != null">
+                employment_status = #{employmentStatus},
+            </if>
+
+            <if test="creditScore != null">
+                credit_score = #{creditScore},
+            </if>
+
+            <if test="liquidAssetAmount != null">
+                liquid_asset_amount = #{liquidAssetAmount},
+            </if>
+        </set>
+
         WHERE user_id = #{userId}
     </update>
 

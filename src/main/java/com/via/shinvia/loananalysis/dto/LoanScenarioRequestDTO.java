@@ -15,11 +15,6 @@ import java.math.BigDecimal;
 @Setter
 public class LoanScenarioRequestDTO {
 
-    // 회원 식별자
-    @NotNull(message = "회원번호가 필요합니다.")
-    @Positive(message = "회원번호는 양수여야 합니다.")
-    private Long userId;
-
     // 분석할 대출 식별자
     @NotNull(message = "대상 대출을 선택해주세요.")
     @Positive(message = "대출 식별자는 양수여야 합니다.")

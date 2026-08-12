@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
 <head>
-    <meta charset="UTF-8">
-    <title>과거 금리인상기 재현 테스트</title>
-    <link rel="stylesheet" th:href="@{/css/loan-ratesimulation-common.css}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>과거 금리인상기 재현 테스트 | Via</title>
 </head>
 <body>
 <main class="page-shell">
+    <link rel="stylesheet" th:href="@{/css/loan-ratesimulation-common.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <header class="page-header">
         <h1>과거 금리인상기 재현 테스트</h1>
         <p class="hint">
@@ -19,25 +20,43 @@
         </p>
     </header>
 
-    <section class="card">
-        <h2 class="card-title">조회 조건</h2>
-        <form id="replayForm" class="form-grid">
-            <div class="field">
-                <label for="loanId">loanId</label>
-                <input type="number" id="loanId" name="loanId" th:value="${loanId}" required min="1" readonly>
+    <section class="card my-loans-card" id="myLoansSection"
+              data-target-input="loanId"
+              th:attr="data-active-loan-id=${loanId}">
+        <h2 class="card-title">내 보유 대출</h2>
+        <div id="myLoansList" class="my-loans-list">
+            <p class="my-loans-empty">불러오는 중...</p>
+        </div>
+    </section>
+
+    <section class="scenario-section" aria-labelledby="replayFormTitle">
+        <div class="scenario-section-heading">
+            <div>
+                <h2 id="replayFormTitle">시나리오 조건 입력</h2>
+                <p>재현할 기간을 입력한 후 실행하기 버튼을 눌러 주세요.</p>
+            </div>
+            <span><b>*</b> 필수 입력</span>
+        </div>
+
+        <form id="replayForm" class="scenario-form">
+            <input type="hidden" id="loanId" name="loanId" th:value="${loanId}" required min="1">
+
+            <div class="scenario-form-row">
+                <label for="startDate">시작일 <b>*</b></label>
+                <div class="scenario-field">
+                    <input type="date" id="startDate" name="startDate" value="2021-08-01" required>
+                </div>
+
+                <label for="endDate">종료일 <b>*</b></label>
+                <div class="scenario-field">
+                    <input type="date" id="endDate" name="endDate" value="2023-01-31" required>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="startDate">startDate</label>
-                <input type="date" id="startDate" name="startDate" value="2021-08-01" required>
+            <div class="scenario-actions">
+                <button type="button" id="resetButton" class="scenario-button secondary">초기화</button>
+                <button type="submit" id="submitButton" class="scenario-button primary">실행하기</button>
             </div>
-
-            <div class="field">
-                <label for="endDate">endDate</label>
-                <input type="date" id="endDate" name="endDate" value="2023-01-31" required>
-            </div>
-
-            <button type="submit" class="btn-primary" id="submitButton">조회</button>
         </form>
 
         <p id="errorMessage" class="banner banner-error hidden"></p>
@@ -87,11 +106,11 @@
             <table id="resultTable">
                 <thead>
                 <tr>
-                    <th>monthOffset</th>
-                    <th>appliedRate</th>
-                    <th>remainingBalance</th>
-                    <th>monthlyPayment</th>
-                    <th>segmentInterest</th>
+                    <th>경과개월</th>
+                    <th>적용금리</th>
+                    <th>잔액</th>
+                    <th>월상환액</th>
+                    <th>구간이자</th>
                 </tr>
                 </thead>
                 <tbody id="resultTableBody"></tbody>
@@ -100,8 +119,9 @@
 
         <p id="resultDisclaimer" class="banner banner-neutral"></p>
     </section>
-</main>
 
-<script th:src="@{/js/historical-rate-replay.js}"></script>
+    <script th:src="@{/js/my-loans-widget.js}"></script>
+    <script th:src="@{/js/historical-rate-replay.js}"></script>
+</main>
 </body>
 </html>

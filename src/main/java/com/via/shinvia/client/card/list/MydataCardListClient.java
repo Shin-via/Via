@@ -3,7 +3,6 @@ package com.via.shinvia.client.card.list;
 import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.config.MockServerProperties;
-import com.via.shinvia.mydata.config.MyDataProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -21,14 +20,13 @@ import java.net.URI;
 public class MydataCardListClient {
 
 
-    private final MyDataProperties myDataProperties;
     private final RestTemplate mydataRestTemplate;
     private final MockServerProperties mockServerProperties;
 
     public CardListResponse getCards(String accessToken, CardListRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(mockServerProperties.getBaseUrl())
                 .path("/v2/card/cards")
-                .queryParam("org_code",myDataProperties.getOrgCode())
+                .queryParam("org_code",mockServerProperties.getOrgCode())
                 .queryParam("limit", request.getLimit());
 
         if (StringUtils.hasText(request.getSearchTimestamp())) {

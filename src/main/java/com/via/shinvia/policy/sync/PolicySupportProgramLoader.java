@@ -25,11 +25,6 @@ public class PolicySupportProgramLoader
             ApplicationArguments args
     ) {
         if (!syncOnStartup) {
-
-            log.info(
-                    "정책상품 API 자동 동기화 비활성화"
-            );
-
             return;
         }
 

@@ -16,10 +16,6 @@
     transition: transform 0.3s ease-in-out;
 }
 
-.header.nav-hidden {
-    transform: translateY(-100%);
-}
-
 .utility-nav {
     height: 40px;
     border-bottom: 1px solid var(--color-border-dim);
@@ -30,6 +26,11 @@
     gap: 24px;
     font-size: 14px;
     color: rgba(255, 255, 255, 0.8);
+}
+
+.utility-link {
+    color: #ffffff;
+    text-decoration: none;
 }
 
 .utility-link:hover {
@@ -201,20 +202,23 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 24px;
     position: relative;
 }
 
 .brand-section {
     display: flex;
     align-items: center;
-    gap: 80px;
+    gap: clamp(28px, 4vw, 72px);
     height: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .logo {
     font-size: 28px;
     font-weight: 700;
-    color: #00236E;
+    color: #171a1f;
     letter-spacing: -0.02em;
 }
 
@@ -227,7 +231,7 @@
     .nav-links {
         display: flex;
         align-items: center;
-        gap: 32px;
+        gap: clamp(16px, 2vw, 32px);
     }
 }
 
@@ -243,6 +247,9 @@
     transition: color 0.2s, border-color 0.2s;
     padding-bottom: 4px;
     border-bottom: 2px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .nav-item:hover .nav-link {
@@ -255,7 +262,7 @@
 .mega-menu {
     position: absolute;
     left: 0;
-    top: 64px;
+    top: 104px;
     width: 100%;
     background-color: var(--color-surface-container-lowest);
     border-bottom: 1px solid var(--color-outline-variant);
@@ -278,6 +285,97 @@
     max-width: 1440px;
     margin: 0 auto;
     padding: 32px 24px;
+}
+
+.mega-menu-categories {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+}
+
+.mega-menu-category {
+    min-width: 0;
+    padding: 4px 28px 10px;
+    border-right: 1px solid var(--color-surface-container-high);
+}
+
+.mega-menu-category:first-child {
+    padding-left: 8px;
+}
+
+.mega-menu-category:last-child {
+    padding-right: 8px;
+    border-right: 0;
+}
+
+.mega-menu-category-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 14px;
+    color: #30343b;
+}
+
+.mega-menu-category-heading .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.mega-menu-category-heading h4 {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.mega-menu-list {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mega-menu-list a,
+.mega-menu-disabled {
+    display: flex;
+    min-height: 36px;
+    align-items: center;
+    padding: 7px 10px;
+    border-radius: 7px;
+    color: var(--color-on-surface-variant);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.mega-menu-list a:hover {
+    background: #f0f1f3;
+    color: #30343b;
+    font-weight: 600;
+}
+
+.mega-menu-disabled {
+    justify-content: space-between;
+    color: #9299a4;
+    cursor: default;
+}
+
+.mega-menu-disabled small {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--color-surface-container-high);
+    font-size: 9px;
+    font-weight: 700;
+}
+
+@media (max-width: 1180px) {
+    .mega-menu-categories {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px 0;
+    }
+
+    .mega-menu-category:nth-child(2) {
+        border-right: 0;
+    }
 }
 
 .mega-menu-grid {
@@ -310,6 +408,26 @@
 .mega-menu-card:hover {
     background-color: var(--color-surface-container-low);
     border-color: var(--color-outline-variant);
+}
+
+.mega-menu-card-disabled {
+    cursor: default;
+    opacity: .62;
+}
+
+.mega-menu-card-disabled:hover {
+    border-color: transparent;
+    background-color: transparent;
+}
+
+.mega-menu-card-disabled .card-desc strong {
+    display: inline-flex;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--color-surface-container-high);
+    color: var(--color-on-surface-variant);
+    font-size: 10px;
 }
 
 .icon-circle {
@@ -426,6 +544,30 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    flex: 0 0 auto;
+}
+
+.action-buttons form {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .main-header {
+        padding: 0 16px;
+    }
+
+    .brand-section {
+        gap: 0;
+    }
+
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .btn-signin {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
 }
 
 .icon-button {

@@ -1,7 +1,12 @@
 package com.via.shinvia.mydata.controller;
 
+import com.via.shinvia.mydata.domain.MyDataConnection;
 import com.via.shinvia.mydata.service.MyDataAuthService;
 import com.via.shinvia.mydata.service.MyDataConnectionService;
+import com.via.shinvia.security.CurrentUser;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,18 +14,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/mydata")
+@RequiredArgsConstructor
 public class MyDataConnectionController {
 
     private final MyDataAuthService myDataAuthService;
     private final MyDataConnectionService myDataConnectionService;
-
-    public MyDataConnectionController(MyDataAuthService myDataAuthService, MyDataConnectionService myDataConnectionService) {
-        this.myDataAuthService = myDataAuthService;
-        this.myDataConnectionService = myDataConnectionService;
-    }
+    private final CurrentUser currentUser;
 
     @GetMapping("/connection")
-    public String connectionPage() {
+    public String connectionPage(Authentication authentication) {
+        Long userId=currentUser.getUserId(authentication);
+        Long connectionId = myDataConnectionService.getConnectionId(userId);
+        if (connectionId!=null) {
+            return "redirect:/mydata/result";
+        }
         return "mydata/connection";
     }
 

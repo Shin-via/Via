@@ -28,6 +28,8 @@ public class SecurityConfig {
                                 "/api/loan-analysis/**",
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/policy/recommendation/**",
+                                "/api/mydata/loans/**",
+                                "/api/policy/recommendation/**",
                                 "/api/mydata/oauth/**", //일단 임시허용
                                 "/api/auth/token/**", // 일단 임시허용
                                 "/api/accounts/**" // 계좌 조회 및 동기화 API 임시 허용
@@ -60,13 +62,11 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
                                 // Card sync 경로 허용
                                 "/api/cards/sync/**",
-                                // 계좌 조회 및 동기화 경로 허용
-                                "/api/accounts/**",
                                 // 정부 규제 안내
                                 "/financial-policy/**",
-                                //rps 부채상환
-                                "/loan-analysis/**",
-                                "/api/loan-analysis/**",
+                                // 부채 상환순위 임시 공개 경로
+                                "/loan-analysis/debt-priority",
+                                "/api/loan-analysis/debt-priority/**",
                                 // 금융정책 화면
                                 "/policy-support",
                                 "/policy-support/**",
@@ -77,10 +77,6 @@ public class SecurityConfig {
                                 "/api/asset-products/**",
                                 "/api/social-finance/**",
                                 "/api/welfare-support/**",
-                                // 대출분석 API
-                                "/api/loan-analysis/**",
-
-
                                 // 대출상품 카탈로그
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/loan-product-catalogs/**",
@@ -88,6 +84,7 @@ public class SecurityConfig {
                                 // 정적 리소스
                                 "/css/**",
                                 "/js/**",
+                                "/img/**",
                                 "/images/**",
                                 "/favicon.ico",
                                 "/error",
@@ -143,5 +140,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
+    }*/
 }
