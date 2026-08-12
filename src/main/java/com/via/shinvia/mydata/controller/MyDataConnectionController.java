@@ -24,8 +24,7 @@ public class MyDataConnectionController {
     @GetMapping("/connection")
     public String connectionPage(Authentication authentication) {
         Long userId=currentUser.getUserId(authentication);
-        Long connectionId = myDataConnectionService.getConnectionId(userId);
-        if (connectionId!=null) {
+        if (myDataConnectionService.isConnected(userId)) {
             return "redirect:/mydata/result";
         }
         return "mydata/connection";

@@ -16,9 +16,11 @@ public class MyDataConnectionService {
     private final MyDataConnectionMapper myDataConnectionMapper;
     private final CurrentUser currentUser;
 
-    public Long getConnectionId(Long userId) {
-        Long connectionId = myDataConnectionMapper.findConnectionIdByUserId(userId);
-        return connectionId;
+    public boolean isConnected(Long userId) {
+        MyDataConnection connection = myDataConnectionMapper.findByUserId(userId);
+
+        return connection != null
+                && connection.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
 
     public Long startConnection(Long userId){
