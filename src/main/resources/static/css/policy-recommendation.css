@@ -10,14 +10,17 @@
 }
 
 .recommendation-page {
-    width: min(100% - 48px, 1040px);
+    width: 100%;
+    max-width: 700px;
     margin: 0 auto;
     padding: 48px 0 70px;
     color: var(--rec-text);
 }
 
 .recommendation-header {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rec-line);
 }
 
 .recommendation-header > span {
@@ -52,10 +55,10 @@
 .recommendation-optional-label { color: #505761; font-size: 11px; font-weight: 800; letter-spacing: .5px; }
 .recommendation-profile-link { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 15px; border: 1px solid #30343b; border-radius: 0; background: #fff; color: #505761; font-size: 13px; font-weight: 800; text-decoration: none; }
 .recommendation-profile-link:hover { background: #f4f5f6; }
-.recommendation-profile-values { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: 18px; padding-top: 18px; border-top: 1px solid #dfe1e4; }
-.recommendation-profile-values > div { min-width: 0; padding: 0 14px; border-right: 1px solid #dfe1e4; }
-.recommendation-profile-values > div:first-child { padding-left: 0; }
-.recommendation-profile-values > div:last-child { padding-right: 0; border-right: 0; }
+.recommendation-profile-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; border-top: 2px solid #30343b; border-right: 1px solid #dfe1e4; background: #fff; }
+.recommendation-profile-values > div { min-width: 0; min-height: 72px; padding: 14px 16px; border-bottom: 1px solid #dfe1e4; border-left: 1px solid #dfe1e4; }
+.recommendation-profile-values > div:first-child { padding-left: 16px; }
+.recommendation-profile-values > div:last-child { padding-right: 16px; border-right: 0; }
 .recommendation-profile-values span, .recommendation-profile-values strong { display: block; }
 .recommendation-profile-values span { margin-bottom: 5px; color: #71839b; font-size: 11px; }
 .recommendation-profile-values strong { color: #414750; font-size: 13px; overflow-wrap: anywhere; }
@@ -94,9 +97,9 @@
 }
 
 #recommendationForm {
-    padding: 0 38px 34px;
+    padding: 0 24px 28px;
     border: 1px solid var(--rec-line);
-    border-top: 3px solid #30343b;
+    border-top: 2px solid #30343b;
     border-radius: 0;
     background: var(--rec-white);
     box-shadow: none;
@@ -105,7 +108,7 @@
 .survey-step {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    width: min(100%, 760px);
+    width: 100%;
     margin: 0 auto;
     padding: 38px 0;
     border-bottom: 1px solid #dfe4ea;
@@ -252,7 +255,7 @@ fieldset.form-group legend + * {
 }
 
 .survey-buttons {
-    width: min(100%, 760px);
+    width: 100%;
     margin-right: auto;
     margin-left: auto;
     display: flex;
@@ -381,15 +384,15 @@ fieldset.form-group legend + * {
 
 @media (max-width: 720px) {
     .recommendation-page,
-    .recommendation-result-page { width: min(100% - 28px, 1040px); padding: 36px 0 50px; }
+    .recommendation-result-page { width: calc(100% - 28px); max-width: 700px; padding: 36px 0 50px; }
     #recommendationForm { padding: 0 18px 24px; }
     .survey-progress { padding: 16px; }
     .recommendation-financial-profile { padding: 20px 18px; }
     .recommendation-profile-heading { align-items: flex-start; flex-direction: column; gap: 16px; }
-    .recommendation-profile-values { grid-template-columns: 1fr 1fr; row-gap: 16px; }
+    .recommendation-profile-values { grid-template-columns: 1fr 1fr; }
     .recommendation-profile-values > div,
     .recommendation-profile-values > div:first-child,
-    .recommendation-profile-values > div:last-child { padding: 0; border-right: 0; }
+    .recommendation-profile-values > div:last-child { padding: 14px; border-right: 0; }
     fieldset.form-group { grid-template-columns: 1fr; padding: 16px; }
     .form-group label:has(input[type="radio"]),
     .form-group label:has(input[type="checkbox"]) { display: flex; margin-right: 0; }

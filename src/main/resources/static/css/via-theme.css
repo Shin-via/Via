@@ -50,12 +50,12 @@ body {
 }
 
 .site-layout {
-    width: min(100% - 48px, 1180px);
+    width: min(100% - 48px, 980px);
     min-height: calc(100vh - 104px);
     margin: 104px auto 0;
     padding-top: 30px;
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 30px;
+    grid-template-columns: 220px minmax(0, 700px);
+    gap: 60px;
 }
 
 .site-content,
@@ -146,6 +146,7 @@ body {
         position: static;
         margin-bottom: 24px;
     }
+
 }
 
 /* 내부 서비스 화면: index와 동일한 차분한 네이비·블루 팔레트 */
