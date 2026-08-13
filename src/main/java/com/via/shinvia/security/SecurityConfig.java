@@ -28,7 +28,11 @@ public class SecurityConfig {
                                 "/api/loan-analysis/**",
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/policy/recommendation/**",
-                                "/api/mydata/loans/**"
+                                "/api/mydata/loans/**",
+                                "/api/policy/recommendation/**",
+                                "/api/mydata/oauth/**", //일단 임시허용
+                                "/api/auth/token/**", // 일단 임시허용
+                                "/api/accounts/**" // 계좌 조회 및 동기화 API 임시 허용
                         )
                 )
 
@@ -73,6 +77,13 @@ public class SecurityConfig {
                                 // 대출상품 카탈로그
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/loan-product-catalogs/**",
+
+                                // 복지로 API 및 스웨거
+                                "/api/bokjiro/**",
+                                "/api/localbokjiro/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
 
                                 // 정적 리소스
                                 "/css/**",

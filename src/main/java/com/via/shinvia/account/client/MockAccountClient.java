@@ -9,29 +9,30 @@ import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionReques
 import com.via.shinvia.account.dto.mock.MockAccountDtos.DepositTransactionResponse;
 import com.via.shinvia.mydata.client.MyDataAuthClient;
 import com.via.shinvia.mydata.config.MyDataProperties;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestClientResponseException;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class MockAccountClient {
     private static final String SUCCESS_CODE = "00000";
-    private final  MyDataAuthClient mydata;
+    private final MyDataAuthClient mydata;
     private final RestClient restClient;
     private final MyDataProperties myDataProperties;
     private final StringRedisTemplate redistemplate;
 
     public MockAccountClient(
-            MyDataAuthClient mydata, RestClient.Builder restClientBuilder,
-            @Value("${mock.account.base-url:http://localhost:9090}")
-            String baseUrl, MyDataProperties myDataProperties, StringRedisTemplate redistemplate
+            MyDataAuthClient mydata,
+            RestClient.Builder restClientBuilder,
+            @Value("${mock.account.base-url:http://localhost:9090}") String baseUrl,
+            MyDataProperties myDataProperties,
+            StringRedisTemplate redistemplate
     ) {
         this.mydata = mydata;
         this.myDataProperties = myDataProperties;
@@ -41,25 +42,39 @@ public class MockAccountClient {
                 .build();
     }
 
+    // 마이데이터 공통 헤더 (Authorization, x-api-tran-id, x-api-type) 100% 자동 세팅 헬퍼
+    private RestClient.RequestHeadersSpec<?> applyHeaders(RestClient.RequestHeadersSpec<?> spec, String authorization) {
+        String token = (authorization != null && !authorization.isBlank())
+                ? authorization
+                : "Bearer mock_access_token";
+
+        return spec.header("Authorization", token)
+                   .header("x-api-tran-id", mydata.generateTranId())
+                   .header("x-api-type", "user");
+    }
+
+    public AccountListResponse getAccounts(String nextPage, int limit) {
+        return getAccounts(null, nextPage, limit);
+    }
+
     public AccountListResponse getAccounts(String authorization, String nextPage, int limit) {
         try {
-            String token = (authorization != null && !authorization.isBlank()) ? authorization : "Bearer mock_access_token";
             String targetOrgCode = myDataProperties.getOrgCode();
-            AccountListResponse response = restClient.get()
+
+            var spec = restClient.get()
                     .uri(uriBuilder -> {
                         var builder = uriBuilder
                                 .path("/v2/bank/accounts")
                                 .queryParam("org_code", targetOrgCode)
-                                .queryParam("search_timestamp","")
+                                .queryParam("search_timestamp", "0")
                                 .queryParam("limit", limit);
                         if (hasText(nextPage)) {
                             builder.queryParam("next_page", nextPage);
                         }
                         return builder.build();
-                    })
-                    .header("authorization", token)
-                    .header("x-api-tran-id", mydata.generateTranId())
-                    .header("x-api-type"," ")
+                    });
+
+            AccountListResponse response = applyHeaders(spec, authorization)
                     .retrieve()
                     .body(AccountListResponse.class);
 
@@ -71,25 +86,39 @@ public class MockAccountClient {
 
             return response;
 
-        } catch (RestClientException exception) {
+        } catch (RestClientResponseException exception) {
             throw new IllegalStateException(
-                    "은행-001 계좌 목록 조회 호출 실패",
+                    "은행-001 계좌 목록 조회 호출 실패 (HTTP " + exception.getStatusCode() + "): " + exception.getResponseBodyAsString(),
                     exception
             );
+        } catch (RestClientException exception) {
+            throw new IllegalStateException("은행-001 계좌 목록 조회 호출 실패", exception);
         }
     }
 
-    /*public AccountListResponse getAccounts(String orgCode, String nextPage, int limit) {
-        return getAccounts(null, nextPage, limit);
-    }*/
+    public DepositBasicResponse getDepositBasic(DepositBasicRequest request) {
+        return getDepositBasic(null, request);
+    }
 
-    public DepositBasicResponse getDepositBasic(
-            DepositBasicRequest request
-    ) {
+    public DepositBasicResponse getDepositBasic(String authorization, DepositBasicRequest request) {
         try {
-            DepositBasicResponse response = restClient.post()
+            String effectiveOrgCode = myDataProperties.getOrgCode();
+            String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
+                    ? request.searchTimestamp()
+                    : "0";
+
+            DepositBasicRequest finalRequest = new DepositBasicRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    effectiveSearchTimestamp
+            );
+
+            var spec = restClient.post()
                     .uri("/v2/bank/accounts/deposit/basic")
-                    .body(request)
+                    .body(finalRequest);
+
+            DepositBasicResponse response = applyHeaders(spec, authorization)
                     .retrieve()
                     .body(DepositBasicResponse.class);
 
@@ -101,21 +130,39 @@ public class MockAccountClient {
 
             return response;
 
-        } catch (RestClientException exception) {
+        } catch (RestClientResponseException exception) {
             throw new IllegalStateException(
-                    "은행-002 수신계좌 기본정보 조회 호출 실패",
+                    "은행-002 수신계좌 기본정보 조회 호출 실패 (HTTP " + exception.getStatusCode() + "): " + exception.getResponseBodyAsString(),
                     exception
             );
+        } catch (RestClientException exception) {
+            throw new IllegalStateException("은행-002 수신계좌 기본정보 조회 호출 실패", exception);
         }
     }
 
-    public DepositDetailResponse getDepositDetail(
-            DepositDetailRequest request
-    ) {
+    public DepositDetailResponse getDepositDetail(DepositDetailRequest request) {
+        return getDepositDetail(null, request);
+    }
+
+    public DepositDetailResponse getDepositDetail(String authorization, DepositDetailRequest request) {
         try {
-            DepositDetailResponse response = restClient.post()
+            String effectiveOrgCode = myDataProperties.getOrgCode();
+            String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
+                    ? request.searchTimestamp()
+                    : "0";
+
+            DepositDetailRequest finalRequest = new DepositDetailRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    effectiveSearchTimestamp
+            );
+
+            var spec = restClient.post()
                     .uri("/v2/bank/accounts/deposit/detail")
-                    .body(request)
+                    .body(finalRequest);
+
+            DepositDetailResponse response = applyHeaders(spec, authorization)
                     .retrieve()
                     .body(DepositDetailResponse.class);
 
@@ -127,21 +174,46 @@ public class MockAccountClient {
 
             return response;
 
-        } catch (RestClientException exception) {
+        } catch (RestClientResponseException exception) {
             throw new IllegalStateException(
-                    "은행-003 수신계좌 추가정보 조회 호출 실패",
+                    "은행-003 수신계좌 추가정보 조회 호출 실패 (HTTP " + exception.getStatusCode() + "): " + exception.getResponseBodyAsString(),
                     exception
             );
+        } catch (RestClientException exception) {
+            throw new IllegalStateException("은행-003 수신계좌 추가정보 조회 호출 실패", exception);
         }
     }
 
-    public DepositTransactionResponse getDepositTransactions(
-            DepositTransactionRequest request
-    ) {
+    public DepositTransactionResponse getDepositTransactions(DepositTransactionRequest request) {
+        return getDepositTransactions(null, request);
+    }
+
+    public DepositTransactionResponse getDepositTransactions(String authorization, DepositTransactionRequest request) {
         try {
-            DepositTransactionResponse response = restClient.post()
+            String effectiveOrgCode = myDataProperties.getOrgCode();
+            int limit = (request != null && request.limit() > 0) ? request.limit() : 20;
+
+            String defaultToDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String defaultFromDate = LocalDate.now().minusDays(30).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+            String effectiveFromDate = (request != null && hasText(request.fromDate())) ? request.fromDate() : defaultFromDate;
+            String effectiveToDate = (request != null && hasText(request.toDate())) ? request.toDate() : defaultToDate;
+
+            DepositTransactionRequest finalRequest = new DepositTransactionRequest(
+                    effectiveOrgCode,
+                    request != null ? request.accountNum() : null,
+                    request != null ? request.seqno() : null,
+                    effectiveFromDate,
+                    effectiveToDate,
+                    request != null ? request.nextPage() : null,
+                    limit
+            );
+
+            var spec = restClient.post()
                     .uri("/v2/bank/accounts/deposit/transactions")
-                    .body(request)
+                    .body(finalRequest);
+
+            DepositTransactionResponse response = applyHeaders(spec, authorization)
                     .retrieve()
                     .body(DepositTransactionResponse.class);
 
@@ -153,31 +225,26 @@ public class MockAccountClient {
 
             return response;
 
-        } catch (RestClientException exception) {
+        } catch (RestClientResponseException exception) {
             throw new IllegalStateException(
-                    "은행-004 수신계좌 거래내역 조회 호출 실패",
+                    "은행-004 수신계좌 거래내역 조회 호출 실패 (HTTP " + exception.getStatusCode() + "): " + exception.getResponseBodyAsString(),
                     exception
             );
+        } catch (RestClientException exception) {
+            throw new IllegalStateException("은행-004 수신계좌 거래내역 조회 호출 실패", exception);
         }
     }
 
-    private void validate(
-            String rspCode,
-            String rspMsg,
-            String apiName
-    ) {
+    private void validate(String rspCode, String rspMsg, String apiName) {
         if (rspCode == null) {
-            throw new IllegalStateException(
-                    apiName + " 응답이 비어 있습니다."
-            );
+            throw new IllegalStateException(apiName + " 응답이 비어 있습니다.");
         }
 
         if (!SUCCESS_CODE.equals(rspCode)) {
-            throw new IllegalStateException(
-                    apiName + " 실패: " + rspCode + " / " + rspMsg
-            );
+            throw new IllegalStateException(apiName + " 실패: " + rspCode + " / " + rspMsg);
         }
     }
+
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
     }

@@ -193,14 +193,12 @@ public class MyDataAuthService {
         // 2. 신규 Access Token 저장 (Key: token 자체, Value: userCi)
         if (StringUtils.hasText(cleanAt)) {
             redisTemplate.opsForValue().set("mydata:ci:at:" + userCi, cleanAt, ACCESS_TOKEN_TTL);
-            redisTemplate.opsForValue().set(cleanAt, userCi, ACCESS_TOKEN_TTL);
             redisTemplate.opsForValue().set("mydata:at:ci:" + cleanAt, userCi, ACCESS_TOKEN_TTL);
         }
 
         // 3. 신규 Refresh Token 저장 (Key: token 자체, Value: userCi)
         if (StringUtils.hasText(cleanRt)) {
             redisTemplate.opsForValue().set("mydata:ci:rt:" + userCi, cleanRt, REFRESH_TOKEN_TTL);
-            redisTemplate.opsForValue().set(cleanRt, userCi, REFRESH_TOKEN_TTL);
             redisTemplate.opsForValue().set("mydata:rt:ci:" + cleanRt, userCi, REFRESH_TOKEN_TTL);
         }
 

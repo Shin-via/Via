@@ -18,9 +18,9 @@ public class CardSecurityConfig {
     @Order(1)
     public SecurityFilterChain cardSecurityFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/cards/sync/**")
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
                 // 로그인 세션이 없어 CSRF 토큰을 발급/전달할 방법이 없으므로, 이 구간(permitAll)에 한해 비활성화
-                .csrf(csrf -> csrf.disable());
+                //.csrf(csrf -> csrf.disable());
 
         return http.build();
     }
