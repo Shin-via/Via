@@ -1,10 +1,10 @@
-package com.via.shinvia.policy.bokjiro.controller;
+package com.via.shinvia.welfare.controller;
 
-import com.via.shinvia.policy.bokjiro.dto.BokjiroDetailResponseDTO;
-import com.via.shinvia.policy.bokjiro.dto.BokjiroListRequestDTO;
-import com.via.shinvia.policy.bokjiro.dto.BokjiroListResponseDTO;
-import com.via.shinvia.policy.bokjiro.entity.BokjiroEntity;
-import com.via.shinvia.policy.bokjiro.service.BokjiroWelfareService;
+import com.via.shinvia.welfare.dto.BokjiroServiceDetailDto;
+import com.via.shinvia.welfare.dto.BokjiroListRequestDTO;
+import com.via.shinvia.welfare.dto.BokjiroApiResponse;
+import com.via.shinvia.welfare.dto.WelfareServiceDto;
+import com.via.shinvia.welfare.service.BokjiroApiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,17 +21,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BokjiroWelfareApiController {
 
-    private final BokjiroWelfareService bokjiroWelfareService;
+    private final BokjiroApiService bokjiroWelfareService;
 
     @Operation(
             summary = "중앙부처 복지서비스 목록 조회 (API 직접 호출)",
             description = "생애주기, 관심주제, 가구유형, 검색어 등을 조건으로 복지로 API를 직접 호출하여 목록을 조회합니다."
     )
     @GetMapping("/welfare-list")
-    public ResponseEntity<BokjiroListResponseDTO> getWelfareList(
+    public ResponseEntity<BokjiroApiResponse> getWelfareList(
             @ModelAttribute BokjiroListRequestDTO request
     ) {
-        BokjiroListResponseDTO response = bokjiroWelfareService.searchWelfareList(request);
+        BokjiroApiResponse response = bokjiroWelfareService.searchWelfareList(request);
         return ResponseEntity.ok(response);
     }
 
@@ -40,11 +40,11 @@ public class BokjiroWelfareApiController {
             description = "서비스 ID(servId)를 사용하여 복지서비스의 상세 정보(대상자, 선정기준, 지원내용 등)를 조회합니다."
     )
     @GetMapping("/welfare-detail/{servId}")
-    public ResponseEntity<BokjiroDetailResponseDTO> getWelfareDetail(
+    public ResponseEntity<BokjiroServiceDetailDto> getWelfareDetail(
             @Parameter(description = "복지서비스 ID (예: WLF00001188)", example = "WLF00001188")
             @PathVariable String servId
     ) {
-        BokjiroDetailResponseDTO response = bokjiroWelfareService.getWelfareDetail(servId);
+        BokjiroServiceDetailDto response = bokjiroWelfareService.getWelfareDetail(servId);
         return ResponseEntity.ok(response);
     }
 
@@ -63,7 +63,7 @@ public class BokjiroWelfareApiController {
             description = "bokjiro 테이블에 저장되어 있는 모든 복지 정책상품 목록을 조회합니다."
     )
     @GetMapping("/db-list")
-    public ResponseEntity<List<BokjiroEntity>> getDbList() {
+    public ResponseEntity<List<WelfareServiceDto>> getDbList() {
         return ResponseEntity.ok(bokjiroWelfareService.getSavedDbList());
     }
 }
