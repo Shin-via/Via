@@ -29,6 +29,7 @@ public class SecurityConfig {
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/policy/recommendation/**",
                                 "/api/mydata/loans/**",
+                                "/api/lifecycle/survey/**",
                                 "/api/policy/recommendation/**",
                                 "/api/mydata/oauth/**", //일단 임시허용
                                 "/api/auth/token/**", // 일단 임시허용
@@ -97,7 +98,9 @@ public class SecurityConfig {
                                 "/dsr","/dsr/**",
 
                                 //id, pw 찾기
-                                "/find/id/**","/find/pw/**"
+                                "/find/id/**","/find/pw/**",
+                                //생애주기시나리오
+                                "/api/lifecycle/survey/**"
 
                         )
                         .permitAll()

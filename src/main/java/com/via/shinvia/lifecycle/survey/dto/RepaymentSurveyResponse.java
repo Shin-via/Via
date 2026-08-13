@@ -8,13 +8,23 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RepaymentSurveyRequest {
+public class RepaymentSurveyResponse {
+
+    // 생애주기 이벤트 식별자
+    private Long lifecycleEventId;
+
+    // 시나리오 식별자
+    private Long lifecycleScenarioId;
+
+    // 이벤트 실행 순서
+    private Integer eventOrder;
 
     // 추가상환 또는 조기상환 예정일
     private LocalDate targetDate;
@@ -23,14 +33,21 @@ public class RepaymentSurveyRequest {
     // loan_account.loan_account_id
     private Long loanAccountId;
 
-    // 추가상환 예정금액
+    // 일회성으로 상환할 금액
     private BigDecimal repaymentAmount;
 
-    // 매월 추가로 상환하고 싶은 금액
-    // 일회성 상환만 할 경우 null 가능
+    // 매월 추가로 상환할 금액
+    // 일회성 상환만 하면 null 가능
     private BigDecimal additionalMonthlyRepayment;
 
+    // 상환 방식
     // PARTIAL : 부분상환
     // FULL : 전액상환
     private String repaymentAction;
+
+    // 이벤트 최초 생성일시
+    private LocalDateTime createdAt;
+
+    // 이벤트 마지막 수정일시
+    private LocalDateTime updatedAt;
 }
