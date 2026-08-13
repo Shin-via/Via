@@ -781,4 +781,13 @@
 
     </select>
 
+    <select id="findLatestEventId" resultType="java.lang.Long">
+        SELECT lifecycle_event_id
+        FROM lifecycle_event
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND event_type = #{eventType}
+        ORDER BY lifecycle_event_id DESC
+        LIMIT 1
+    </select>
+
 </mapper>
