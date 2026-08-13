@@ -81,6 +81,13 @@ public class SecurityConfig {
                                 "/api/admin/loan-product-catalogs/**",
                                 "/api/loan-product-catalogs/**",
 
+                                // 복지로 API 및 스웨거
+                                "/api/bokjiro/**",
+                                "/api/localbokjiro/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+
                                 // 정적 리소스
                                 "/css/**",
                                 "/js/**",

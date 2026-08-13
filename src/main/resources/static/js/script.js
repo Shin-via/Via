@@ -1,7 +1,9 @@
+
 document.addEventListener("DOMContentLoaded", () => {
     initializeHeroCarousel();
     initializeRevealEffects();
     initializeProfilePopover();
+    initializeTokenRefresh();
 });
 
 function initializeHeroCarousel() {
@@ -119,4 +121,56 @@ function initializeProfilePopover() {
             button.setAttribute("aria-expanded", "false");
         }
     });
+}
+
+function initializeTokenRefresh() {
+    const refreshBtn = document.getElementById("headerTokenRefreshBtn");
+    if (!refreshBtn) return;
+
+    refreshBtn.addEventListener("click", async () => {
+        if (refreshBtn.disabled) return;
+
+        const originalText = refreshBtn.textContent;
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "연장 중...";
+        try {
+            const response = await fetch("/api/auth/token/extend", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.ok) {
+                const message = await response.text();
+                showToast(message || "토큰 및 세션 시간이 성공적으로 연장되었습니다.", "success");
+            } else {
+                const errorText = await response.text();
+                showToast(errorText || "토큰 재발급 중 오류가 발생했습니다.", "error");
+            }
+        } catch (error) {
+            console.error("Token refresh failed:", error);
+            showToast("네트워크 오류가 발생했습니다.", "error");
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = originalText;
+        }
+    });
+}
+
+function showToast(message, type = "success") {
+    let toast = document.getElementById("viaToast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "viaToast";
+        toast.className = "via-toast";
+        document.body.appendChild(toast);
+    }
+
+    toast.className = `via-toast ${type} show`;
+    toast.innerHTML = `<span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : 'error'}</span><span>${message}</span>`;
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
 }
