@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lifecycle/survey")
-public class LifecycleSurveyController {
+public class LifecycleSurveyApiController {
 
     private final LifecycleSurveyService lifecycleSurveyService;
 

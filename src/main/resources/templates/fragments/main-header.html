@@ -10,59 +10,18 @@
                     <a th:href="@{/loans/recommendations}" class="nav-link">대출</a>
                     <div class="mega-menu">
                         <div class="mega-menu-inner mega-menu-categories">
-                            <section class="mega-menu-category">
+                            <section class="mega-menu-category" th:each="category : ${loanServiceMenus}">
                                 <div class="mega-menu-category-heading">
-                                    <span class="material-symbols-outlined">monitoring</span>
-                                    <h4>금융 진단센터</h4>
+                                    <span class="material-symbols-outlined" th:text="${category.icon}">payments</span>
+                                    <h4 th:text="${category.name}">서비스</h4>
                                 </div>
                                 <ul class="mega-menu-list">
-                                    <li><span class="mega-menu-disabled">현재 금융 현황 <small>준비중</small></span></li>
-                                    <li><span class="mega-menu-disabled">스트레스 DSR 분석 <small>준비중</small></span></li>
-                                    <li><a th:href="@{/stress-test/personal}">개인 스트레스 DSR 분석</a></li>
-                                </ul>
-                            </section>
-
-                            <section class="mega-menu-category">
-                                <div class="mega-menu-category-heading">
-                                    <span class="material-symbols-outlined">payments</span>
-                                    <h4>대출</h4>
-                                </div>
-                                <ul class="mega-menu-list">
-                                    <li><a th:href="@{/loans/recommendations}">대출 상품 추천</a></li>
-                                    <li><a th:href="@{/loans/breakeven-rate-test}">금리상승 취약도</a></li>
-                                    <li><a th:href="@{/loans/1/historical-rate-replay}">과거 금리인상기 재현</a></li>
-                                    <li><a th:href="@{/loans/1/market-implied-simulation}">시장 내재 금리 시나리오</a></li>
-                                    <li><a th:href="@{/loans/1/staged-rate-simulation}">계단식 금리 시나리오</a></li>
-                                    <li><a th:href="@{/loan-analysis/debt-priority}">부채 상환 우선순위</a></li>
-                                    <li><a th:href="@{/loan-analysis/scenarios}">대출 대응방안 비교</a></li>
-                                </ul>
-                            </section>
-
-                            <section class="mega-menu-category">
-                                <div class="mega-menu-category-heading">
-                                    <span class="material-symbols-outlined">account_balance</span>
-                                    <h4>정책금융상품</h4>
-                                </div>
-                                <ul class="mega-menu-list">
-                                    <li><a th:href="@{/policy-support}">서민금융상품</a></li>
-                                    <li><a th:href="@{/asset-products}">자산형성상품</a></li>
-                                    <li><a th:href="@{/social-finance}">사회연대금융</a></li>
-                                    <li><a th:href="@{/welfare-support}">복합지원</a></li>
-                                    <li><a th:href="@{/policy/recommendation}">맞춤 금융지원상품 추천</a></li>
-                                </ul>
-                            </section>
-
-                            <section class="mega-menu-category">
-                                <div class="mega-menu-category-heading">
-                                    <span class="material-symbols-outlined">policy</span>
-                                    <h4>금융정책 안내</h4>
-                                </div>
-                                <ul class="mega-menu-list">
-                                    <li><a th:href="@{/financial-policy/stress-dsr}">스트레스 DSR</a></li>
-                                    <li><a th:href="@{/financial-policy/household-dsr}">가계대출·DSR 규제</a></li>
-                                    <li><a th:href="@{/financial-policy/mortgage-regulation}">주택담보대출 규제</a></li>
-                                    <li><a th:href="@{/financial-policy/jeonse-regulation}">전세대출 규제</a></li>
-                                    <li><a th:href="@{/financial-policy/policy-loan}">정책대출 제도</a></li>
+                                    <li th:each="item : ${category.items}">
+                                        <a th:if="${item.enabled}" th:href="@{${item.path}}" th:text="${item.name}">서비스</a>
+                                        <span th:unless="${item.enabled}" class="mega-menu-disabled">
+                                            <span th:text="${item.name}">서비스</span> <small>준비중</small>
+                                        </span>
+                                    </li>
                                 </ul>
                             </section>
                         </div>
@@ -74,45 +33,19 @@
 
                     <div class="mega-menu">
                         <div class="mega-menu-inner mega-menu-categories">
-                            <section class="mega-menu-category">
+                            <section class="mega-menu-category" th:each="category : ${assetServiceMenus}">
                                 <div class="mega-menu-category-heading">
-                    <span class="material-symbols-outlined">
-                        account_balance_wallet
-                    </span>
-                                    <h4>나의 금융정보</h4>
+                                    <span class="material-symbols-outlined" th:text="${category.icon}">timeline</span>
+                                    <h4 th:text="${category.name}">서비스</h4>
                                 </div>
-
                                 <ul class="mega-menu-list">
-                                    <li>
-                                        <a th:href="@{/mydata/connection}">
-                                            마이데이터 조회
-                                        </a>
+                                    <li th:each="item : ${category.items}">
+                                        <a th:if="${item.enabled}" th:href="@{${item.path}}" th:text="${item.name}">서비스</a>
+                                        <span th:unless="${item.enabled}" class="mega-menu-disabled">
+                                            <span th:text="${item.name}">서비스</span> <small>준비중</small>
+                                        </span>
                                     </li>
                                 </ul>
-                                <ul class="mega-menu-list">
-                                    <li>
-                                        <a th:href="@{/financial-profile}">
-                                            금융 프로필
-                                        </a>
-                                    </li>
-                                </ul>
-                            </section>
-                            <section class="mega-menu-category">
-                                <div class="mega-menu-category-heading">
-                    <span class="material-symbols-outlined">
-                        calculate
-                    </span>
-                                    <h4>금융 계산</h4>
-                                </div>
-
-                                <ul class="mega-menu-list">
-                                    <li>
-                                        <a th:href="@{/dsr}">
-                                            스트레스 DSR 계산
-                                        </a>
-                                    </li>
-                                </ul>
-
                             </section>
                         </div>
                     </div>
@@ -132,8 +65,7 @@
     </div>
 
     <div class="utility-nav">
-        <a href="#" class="utility-link">Inquiry</a>
-        <a href="#" class="utility-link">My Page</a>
+        <a th:href="@{/dsr}" class="utility-link">DSR 계산기</a>
 
         <div class="user-avatar-container"
              sec:authorize="isAuthenticated()">
@@ -181,14 +113,14 @@
                         <span>내 프로필 관리</span>
                     </a>
 
-                    <a href="#" class="popover-item">
+                    <a th:href="@{/mydata/connection}" class="popover-item">
                         <span class="material-symbols-outlined">receipt_long</span>
-                        <span>대출 신청 현황</span>
+                        <span>마이데이터 조회</span>
                     </a>
 
-                    <a href="#" class="popover-item">
-                        <span class="material-symbols-outlined">settings</span>
-                        <span>계정 및 보안 설정</span>
+                    <a th:href="@{/financial-profile}" class="popover-item">
+                        <span class="material-symbols-outlined">manage_accounts</span>
+                        <span>금융 프로필</span>
                     </a>
 
                     <a href="#" class="popover-item">

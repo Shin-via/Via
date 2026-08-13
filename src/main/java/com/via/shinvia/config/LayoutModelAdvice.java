@@ -28,6 +28,10 @@ public class LayoutModelAdvice {
             return "대출";
         }
 
+        if (uri.startsWith("/lifecycle")) {
+            return "금융 라이프 플랜";
+        }
+
         return "금융 진단센터";
     }
 }

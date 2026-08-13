@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/basic :: layout(~{::title}, ~{::main}, ${serviceName})}">
+<head>
+    <meta charset="UTF-8">
+    <title>금융 라이프 플랜 | SHINVIA</title>
+</head>
+<body>
+<main class="lifecycle-survey-page">
+    <link rel="stylesheet" th:href="@{/css/lifecycle-survey.css}">
+
+    <header class="lifecycle-survey-header">
+        <span>나의 미래 금융계획</span>
+        <h1>금융 라이프 플랜</h1>
+        <p>앞으로 계획하고 있는 주요 생활 이벤트를 입력하고 금융 계획을 구성해보세요.</p>
+    </header>
+
+    <nav class="lifecycle-step-navigation" aria-label="설문 진행 단계">
+        <button type="button" class="lifecycle-step active" data-step="base">1. 기본정보</button>
+        <button type="button" class="lifecycle-step" data-step="events">2. 생활 이벤트</button>
+        <button type="button" class="lifecycle-step" data-step="review">3. 입력 확인</button>
+    </nav>
+
+    <section class="lifecycle-panel" data-step-panel="base">
+        <div class="lifecycle-panel-heading">
+            <div><span>STEP 1</span><h2>기본 생활정보</h2></div>
+            <p>현재 생활비, 주거 형태 및 소득 전망에 관한 설문 영역입니다.</p>
+        </div>
+        <div class="lifecycle-placeholder"><p>기본 생활정보 입력 영역</p></div>
+    </section>
+
+    <section class="lifecycle-panel" data-step-panel="events" hidden>
+        <div class="lifecycle-panel-heading">
+            <div><span>STEP 2</span><h2>생활 이벤트 선택</h2></div>
+            <p>계획한 생활 이벤트를 선택하고 상세 내용을 입력하는 영역입니다.</p>
+        </div>
+        <div class="lifecycle-event-grid">
+            <button type="button" data-event-type="marriage">결혼</button>
+            <button type="button" data-event-type="childbirth">출산</button>
+            <button type="button" data-event-type="vehicle">차량 구매</button>
+            <button type="button" data-event-type="monthly-rent">월세</button>
+            <button type="button" data-event-type="jeonse">전세</button>
+            <button type="button" data-event-type="home-purchase">주택 구매</button>
+            <button type="button" data-event-type="repayment">대출 상환</button>
+        </div>
+        <div class="lifecycle-placeholder"><p>생활 이벤트 상세 입력 영역</p></div>
+    </section>
+
+    <section class="lifecycle-panel" data-step-panel="review" hidden>
+        <div class="lifecycle-panel-heading">
+            <div><span>STEP 3</span><h2>입력 내용 확인</h2></div>
+            <p>저장한 기본정보와 생활 이벤트를 확인하는 영역입니다.</p>
+        </div>
+        <div class="lifecycle-placeholder"><p>설문 요약 및 시나리오 생성 영역</p></div>
+    </section>
+
+    <script th:src="@{/js/lifecycle-survey.js}"></script>
+</main>
+</body>
+</html>

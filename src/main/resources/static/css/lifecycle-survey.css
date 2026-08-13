@@ -1,0 +1,25 @@
+.lifecycle-sidebar-menu { margin: 0; padding: 8px 0; list-style: none; }
+.lifecycle-sidebar-menu li + li { border-top: 1px solid #dcdfe3; }
+.lifecycle-sidebar-menu a, .lifecycle-sidebar-menu .sidebar-menu-disabled { display: block; padding: 16px 18px; text-decoration: none; }
+.lifecycle-sidebar-menu a { color: #545a63; }
+.lifecycle-sidebar-menu a.active { background: #f2f3f4; color: #252a31; font-weight: 700; }
+.lifecycle-survey-page { color: #545a63; }
+.lifecycle-survey-header { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #dcdfe3; }
+.lifecycle-survey-header span, .lifecycle-panel-heading span { color: #484f59; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.lifecycle-survey-header h1, .lifecycle-panel-heading h2 { margin: 8px 0; color: #16191e; }
+.lifecycle-survey-header p, .lifecycle-panel-heading p { margin: 0; line-height: 1.7; }
+.lifecycle-step-navigation { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 20px; border: 1px solid #dcdfe3; background: #fff; }
+.lifecycle-step { min-height: 48px; border: 0; border-right: 1px solid #dcdfe3; background: #fff; color: #7b8088; cursor: pointer; }
+.lifecycle-step:last-child { border-right: 0; }
+.lifecycle-step.active { background: #252a31; color: #fff; font-weight: 700; }
+.lifecycle-panel { padding: 28px; border: 1px solid #dcdfe3; border-top: 3px solid #30343b; background: #fff; }
+.lifecycle-panel-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.lifecycle-event-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+.lifecycle-event-grid button { min-height: 48px; border: 1px solid #c8d3e2; background: #fff; color: #252a31; cursor: pointer; }
+.lifecycle-placeholder { min-height: 180px; padding: 24px; border: 1px dashed #c8d3e2; background: #f6f7f8; }
+.lifecycle-placeholder p { margin: 0; color: #7b8088; }
+@media (max-width: 720px) {
+    .lifecycle-step-navigation, .lifecycle-event-grid { grid-template-columns: 1fr; }
+    .lifecycle-step { border-right: 0; border-bottom: 1px solid #dcdfe3; }
+    .lifecycle-panel-heading { align-items: flex-start; flex-direction: column; }
+}
