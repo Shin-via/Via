@@ -30,6 +30,7 @@ public class SecurityConfig {
                                 "/api/policy/recommendation/**",
                                 "/api/mydata/loans/**",
                                 "/api/lifecycle/survey/**",
+                                "/api/lifecycle/scenarios/**",
                                 "/api/policy/recommendation/**",
                                 "/api/mydata/oauth/**", //일단 임시허용
                                 "/api/auth/token/**", // 일단 임시허용

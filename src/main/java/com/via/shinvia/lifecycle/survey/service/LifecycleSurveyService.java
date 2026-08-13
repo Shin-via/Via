@@ -78,7 +78,7 @@ public class LifecycleSurveyService {
      * 결혼 이벤트 저장
      */
     @Transactional
-    public void saveMarriageSurvey(
+    public Long saveMarriageSurvey(
             Long scenarioId,
             MarriageSurveyRequest request
     ) {
@@ -96,6 +96,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "MARRIAGE");
     }
 
 
@@ -138,7 +139,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveChildbirthSurvey(
+    public Long saveChildbirthSurvey(
             Long scenarioId,
             ChildbirthSurveyRequest request
     ) {
@@ -154,6 +155,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "CHILDBIRTH");
     }
 
 
@@ -192,7 +194,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveVehicleSurvey(
+    public Long saveVehicleSurvey(
             Long scenarioId,
             VehicleSurveyRequest request
     ) {
@@ -208,6 +210,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "VEHICLE_PURCHASE");
     }
 
 
@@ -246,7 +249,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveMonthlyRentSurvey(
+    public Long saveMonthlyRentSurvey(
             Long scenarioId,
             MonthlyRentSurveyRequest request
     ) {
@@ -262,6 +265,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "MONTHLY_RENT");
     }
 
 
@@ -300,7 +304,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveJeonseSurvey(
+    public Long saveJeonseSurvey(
             Long scenarioId,
             JeonseSurveyRequest request
     ) {
@@ -316,6 +320,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "JEONSE");
     }
 
 
@@ -354,7 +359,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveHomePurchaseSurvey(
+    public Long saveHomePurchaseSurvey(
             Long scenarioId,
             HomePurchaseSurveyRequest request
     ) {
@@ -370,6 +375,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "HOME_PURCHASE");
     }
 
 
@@ -408,7 +414,7 @@ public class LifecycleSurveyService {
      */
 
     @Transactional
-    public void saveRepaymentSurvey(
+    public Long saveRepaymentSurvey(
             Long scenarioId,
             RepaymentSurveyRequest request
     ) {
@@ -424,6 +430,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
+        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "REPAYMENT");
     }
 
 

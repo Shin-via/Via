@@ -1,14 +1,1692 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const stepButtons = document.querySelectorAll("[data-step]");
-    const stepPanels = document.querySelectorAll("[data-step-panel]");
 
-    stepButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const selectedStep = button.dataset.step;
-            stepButtons.forEach((item) => item.classList.toggle("active", item === button));
-            stepPanels.forEach((panel) => {
-                panel.hidden = panel.dataset.stepPanel !== selectedStep;
+    /*
+     * =========================================================
+     * 0. 기본 설정
+     * =========================================================
+     */
+
+    let scenarioId = null;
+    let scenarioRequest = null;
+
+    async function ensureScenario() {
+        if (scenarioId) {
+            return scenarioId;
+        }
+
+        if (!scenarioRequest) {
+            scenarioRequest = fetch(
+                "/api/lifecycle/scenarios/current",
+                { method: "POST" }
+            ).then(async response => {
+                if (!response.ok) {
+                    throw new Error(
+                        `시나리오 생성 실패: ${response.status}`
+                    );
+                }
+                return response.json();
+            }).then(data => {
+                scenarioId = data.scenarioId;
+                return scenarioId;
+            }).finally(() => {
+                scenarioRequest = null;
+            });
+        }
+
+        return scenarioRequest;
+    }
+
+    const regionData = {
+        "서울특별시": ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"],
+        "부산광역시": ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
+        "대구광역시": ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"],
+        "인천광역시": ["중구", "동구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+        "광주광역시": ["동구", "서구", "남구", "북구", "광산구"],
+        "대전광역시": ["동구", "중구", "서구", "유성구", "대덕구"],
+        "울산광역시": ["중구", "남구", "동구", "북구", "울주군"],
+        "세종특별자치시": ["세종특별자치시"],
+        "경기도": ["수원시", "용인시", "고양시", "화성시", "성남시", "부천시", "남양주시", "안산시", "평택시", "안양시", "시흥시", "파주시", "김포시", "의정부시", "광주시", "하남시", "광명시", "군포시", "양주시", "오산시", "이천시", "안성시", "구리시", "의왕시", "포천시", "양평군", "여주시", "동두천시", "과천시", "가평군", "연천군"],
+        "강원특별자치도": ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "인제군", "고성군", "양양군"],
+        "충청북도": ["청주시", "충주시", "제천시", "보은군", "옥천군", "영동군", "증평군", "진천군", "괴산군", "음성군", "단양군"],
+        "충청남도": ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "금산군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
+        "전북특별자치도": ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제시", "완주군", "진안군", "무주군", "장수군", "임실군", "순창군", "고창군", "부안군"],
+        "전라남도": ["목포시", "여수시", "순천시", "나주시", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
+        "경상북도": ["포항시", "경주시", "김천시", "안동시", "구미시", "영주시", "영천시", "상주시", "문경시", "경산시", "의성군", "청송군", "영양군", "영덕군", "청도군", "고령군", "성주군", "칠곡군", "예천군", "봉화군", "울진군", "울릉군"],
+        "경상남도": ["창원시", "진주시", "통영시", "사천시", "김해시", "밀양시", "거제시", "양산시", "의령군", "함안군", "창녕군", "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
+        "제주특별자치도": ["제주시", "서귀포시"]
+    };
+
+
+    /*
+     * 현재 화면에서 선택한 이벤트
+     */
+    let selectedEventType = null;
+    const selectedEventTypes = new Set();
+
+
+    /*
+     * 저장된 이벤트 ID 관리
+     *
+     * 수정 API를 붙일 때 사용할 수 있다.
+     */
+    const savedEventIds = {
+        marriage: null,
+        childbirth: null,
+        vehicle: null,
+        "monthly-rent": null,
+        jeonse: null,
+        "home-purchase": null,
+        repayment: null
+    };
+
+
+    /*
+     * =========================================================
+     * 1. DOM 요소
+     * =========================================================
+     */
+
+    // STEP 버튼
+    const stepButtons =
+        document.querySelectorAll(".lifecycle-step");
+
+    // STEP별 화면
+    const stepPanels =
+        document.querySelectorAll("[data-step-panel]");
+
+    // 이전/다음 이동 버튼
+    const stepMoveButtons =
+        document.querySelectorAll("[data-go-step]");
+
+    // 이벤트 선택 버튼
+    const eventButtons =
+        document.querySelectorAll("[data-event-type]");
+
+    // 이벤트별 상세 폼 영역
+    const eventForms =
+        document.querySelectorAll("[data-event-form]");
+
+    function updateSigunguOptions(sidoSelect, selectedValue = "") {
+        const sigunguSelect = document.getElementById(
+            sidoSelect.dataset.regionTarget
+        );
+
+        if (!sigunguSelect) {
+            return;
+        }
+
+        const sigunguList = regionData[sidoSelect.value] ?? [];
+        sigunguSelect.replaceChildren();
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = sigunguList.length
+            ? "시·군·구를 선택해주세요"
+            : "먼저 시·도를 선택해주세요";
+        sigunguSelect.appendChild(placeholder);
+
+        sigunguList.forEach(sigungu => {
+            const option = document.createElement("option");
+            option.value = sigungu;
+            option.textContent = sigungu;
+            sigunguSelect.appendChild(option);
+        });
+
+        sigunguSelect.disabled = sigunguList.length === 0;
+        sigunguSelect.value = sigunguList.includes(selectedValue)
+            ? selectedValue
+            : "";
+    }
+
+    document.querySelectorAll("[data-region-sido]")
+        .forEach(sidoSelect => {
+            Object.keys(regionData).forEach(sido => {
+                const option = document.createElement("option");
+                option.value = sido;
+                option.textContent = sido;
+                sidoSelect.appendChild(option);
+            });
+
+            sidoSelect.addEventListener("change", () => {
+                updateSigunguOptions(sidoSelect);
+            });
+        });
+
+    const moneyInputs = Array.from(
+        document.querySelectorAll(
+            ".lifecycle-input-unit > input"
+        )
+    ).filter(input =>
+        input.nextElementSibling?.textContent.trim() === "원"
+    );
+
+    function normalizeMoneyDigits(value) {
+        const digits = String(value ?? "")
+            .replace(/[^0-9]/g, "");
+
+        if (digits === "") {
+            return "";
+        }
+
+        return digits.replace(/^0+(?=\d)/, "");
+    }
+
+    function formatMoneyInput(input) {
+        const digits = normalizeMoneyDigits(input.value);
+        input.value = digits.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            ","
+        );
+    }
+
+    function parseMoneyValue(value) {
+        const digits = normalizeMoneyDigits(value);
+        return digits === "" ? 0 : Number(digits);
+    }
+
+    moneyInputs.forEach(input => {
+        input.type = "text";
+        input.inputMode = "numeric";
+        input.autocomplete = "off";
+        input.setAttribute("aria-label", "금액");
+        formatMoneyInput(input);
+        input.addEventListener("input", () => {
+            formatMoneyInput(input);
+        });
+    });
+
+    function isSurveyControlIncomplete(control, form) {
+
+        if (
+            control.disabled
+            || control.closest("[hidden]")
+            || ["hidden", "button", "submit", "reset", "checkbox"]
+                .includes(control.type)
+        ) {
+            return false;
+        }
+
+        if (control.type === "radio") {
+            return !form.querySelector(
+                `input[type="radio"][name="${control.name}"]:checked`
+            );
+        }
+
+        return control.value.trim() === ""
+            || !control.checkValidity();
+    }
+
+    function clearSurveyFieldError(group) {
+        group.classList.remove("has-error");
+        group.querySelector(
+            ":scope > .lifecycle-field-error"
+        )?.remove();
+    }
+
+    function showSurveyFieldError(group, message) {
+        clearSurveyFieldError(group);
+        group.classList.add("has-error");
+
+        const error = document.createElement("small");
+        error.className = "lifecycle-field-error";
+        error.textContent = message;
+        error.setAttribute("role", "alert");
+        group.appendChild(error);
+    }
+
+    function validateSurveyForm(form) {
+
+        const groups = Array.from(
+            form.querySelectorAll(".lifecycle-form-group")
+        );
+        let firstInvalidControl = null;
+
+        groups.forEach(group => {
+            clearSurveyFieldError(group);
+
+            const controls = Array.from(
+                group.querySelectorAll(
+                    "input, select, textarea"
+                )
+            );
+            const invalidControl = controls.find(
+                control => isSurveyControlIncomplete(control, form)
+            );
+
+            if (!invalidControl) {
+                return;
+            }
+
+            firstInvalidControl ||= invalidControl;
+            showSurveyFieldError(
+                group,
+                invalidControl.type === "radio"
+                    ? "항목을 선택해주세요."
+                    : "필수 항목을 입력해주세요."
+            );
+        });
+
+        if (firstInvalidControl) {
+            firstInvalidControl.focus();
+            firstInvalidControl.closest(
+                ".lifecycle-form-group"
+            )?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        return firstInvalidControl === null;
+    }
+
+    document.addEventListener("click", event => {
+
+        const saveButton = event.target.closest(
+            ".lifecycle-form .lifecycle-primary-button"
+        );
+
+        if (!saveButton) {
+            return;
+        }
+
+        const form = saveButton.closest("form");
+
+        if (form && !validateSurveyForm(form)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
+
+    document.querySelectorAll(
+        ".lifecycle-form input, .lifecycle-form select, .lifecycle-form textarea"
+    ).forEach(control => {
+        ["input", "change"].forEach(eventName => {
+            control.addEventListener(eventName, () => {
+                const group = control.closest(
+                    ".lifecycle-form-group"
+                );
+
+                if (!group?.classList.contains("has-error")) {
+                    return;
+                }
+
+                const form = control.closest("form");
+                const stillInvalid = Array.from(
+                    group.querySelectorAll(
+                        "input, select, textarea"
+                    )
+                ).some(item =>
+                    isSurveyControlIncomplete(item, form)
+                );
+
+                if (!stillInvalid) {
+                    clearSurveyFieldError(group);
+                }
             });
         });
     });
+
+
+    /*
+     * =========================================================
+     * 2. STEP 화면 이동
+     * =========================================================
+     */
+
+    /**
+     * 원하는 STEP 화면을 표시한다.
+     *
+     * base   -> 기본정보
+     * events -> 생활 이벤트
+     * review -> 입력 확인
+     */
+    function showStep(stepName) {
+
+        // 모든 STEP 패널 숨김
+        stepPanels.forEach(panel => {
+
+            panel.hidden =
+                panel.dataset.stepPanel !== stepName;
+        });
+
+
+        // 상단 STEP 버튼 active 처리
+        stepButtons.forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.step === stepName
+            );
+        });
+
+
+        // review 화면 진입 시 요약 갱신
+        if (stepName === "review") {
+            loadReview();
+        }
+
+        const activePanel =
+            document.querySelector(
+                `[data-step-panel="${stepName}"]`
+            );
+
+        if (activePanel) {
+            requestAnimationFrame(() => {
+                activePanel.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            });
+        }
+    }
+
+
+    /*
+     * 상단 STEP 버튼 클릭
+     */
+    stepButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            showStep(button.dataset.step);
+        });
+    });
+
+
+    /*
+     * 이전 / 다음 버튼 클릭
+     */
+    stepMoveButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            showStep(button.dataset.goStep);
+        });
+    });
+
+
+    /*
+     * =========================================================
+     * 3. 기본 생활정보
+     * =========================================================
+     */
+
+    const saveBaseSurveyBtn =
+        document.getElementById("saveBaseSurveyBtn");
+
+
+    /*
+     * 급여 상승 시나리오
+     */
+    const salaryScenarioRadios =
+        document.querySelectorAll(
+            'input[name="salaryGrowthScenario"]'
+        );
+
+    const customSalaryGrowthArea =
+        document.getElementById(
+            "customSalaryGrowthArea"
+        );
+
+    const customSalaryGrowthRate =
+        document.getElementById(
+            "customSalaryGrowthRate"
+        );
+
+    const baseSurveyRequiredFieldIds = [
+        "monthlyLivingExpense",
+        "currentHousingType",
+        "monthlyHousingExpense",
+        "industryCode",
+        "customSalaryGrowthRate"
+    ];
+
+    function checkBaseSurveyComplete() {
+
+        if (!saveBaseSurveyBtn) {
+            return;
+        }
+
+        const monthlyLivingExpense =
+            document.getElementById("monthlyLivingExpense");
+        const currentHousingType =
+            document.getElementById("currentHousingType");
+        const monthlyHousingExpense =
+            document.getElementById("monthlyHousingExpense");
+        const industryCode =
+            document.getElementById("industryCode");
+        const salaryScenario =
+            document.querySelector(
+                'input[name="salaryGrowthScenario"]:checked'
+            );
+
+        let complete =
+            monthlyLivingExpense.value !== ""
+            && monthlyLivingExpense.checkValidity()
+            && currentHousingType.value !== ""
+            && monthlyHousingExpense.value !== ""
+            && monthlyHousingExpense.checkValidity()
+            && industryCode.value !== ""
+            && salaryScenario !== null;
+
+        if (
+            salaryScenario
+            && salaryScenario.value === "CUSTOM"
+        ) {
+            complete =
+                complete
+                && customSalaryGrowthRate.value !== ""
+                && customSalaryGrowthRate.checkValidity();
+        }
+
+        saveBaseSurveyBtn.hidden = !complete;
+    }
+
+    baseSurveyRequiredFieldIds.forEach(id => {
+
+        const element = document.getElementById(id);
+
+        if (!element) {
+            return;
+        }
+
+        element.addEventListener(
+            "input",
+            checkBaseSurveyComplete
+        );
+        element.addEventListener(
+            "change",
+            checkBaseSurveyComplete
+        );
+    });
+
+
+    /*
+     * CUSTOM 선택 시에만
+     * 직접 입력 영역 표시
+     */
+    salaryScenarioRadios.forEach(radio => {
+
+        radio.addEventListener("change", () => {
+
+            const selected =
+                document.querySelector(
+                    'input[name="salaryGrowthScenario"]:checked'
+                );
+
+            if (!selected) {
+                return;
+            }
+
+            if (selected.value === "CUSTOM") {
+
+                customSalaryGrowthArea.hidden = false;
+
+            } else {
+
+                customSalaryGrowthArea.hidden = true;
+
+                if (customSalaryGrowthRate) {
+                    customSalaryGrowthRate.value = "";
+                }
+            }
+
+            checkBaseSurveyComplete();
+        });
+    });
+
+
+    /**
+     * 기본 생활정보 저장
+     */
+    async function saveBaseSurvey() {
+
+        const monthlyLivingExpense =
+            document.getElementById(
+                "monthlyLivingExpense"
+            ).value;
+
+        const currentHousingType =
+            document.getElementById(
+                "currentHousingType"
+            ).value;
+
+        const monthlyHousingExpense =
+            document.getElementById(
+                "monthlyHousingExpense"
+            ).value;
+
+        const industryCode =
+            document.getElementById(
+                "industryCode"
+            ).value;
+
+        const salaryScenario =
+            document.querySelector(
+                'input[name="salaryGrowthScenario"]:checked'
+            );
+
+
+        /*
+         * 필수값 검사
+         */
+        if (!monthlyLivingExpense) {
+
+            alert("현재 월평균 생활비를 입력해주세요.");
+            return;
+        }
+
+        if (!currentHousingType) {
+
+            alert("현재 주거형태를 선택해주세요.");
+            return;
+        }
+
+        if (monthlyHousingExpense === "") {
+
+            alert("현재 월 주거비를 입력해주세요.");
+            return;
+        }
+
+        if (!salaryScenario) {
+
+            alert("미래 소득 상승 가정을 선택해주세요.");
+            return;
+        }
+
+        if (!industryCode) {
+
+            alert("현재 종사 산업군을 선택해주세요.");
+            return;
+        }
+
+
+        /*
+         * CUSTOM을 선택한 경우
+         * 직접 입력 상승률 필수
+         */
+        if (
+            salaryScenario.value === "CUSTOM"
+            && !customSalaryGrowthRate.value
+        ) {
+
+            alert(
+                "예상 연평균 소득 상승률을 입력해주세요."
+            );
+
+            return;
+        }
+
+
+        /*
+         * 서버에 전달할 Request DTO
+         *
+         * LifecycleBaseSurveyRequest와
+         * 필드명이 동일해야 한다.
+         */
+        const requestData = {
+
+            monthlyLivingExpense:
+                parseMoneyValue(monthlyLivingExpense),
+
+            currentHousingType:
+            currentHousingType,
+
+            monthlyHousingExpense:
+                parseMoneyValue(monthlyHousingExpense),
+
+            industryCode:
+                industryCode || null,
+
+            salaryGrowthScenario:
+            salaryScenario.value,
+
+            /*
+             * 화면에서는 %
+             * DB에서는 소수 비율 사용
+             *
+             * 예:
+             * 사용자 입력 3%
+             * -> 서버 전달 0.03
+             */
+            customSalaryGrowthRate:
+                salaryScenario.value === "CUSTOM"
+                    ? Number(customSalaryGrowthRate.value) / 100
+                    : null
+        };
+
+
+        try {
+
+            const response = await fetch(
+                "/api/lifecycle/survey/base",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(requestData)
+                }
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `기본정보 저장 실패: ${response.status}`
+                );
+            }
+
+
+            alert("기본 생활정보가 저장되었습니다.");
+
+
+            // 저장 성공 후 STEP 2 이동
+            showStep("events");
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "기본 생활정보 저장 중 오류가 발생했습니다."
+            );
+        }
+    }
+
+
+    /*
+     * 기본정보 저장 버튼
+     */
+    if (saveBaseSurveyBtn) {
+
+        saveBaseSurveyBtn.addEventListener(
+            "click",
+            saveBaseSurvey
+        );
+    }
+
+
+    /**
+     * 저장된 기본 생활정보 조회
+     *
+     * 사용자가 다시 설문 화면에 들어왔을 때
+     * 기존 데이터를 폼에 다시 채운다.
+     */
+    async function loadBaseSurvey() {
+
+        try {
+
+            const response = await fetch(
+                "/api/lifecycle/survey/base"
+            );
+
+
+            /*
+             * 아직 기본설문이 없는 사용자라면
+             * 아무 처리하지 않는다.
+             */
+            if (response.status === 404) {
+                checkBaseSurveyComplete();
+                return;
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `기본정보 조회 실패: ${response.status}`
+                );
+            }
+
+
+            const data = await response.json();
+
+
+            if (!data) {
+                return;
+            }
+
+
+            /*
+             * 기존 저장값을 화면에 표시
+             */
+            document.getElementById(
+                "monthlyLivingExpense"
+            ).value =
+                data.monthlyLivingExpense ?? "";
+
+
+            document.getElementById(
+                "currentHousingType"
+            ).value =
+                data.currentHousingType ?? "";
+
+
+            document.getElementById(
+                "monthlyHousingExpense"
+            ).value =
+                data.monthlyHousingExpense ?? "";
+
+
+            document.getElementById(
+                "industryCode"
+            ).value =
+                data.industryCode ?? "";
+
+
+            /*
+             * 급여 시나리오 선택
+             */
+            if (data.salaryGrowthScenario) {
+
+                const targetRadio =
+                    document.querySelector(
+                        `input[name="salaryGrowthScenario"]
+                        [value="${data.salaryGrowthScenario}"]`
+                    );
+
+                /*
+                 * 위 querySelector가 줄바꿈 때문에
+                 * 정상 선택되지 않을 수 있으므로
+                 * 실제 선택은 아래 방식으로 처리
+                 */
+                salaryScenarioRadios.forEach(radio => {
+
+                    radio.checked =
+                        radio.value ===
+                        data.salaryGrowthScenario;
+                });
+            }
+
+
+            /*
+             * CUSTOM 저장값이 있다면
+             * 소수 -> % 변환해서 화면 표시
+             */
+            if (
+                data.salaryGrowthScenario === "CUSTOM"
+            ) {
+
+                customSalaryGrowthArea.hidden = false;
+
+                if (
+                    data.customSalaryGrowthRate != null
+                ) {
+
+                    customSalaryGrowthRate.value =
+                        Number(
+                            data.customSalaryGrowthRate
+                        ) * 100;
+                }
+
+            } else {
+
+                customSalaryGrowthArea.hidden = true;
+            }
+
+            moneyInputs.forEach(formatMoneyInput);
+            checkBaseSurveyComplete();
+
+
+        } catch (error) {
+
+            /*
+             * 기본설문 조회 실패가
+             * 전체 페이지 이용을 막으면 안 되므로
+             * console에만 기록한다.
+             */
+            console.error(
+                "기본 생활정보 조회 오류",
+                error
+            );
+        }
+    }
+
+
+    /*
+     * =========================================================
+     * 4. 이벤트 선택
+     * =========================================================
+     */
+
+    eventButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const eventType =
+                button.dataset.eventType;
+
+            selectedEventType = eventType;
+            selectedEventTypes.add(eventType);
+
+
+            /*
+             * 선택 카드 UI 처리
+             */
+            eventButtons.forEach(item => {
+
+                item.classList.toggle(
+                    "selected",
+                    selectedEventTypes.has(
+                        item.dataset.eventType
+                    )
+                );
+            });
+
+
+            /*
+             * 모든 이벤트 폼 숨김
+             */
+            eventForms.forEach(form => {
+
+                form.hidden = true;
+            });
+
+
+            /*
+             * 선택한 이벤트 form만 표시
+             */
+            const selectedForm =
+                document.querySelector(
+                    `[data-event-form="${eventType}"]`
+                );
+
+
+            if (selectedForm) {
+
+                selectedForm.hidden = false;
+
+                /*
+                 * 선택한 폼 위치로 이동
+                 */
+                selectedForm.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        });
+    });
+
+    const eventApiPaths = {
+        childbirth: "childbirth",
+        vehicle: "vehicle",
+        "monthly-rent": "monthly-rent",
+        jeonse: "jeonse",
+        "home-purchase": "home-purchase",
+        repayment: "repayment"
+    };
+    const lifestyleFieldNames = new Set([
+        "childbirthLifestyleLevel",
+        "vehicleLifestyleLevel",
+        "monthlyRentLifestyleLevel",
+        "jeonseLifestyleLevel",
+        "homePurchaseLifestyleLevel"
+    ]);
+    const numericFieldNames = new Set([
+        "childOrder", "desiredArea", "loanPeriodMonths",
+        "annualMileage", "loanAccountId"
+    ]);
+
+    function buildEventRequest(form) {
+        const request = {};
+        const controls = Array.from(
+            form.querySelectorAll("input, select, textarea")
+        );
+
+        controls.forEach(control => {
+            if (!control.name || control.disabled) {
+                return;
+            }
+
+            if (control.type === "radio" && !control.checked) {
+                return;
+            }
+
+            const fieldName = lifestyleFieldNames.has(control.name)
+                ? "lifestyleLevel"
+                : control.name;
+
+            if (control.type === "checkbox") {
+                request[fieldName] = control.checked;
+            } else if (moneyInputs.includes(control)) {
+                request[fieldName] = parseMoneyValue(control.value);
+            } else if (numericFieldNames.has(fieldName)) {
+                request[fieldName] = control.value === ""
+                    ? null
+                    : Number(control.value);
+            } else {
+                request[fieldName] = control.value === ""
+                    ? null
+                    : control.value;
+            }
+        });
+
+        return request;
+    }
+
+    async function saveEventSurvey(eventType, form, button) {
+        const apiPath = eventApiPaths[eventType];
+
+        if (!apiPath) {
+            return;
+        }
+
+        const currentScenarioId = await ensureScenario();
+        const eventId = savedEventIds[eventType];
+        const url = eventId
+            ? `/api/lifecycle/survey/${apiPath}/${eventId}`
+            : `/api/lifecycle/survey/scenario/${currentScenarioId}/${apiPath}`;
+
+        button.disabled = true;
+
+        try {
+            const response = await fetch(url, {
+                method: eventId ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(buildEventRequest(form))
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `이벤트 저장 실패: ${response.status}`
+                );
+            }
+
+            if (!eventId) {
+                savedEventIds[eventType] = await response.json();
+            }
+
+            selectedEventTypes.add(eventType);
+            button.textContent = "저장 완료";
+        } catch (error) {
+            console.error(error);
+            alert("이벤트 저장 중 오류가 발생했습니다.");
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    Object.keys(eventApiPaths).forEach(eventType => {
+        const formArea = document.querySelector(
+            `[data-event-form="${eventType}"]`
+        );
+        const form = formArea?.querySelector("form");
+        const saveButton = form?.querySelector(
+            ".lifecycle-primary-button"
+        );
+
+        if (form && saveButton) {
+            saveButton.addEventListener("click", () => {
+                saveEventSurvey(eventType, form, saveButton);
+            });
+        }
+    });
+
+
+    /*
+     * =========================================================
+     * 5. 결혼 설문
+     * =========================================================
+     */
+
+    const saveMarriageSurveyBtn =
+        document.getElementById(
+            "saveMarriageSurveyBtn"
+        );
+
+
+    /*
+     * 결혼 LifestyleLevel
+     */
+    const marriageLifestyleRadios =
+        document.querySelectorAll(
+            'input[name="marriageLifestyleLevel"]'
+        );
+
+    const marriageCustomCostArea =
+        document.getElementById(
+            "marriageCustomCostArea"
+        );
+
+    const marriageCustomEstimatedCost =
+        document.getElementById(
+            "marriageCustomEstimatedCost"
+        );
+
+
+    /*
+     * 결혼 CUSTOM 선택 시
+     * 직접 예상비용 입력 영역 표시
+     */
+    marriageLifestyleRadios.forEach(radio => {
+
+        radio.addEventListener("change", () => {
+
+            const selected =
+                document.querySelector(
+                    'input[name="marriageLifestyleLevel"]:checked'
+                );
+
+
+            if (!selected) {
+                return;
+            }
+
+
+            if (selected.value === "CUSTOM") {
+
+                marriageCustomCostArea.hidden = false;
+
+            } else {
+
+                marriageCustomCostArea.hidden = true;
+
+                if (marriageCustomEstimatedCost) {
+
+                    marriageCustomEstimatedCost.value = "";
+                }
+            }
+        });
+    });
+
+
+    /**
+     * 결혼 이벤트 저장
+     */
+    async function saveMarriageSurvey() {
+
+        const targetDate =
+            document.getElementById(
+                "marriageTargetDate"
+            ).value;
+
+        const lifestyle =
+            document.querySelector(
+                'input[name="marriageLifestyleLevel"]:checked'
+            );
+
+        const guestCount =
+            document.getElementById(
+                "marriageGuestCount"
+            ).value;
+
+        const furnitureIncluded =
+            document.getElementById(
+                "marriageFurnitureIncluded"
+            ).checked;
+
+        const honeymoonIncluded =
+            document.getElementById(
+                "marriageHoneymoonIncluded"
+            ).checked;
+
+        const contributionRate =
+            document.getElementById(
+                "marriageUserContributionRate"
+            ).value;
+
+        const familySupportAmount =
+            document.getElementById(
+                "marriageFamilySupportAmount"
+            ).value;
+
+
+        /*
+         * 필수값 검사
+         */
+        if (!targetDate) {
+
+            alert("결혼 예정일을 입력해주세요.");
+            return;
+        }
+
+        if (!lifestyle) {
+
+            alert("결혼 준비 수준을 선택해주세요.");
+            return;
+        }
+
+        if (!guestCount) {
+
+            alert("예상 하객 수를 입력해주세요.");
+            return;
+        }
+
+
+        /*
+         * CUSTOM이면 예상 결혼비용 필수
+         */
+        if (
+            lifestyle.value === "CUSTOM"
+            && !marriageCustomEstimatedCost.value
+        ) {
+
+            alert(
+                "예상 결혼 총비용을 입력해주세요."
+            );
+
+            return;
+        }
+
+
+        /*
+         * MarriageSurveyRequest와 동일한 구조
+         */
+        const requestData = {
+
+            targetDate:
+            targetDate,
+
+            lifestyleLevel:
+            lifestyle.value,
+
+            guestCount:
+                Number(guestCount),
+
+            furnitureIncluded:
+            furnitureIncluded,
+
+            honeymoonIncluded:
+            honeymoonIncluded,
+
+            /*
+             * 화면 50%
+             * -> 서버 0.5
+             */
+            userContributionRate:
+                Number(contributionRate) / 100,
+
+            familySupportAmount:
+                familySupportAmount
+                    ? parseMoneyValue(familySupportAmount)
+                    : 0,
+
+            customEstimatedCost:
+                lifestyle.value === "CUSTOM"
+                    ? parseMoneyValue(
+                        marriageCustomEstimatedCost.value
+                    )
+                    : null
+        };
+
+
+        try {
+
+            const currentScenarioId = await ensureScenario();
+
+            /*
+             * 기존 이벤트 ID가 없으면 신규 저장
+             */
+            if (!savedEventIds.marriage) {
+
+                const response = await fetch(
+                    `/api/lifecycle/survey/scenario/${currentScenarioId}/marriage`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(requestData)
+                    }
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `결혼 설문 저장 실패: ${response.status}`
+                    );
+                }
+
+                savedEventIds.marriage = await response.json();
+                selectedEventTypes.add("marriage");
+
+
+                alert("결혼 계획이 저장되었습니다.");
+
+
+                /*
+                 * 현재 POST 응답이 eventId를 반환하지 않으므로
+                 * 이후 eventId 반환 방식으로 변경하면
+                 * savedEventIds.marriage에 저장하면 된다.
+                 */
+
+            } else {
+
+                /*
+                 * 이미 저장된 이벤트라면 PUT 수정
+                 */
+                const response = await fetch(
+                    `/api/lifecycle/survey/marriage/${savedEventIds.marriage}`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(requestData)
+                    }
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `결혼 설문 수정 실패: ${response.status}`
+                    );
+                }
+
+
+                alert("결혼 계획이 수정되었습니다.");
+            }
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "결혼 계획 저장 중 오류가 발생했습니다."
+            );
+        }
+    }
+
+
+    /*
+     * 결혼 저장 버튼
+     */
+    if (saveMarriageSurveyBtn) {
+
+        saveMarriageSurveyBtn.addEventListener(
+            "click",
+            saveMarriageSurvey
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * 6. 입력 내용 확인
+     * =========================================================
+     */
+
+    /**
+     * STEP 3에서 기본정보와 이벤트를 표시한다.
+     */
+    async function loadReview() {
+
+        await loadBaseSurveySummary();
+
+        loadEventSummary();
+    }
+
+
+    /**
+     * 기본 생활정보 요약
+     */
+    async function loadBaseSurveySummary() {
+
+        const summaryArea =
+            document.getElementById(
+                "baseSurveySummary"
+            );
+
+
+        if (!summaryArea) {
+            return;
+        }
+
+
+        try {
+
+            const response = await fetch(
+                "/api/lifecycle/survey/base"
+            );
+
+
+            if (!response.ok) {
+
+                summaryArea.innerHTML =
+                    "<p>저장된 기본 생활정보가 없습니다.</p>";
+
+                return;
+            }
+
+
+            const data = await response.json();
+
+
+            /*
+             * 주거형태 한글명
+             */
+            const housingNames = {
+
+                FAMILY: "가족과 거주",
+
+                MONTHLY_RENT: "월세",
+
+                JEONSE: "전세",
+
+                OWN: "자가"
+            };
+
+
+            /*
+             * 소득 전망 한글명
+             */
+            const salaryScenarioNames = {
+
+                CONSERVATIVE: "보수적",
+
+                BASE: "기준",
+
+                OPTIMISTIC: "낙관적",
+
+                CUSTOM: "직접입력"
+            };
+
+
+            summaryArea.innerHTML = `
+                <div class="lifecycle-review-item">
+                    <span>월 생활비</span>
+                    <strong>
+                        ${formatMoney(
+                data.monthlyLivingExpense
+            )}원
+                    </strong>
+                </div>
+
+                <div class="lifecycle-review-item">
+                    <span>현재 주거형태</span>
+                    <strong>
+                        ${housingNames[
+                data.currentHousingType
+                ] ?? data.currentHousingType}
+                    </strong>
+                </div>
+
+                <div class="lifecycle-review-item">
+                    <span>월 주거비</span>
+                    <strong>
+                        ${formatMoney(
+                data.monthlyHousingExpense
+            )}원
+                    </strong>
+                </div>
+
+                <div class="lifecycle-review-item">
+                    <span>산업군</span>
+                    <strong>
+                        ${data.industryCode ?? "-"}
+                    </strong>
+                </div>
+
+                <div class="lifecycle-review-item">
+                    <span>소득 상승 가정</span>
+                    <strong>
+                        ${
+                salaryScenarioNames[
+                    data.salaryGrowthScenario
+                    ]
+                ?? data.salaryGrowthScenario
+            }
+                    </strong>
+                </div>
+            `;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            summaryArea.innerHTML =
+                "<p>기본 생활정보를 불러오지 못했습니다.</p>";
+        }
+    }
+
+
+    /**
+     * 현재 선택한 이벤트 요약
+     *
+     * 이후 각 이벤트가 완성되면
+     * 실제 저장 데이터를 조회하는 방식으로 확장한다.
+     */
+    function loadEventSummary() {
+
+        const summaryArea =
+            document.getElementById(
+                "eventSurveySummary"
+            );
+
+
+        if (!summaryArea) {
+            return;
+        }
+
+
+        if (selectedEventTypes.size === 0) {
+
+            summaryArea.innerHTML =
+                "<p>선택한 생활 이벤트가 없습니다.</p>";
+
+            return;
+        }
+
+
+        const eventNames = {
+
+            marriage: "결혼",
+
+            childbirth: "출산",
+
+            vehicle: "차량 구매",
+
+            "monthly-rent": "월세",
+
+            jeonse: "전세",
+
+            "home-purchase": "주택 구매",
+
+            repayment: "대출 상환"
+        };
+
+
+        summaryArea.innerHTML = Array.from(
+            selectedEventTypes
+        ).map(eventType => {
+
+            const eventForm = document.querySelector(
+                `[data-event-form="${eventType}"]`
+            );
+            const fields = eventForm
+                ? collectEventFormValues(eventForm)
+                : [];
+
+            const fieldMarkup = fields.length > 0
+                ? fields.map(field => `
+                    <div class="lifecycle-review-item">
+                        <span>${escapeHtml(field.label)}</span>
+                        <strong>${escapeHtml(field.value)}</strong>
+                    </div>
+                `).join("")
+                : "<p>입력된 상세 내용이 없습니다.</p>";
+
+            return `
+                <section class="lifecycle-event-review-group">
+                    <h4>${escapeHtml(
+                        eventNames[eventType] ?? eventType
+                    )}</h4>
+                    ${fieldMarkup}
+                </section>
+            `;
+        }).join("");
+    }
+
+    function collectEventFormValues(eventForm) {
+
+        return Array.from(
+            eventForm.querySelectorAll(
+                "input, select, textarea"
+            )
+        ).filter(control => {
+            if (
+                control.disabled
+                || control.type === "hidden"
+                || control.type === "button"
+                || control.type === "submit"
+            ) {
+                return false;
+            }
+
+            if (
+                control.type === "radio"
+                && !control.checked
+            ) {
+                return false;
+            }
+
+            return control.type === "checkbox"
+                || control.value !== "";
+        }).map(control => ({
+            label: getControlLabel(control),
+            value: getControlDisplayValue(control)
+        }));
+    }
+
+    function getControlLabel(control) {
+
+        const explicitLabel = control.id
+            ? document.querySelector(
+                `label[for="${control.id}"]`
+            )
+            : null;
+        const wrappingLabel = control.closest("label");
+
+        return (
+            explicitLabel?.textContent
+            || wrappingLabel?.textContent
+            || control.name
+            || control.id
+            || "입력값"
+        ).trim().replace(/\s+/g, " ");
+    }
+
+    function getControlDisplayValue(control) {
+
+        if (control.type === "checkbox") {
+            return control.checked ? "예" : "아니오";
+        }
+
+        if (control.type === "radio") {
+            return control.closest("label")?.textContent
+                ?.trim().replace(/\s+/g, " ")
+                || control.value;
+        }
+
+        if (control.tagName === "SELECT") {
+            return control.selectedOptions[0]?.textContent
+                ?.trim()
+                || control.value;
+        }
+
+        return control.value;
+    }
+
+    function escapeHtml(value) {
+        const element = document.createElement("div");
+        element.textContent = String(value ?? "");
+        return element.innerHTML;
+    }
+
+
+    /*
+     * =========================================================
+     * 7. 시뮬레이션 시작 버튼
+     * =========================================================
+     */
+
+    const completeSurveyBtn =
+        document.getElementById(
+            "completeLifecycleSurveyBtn"
+        );
+
+
+    if (completeSurveyBtn) {
+
+        completeSurveyBtn.addEventListener(
+            "click",
+            () => {
+
+                /*
+                 * A 담당 시뮬레이션 화면/API가 완성되면
+                 * 여기서 해당 주소로 이동한다.
+                 *
+                 * 예:
+                 *
+                 * window.location.href =
+                 *     `/lifecycle/scenario/${scenarioId}`;
+                 */
+
+                alert(
+                    "설문 입력이 완료되었습니다."
+                );
+            }
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * 8. 공통 Utility
+     * =========================================================
+     */
+
+    /**
+     * 금액에 천 단위 콤마 표시
+     *
+     * 1500000
+     * -> 1,500,000
+     */
+    function formatMoney(value) {
+
+        if (
+            value === null
+            || value === undefined
+            || value === ""
+        ) {
+
+            return "0";
+        }
+
+        return Number(value).toLocaleString("ko-KR");
+    }
+
+
+    /*
+     * =========================================================
+     * 9. 페이지 최초 실행
+     * =========================================================
+     */
+
+    /*
+     * 기존 기본 생활정보가 있다면
+     * 화면에 자동으로 채운다.
+     */
+    loadBaseSurvey();
+
+    checkBaseSurveyComplete();
+
 });

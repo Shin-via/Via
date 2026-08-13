@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="repaymentForm">
+
+    <section class="lifecycle-event-detail">
+
+        <div class="lifecycle-event-detail-header">
+
+            <div>
+                <span>대출 상환</span>
+                <h3>대출 상환 계획을 알려주세요.</h3>
+            </div>
+
+            <p>
+                기존 대출의 추가상환 또는 조기상환 계획을
+                미래 금융 시나리오에 반영합니다.
+            </p>
+
+        </div>
+
+
+        <form id="repaymentSurveyForm"
+              class="lifecycle-form">
+
+            <!-- 상환 예정일 -->
+            <div class="lifecycle-form-group">
+
+                <label for="repaymentTargetDate">
+                    상환 예정일
+                </label>
+
+                <input type="date"
+                       id="repaymentTargetDate"
+                       name="targetDate"
+                       required>
+
+            </div>
+
+
+            <!-- 대출 선택 -->
+            <div class="lifecycle-form-group">
+
+                <label for="repaymentLoanAccountId">
+                    상환할 대출
+                </label>
+
+                <input type="number"
+                       id="repaymentLoanAccountId"
+                       name="loanAccountId"
+                       min="1"
+                       placeholder="대출계좌 ID"
+                       required>
+
+                <small>
+                    추후 보유 대출 목록을 조회하여 선택하도록 변경합니다.
+                </small>
+
+            </div>
+
+
+            <!-- 일회성 상환 -->
+            <div class="lifecycle-form-group">
+
+                <label for="repaymentAmount">
+                    일회성 상환금액
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="repaymentAmount"
+                           name="repaymentAmount"
+                           min="0">
+
+                    <span>원</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 월 추가상환 -->
+            <div class="lifecycle-form-group">
+
+                <label for="additionalMonthlyRepayment">
+                    월 추가상환금액
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="additionalMonthlyRepayment"
+                           name="additionalMonthlyRepayment"
+                           min="0"
+                           value="0">
+
+                    <span>원</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 상환 유형 -->
+            <div class="lifecycle-form-group">
+
+                <span class="lifecycle-form-label">
+                    상환 유형
+                </span>
+
+                <div class="lifecycle-radio-group">
+
+                    <label>
+                        <input type="radio"
+                               name="repaymentAction"
+                               value="PARTIAL"
+                               checked>
+
+                        부분상환
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="repaymentAction"
+                               value="FULL">
+
+                        전액상환
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="lifecycle-form-actions">
+
+                <button type="button"
+                        id="saveRepaymentSurveyBtn"
+                        class="lifecycle-primary-button">
+
+                    상환 계획 저장
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</th:block>
+
+</html>

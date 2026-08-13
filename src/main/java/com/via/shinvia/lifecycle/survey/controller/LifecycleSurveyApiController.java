@@ -2,8 +2,10 @@ package com.via.shinvia.lifecycle.survey.controller;
 
 import com.via.shinvia.lifecycle.survey.dto.*;
 import com.via.shinvia.lifecycle.survey.service.LifecycleSurveyService;
+import com.via.shinvia.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 public class LifecycleSurveyApiController {
 
     private final LifecycleSurveyService lifecycleSurveyService;
+    private final CurrentUser currentUser;
 
 
     /*
@@ -39,6 +42,16 @@ public class LifecycleSurveyApiController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/base")
+    public ResponseEntity<Void> saveMyBaseSurvey(
+            Authentication authentication,
+            @RequestBody LifecycleBaseSurveyRequest request
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        lifecycleSurveyService.saveBaseSurvey(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
 
     /**
      * 기본 생활정보 조회
@@ -54,6 +67,19 @@ public class LifecycleSurveyApiController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/base")
+    public ResponseEntity<LifecycleBaseSurveyResponse> getMyBaseSurvey(
+            Authentication authentication
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        LifecycleBaseSurveyResponse response =
+                lifecycleSurveyService.getBaseSurvey(userId);
+
+        return response == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(response);
+    }
+
 
 
     /*
@@ -64,17 +90,17 @@ public class LifecycleSurveyApiController {
 
     // 결혼 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/marriage")
-    public ResponseEntity<Void> saveMarriageSurvey(
+    public ResponseEntity<Long> saveMarriageSurvey(
             @PathVariable Long scenarioId,
             @RequestBody MarriageSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveMarriageSurvey(
+        Long eventId = lifecycleSurveyService.saveMarriageSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -115,17 +141,17 @@ public class LifecycleSurveyApiController {
 
     // 출산 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/childbirth")
-    public ResponseEntity<Void> saveChildbirthSurvey(
+    public ResponseEntity<Long> saveChildbirthSurvey(
             @PathVariable Long scenarioId,
             @RequestBody ChildbirthSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveChildbirthSurvey(
+        Long eventId = lifecycleSurveyService.saveChildbirthSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -166,17 +192,17 @@ public class LifecycleSurveyApiController {
 
     // 차량구매 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/vehicle")
-    public ResponseEntity<Void> saveVehicleSurvey(
+    public ResponseEntity<Long> saveVehicleSurvey(
             @PathVariable Long scenarioId,
             @RequestBody VehicleSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveVehicleSurvey(
+        Long eventId = lifecycleSurveyService.saveVehicleSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -217,17 +243,17 @@ public class LifecycleSurveyApiController {
 
     // 월세 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/monthly-rent")
-    public ResponseEntity<Void> saveMonthlyRentSurvey(
+    public ResponseEntity<Long> saveMonthlyRentSurvey(
             @PathVariable Long scenarioId,
             @RequestBody MonthlyRentSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveMonthlyRentSurvey(
+        Long eventId = lifecycleSurveyService.saveMonthlyRentSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -268,17 +294,17 @@ public class LifecycleSurveyApiController {
 
     // 전세 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/jeonse")
-    public ResponseEntity<Void> saveJeonseSurvey(
+    public ResponseEntity<Long> saveJeonseSurvey(
             @PathVariable Long scenarioId,
             @RequestBody JeonseSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveJeonseSurvey(
+        Long eventId = lifecycleSurveyService.saveJeonseSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -319,17 +345,17 @@ public class LifecycleSurveyApiController {
 
     // 주택구매 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/home-purchase")
-    public ResponseEntity<Void> saveHomePurchaseSurvey(
+    public ResponseEntity<Long> saveHomePurchaseSurvey(
             @PathVariable Long scenarioId,
             @RequestBody HomePurchaseSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveHomePurchaseSurvey(
+        Long eventId = lifecycleSurveyService.saveHomePurchaseSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 
@@ -370,17 +396,17 @@ public class LifecycleSurveyApiController {
 
     // 대출상환 이벤트 저장
     @PostMapping("/scenario/{scenarioId}/repayment")
-    public ResponseEntity<Void> saveRepaymentSurvey(
+    public ResponseEntity<Long> saveRepaymentSurvey(
             @PathVariable Long scenarioId,
             @RequestBody RepaymentSurveyRequest request
     ) {
 
-        lifecycleSurveyService.saveRepaymentSurvey(
+        Long eventId = lifecycleSurveyService.saveRepaymentSurvey(
                 scenarioId,
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(eventId);
     }
 
 

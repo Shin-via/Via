@@ -242,4 +242,9 @@ public interface LifecycleSurveyMapper {
     Integer findNextEventOrder(
             @Param("scenarioId") Long scenarioId
     );
+
+    Long findLatestEventId(
+            @Param("scenarioId") Long scenarioId,
+            @Param("eventType") String eventType
+    );
 }
