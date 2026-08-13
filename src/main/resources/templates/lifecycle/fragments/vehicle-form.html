@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="vehicleForm">
+
+    <section class="lifecycle-event-detail">
+
+        <div class="lifecycle-event-detail-header">
+
+            <div>
+                <span>차량 구매</span>
+                <h3>차량 구매 계획을 알려주세요.</h3>
+            </div>
+
+            <p>
+                차량 가격과 구매방식, 대출 및 유지비를 기준으로
+                미래 현금흐름 변화를 분석합니다.
+            </p>
+
+        </div>
+
+
+        <form id="vehicleSurveyForm"
+              class="lifecycle-form">
+
+            <!-- 구매 예정일 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleTargetDate">
+                    차량 구매 예정일
+                </label>
+
+                <input type="date"
+                       id="vehicleTargetDate"
+                       name="targetDate"
+                       required>
+
+            </div>
+
+
+            <!-- 차량 수준 -->
+            <div class="lifecycle-form-group">
+
+                <span class="lifecycle-form-label">
+                    차량 구매 수준
+                </span>
+
+                <div class="lifecycle-radio-group">
+
+                    <label>
+                        <input type="radio"
+                               name="vehicleLifestyleLevel"
+                               value="PRACTICAL">
+                        실속형
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="vehicleLifestyleLevel"
+                               value="AVERAGE"
+                               checked>
+                        평균형
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="vehicleLifestyleLevel"
+                               value="RELAXED">
+                        여유형
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="vehicleLifestyleLevel"
+                               value="PREMIUM">
+                        프리미엄
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="vehicleLifestyleLevel"
+                               value="CUSTOM">
+                        직접입력
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- 신차/중고차 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleCondition">
+                    차량 상태
+                </label>
+
+                <select id="vehicleCondition"
+                        name="vehicleCondition"
+                        required>
+
+                    <option value="">선택해주세요</option>
+                    <option value="NEW">신차</option>
+                    <option value="USED">중고차</option>
+
+                </select>
+
+            </div>
+
+
+            <!-- 차량 등급 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleClass">
+                    차량 등급
+                </label>
+
+                <select id="vehicleClass"
+                        name="vehicleClass"
+                        required>
+
+                    <option value="">선택해주세요</option>
+                    <option value="COMPACT">경차</option>
+                    <option value="SMALL">소형</option>
+                    <option value="SEMI_MIDSIZE">준중형</option>
+                    <option value="MIDSIZE">중형</option>
+                    <option value="LARGE">준대형</option>
+                    <option value="SUV">SUV</option>
+
+                </select>
+
+            </div>
+
+
+            <!-- 현금 구매액 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleCashPaymentAmount">
+                    구매 시 사용할 현금
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="vehicleCashPaymentAmount"
+                           name="cashPaymentAmount"
+                           min="0"
+                           value="0">
+
+                    <span>원</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 대출금 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleLoanAmount">
+                    자동차 대출 예정금액
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="vehicleLoanAmount"
+                           name="loanAmount"
+                           min="0"
+                           value="0">
+
+                    <span>원</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 대출기간 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleLoanPeriodMonths">
+                    대출 기간
+                </label>
+
+                <select id="vehicleLoanPeriodMonths"
+                        name="loanPeriodMonths">
+
+                    <option value="">선택해주세요</option>
+                    <option value="12">12개월</option>
+                    <option value="24">24개월</option>
+                    <option value="36">36개월</option>
+                    <option value="48">48개월</option>
+                    <option value="60">60개월</option>
+                    <option value="72">72개월</option>
+
+                </select>
+
+            </div>
+
+
+            <!-- 주행거리 -->
+            <div class="lifecycle-form-group">
+
+                <label for="vehicleAnnualMileage">
+                    연간 예상 주행거리
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="vehicleAnnualMileage"
+                           name="annualMileage"
+                           min="0"
+                           placeholder="예: 15000">
+
+                    <span>km</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 직접입력 차량가격 -->
+            <div class="lifecycle-form-group"
+                 id="vehicleCustomPriceArea"
+                 hidden>
+
+                <label for="vehicleCustomVehiclePrice">
+                    예상 차량가격
+                </label>
+
+                <div class="lifecycle-input-unit">
+
+                    <input type="number"
+                           id="vehicleCustomVehiclePrice"
+                           name="customVehiclePrice"
+                           min="0">
+
+                    <span>원</span>
+
+                </div>
+
+            </div>
+
+
+            <div class="lifecycle-form-actions">
+
+                <button type="button"
+                        id="saveVehicleSurveyBtn"
+                        class="lifecycle-primary-button">
+
+                    차량 구매 계획 저장
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</th:block>
+
+</html>
