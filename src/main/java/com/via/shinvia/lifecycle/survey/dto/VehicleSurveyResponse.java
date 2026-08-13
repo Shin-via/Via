@@ -9,40 +9,60 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleSurveyRequest {
+public class VehicleSurveyResponse {
+
+    // 생애주기 이벤트 식별자
+    private Long lifecycleEventId;
+
+    // 시나리오 식별자
+    private Long lifecycleScenarioId;
+
+    // 이벤트 실행 순서
+    private Integer eventOrder;
 
     // 차량 구매 예정일
     private LocalDate targetDate;
 
-    // 차량 가격 수준
+    // 차량 구매 수준
+    // PRACTICAL, AVERAGE, RELAXED, PREMIUM, CUSTOM
     private LifestyleLevel lifestyleLevel;
 
-    // NEW : 신차
-    // USED : 중고차
+    // 차량 상태
+    // NEW = 신차
+    // USED = 중고차
     private String vehicleCondition;
 
+    // 차량 등급
     // 경차, 소형, 준중형, 중형, 준대형, SUV 등
     private String vehicleClass;
 
-    // 구매 시 사용할 현금
+    // 차량 구매에 사용할 현금
     private BigDecimal cashPaymentAmount;
 
-    // 차량 구매 시 이용할 대출 예정금액
+    // 차량 구매를 위해 받을 예정인 대출금액
     private BigDecimal loanAmount;
 
     // 자동차대출 기간
+    // 단위: 개월
     private Integer loanPeriodMonths;
 
     // 연간 예상 주행거리
-    // 유류비 계산 시 사용 가능
+    // 향후 유류비 계산 시 사용
     private Integer annualMileage;
 
-    // CUSTOM 선택 시 직접 입력한 차량가격
+    // CUSTOM 선택 시 사용자가 직접 입력한 차량가격
     private BigDecimal customVehiclePrice;
+
+    // 이벤트 최초 생성일시
+    private LocalDateTime createdAt;
+
+    // 이벤트 마지막 수정일시
+    private LocalDateTime updatedAt;
 }
