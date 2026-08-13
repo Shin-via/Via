@@ -1,6 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     initializeHeroCarousel();
+    initializeServiceTabs();
     initializeRevealEffects();
     initializeProfilePopover();
     initializeTokenRefresh();
@@ -85,6 +86,23 @@ function initializeHeroCarousel() {
 
     showSlide(0);
     startAutoPlay();
+}
+
+function initializeServiceTabs() {
+    document.querySelectorAll("[data-service-tabs]").forEach(container => {
+        const tabs = Array.from(container.querySelectorAll("[data-service-tab]"));
+        const panels = Array.from(container.querySelectorAll("[data-service-panel]"));
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                const selected = tab.dataset.serviceTab;
+                tabs.forEach(item => item.classList.toggle("active", item === tab));
+                panels.forEach(panel => {
+                    panel.hidden = panel.dataset.servicePanel !== selected;
+                });
+            });
+        });
+    });
 }
 
 function initializeRevealEffects() {
