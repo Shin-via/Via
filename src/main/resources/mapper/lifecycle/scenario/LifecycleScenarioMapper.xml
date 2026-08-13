@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.via.shinvia.lifecycle.scenario.mapper.LifecycleScenarioMapper">
+    <select id="findActiveScenarioIdByUserId" resultType="java.lang.Long">
+        SELECT lifecycle_scenario_id
+        FROM lifecycle_scenario
+        WHERE user_id = #{userId}
+          AND status = 'ACTIVE'
+        ORDER BY updated_at DESC, lifecycle_scenario_id DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insertScenario"
+            useGeneratedKeys="true"
+            keyProperty="scenario.lifecycleScenarioId"
+            keyColumn="lifecycle_scenario_id">
+        INSERT INTO lifecycle_scenario (
+            user_id, scenario_name, description, base_date, status
+        ) VALUES (
+            #{scenario.userId}, #{scenario.scenarioName},
+            #{scenario.description}, #{scenario.baseDate}, #{scenario.status}
+        )
+    </insert>
+</mapper>
