@@ -1,4 +1,4 @@
-package com.via.shinvia.policy.localbokjiro.entity;
+package com.via.shinvia.welfare.dto;
 
 import lombok.*;
 
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LocalBokjiroEntity {
+public class LocalWelfareServiceDto {
     private Long id;
     private String servId;
     private String servNm;

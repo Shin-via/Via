@@ -1,8 +1,8 @@
-package com.via.shinvia.policy.localbokjiro.client;
+package com.via.shinvia.welfare.client;
 
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroDetailResponseDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListRequestDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListResponseDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroDetailResponseDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListRequestDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListResponseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

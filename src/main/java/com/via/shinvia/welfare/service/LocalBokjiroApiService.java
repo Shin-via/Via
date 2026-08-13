@@ -1,11 +1,11 @@
-package com.via.shinvia.policy.localbokjiro.service;
+package com.via.shinvia.welfare.service;
 
-import com.via.shinvia.policy.localbokjiro.client.LocalBokjiroApiClient;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroDetailResponseDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListRequestDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListResponseDTO;
-import com.via.shinvia.policy.localbokjiro.entity.LocalBokjiroEntity;
-import com.via.shinvia.policy.localbokjiro.repository.LocalBokjiroRepository;
+import com.via.shinvia.welfare.client.LocalBokjiroApiClient;
+import com.via.shinvia.welfare.dto.LocalBokjiroDetailResponseDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListRequestDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListResponseDTO;
+import com.via.shinvia.welfare.dto.LocalWelfareServiceDto;
+import com.via.shinvia.welfare.mapper.LocalWelfareSupportProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,10 +15,10 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LocalBokjiroService {
+public class LocalBokjiroApiService {
 
     private final LocalBokjiroApiClient localBokjiroApiClient;
-    private final LocalBokjiroRepository localBokjiroRepository;
+    private final LocalWelfareSupportProductMapper localBokjiroRepository;
 
     public LocalBokjiroListResponseDTO searchLocalWelfareList(LocalBokjiroListRequestDTO request) {
         log.info("localbokjiro 지자체 복지서비스 목록 조회 서비스 실행: {}", request);
@@ -34,7 +34,7 @@ public class LocalBokjiroService {
         return localBokjiroRepository.count();
     }
 
-    public List<LocalBokjiroEntity> getSavedDbList() {
+    public List<LocalWelfareServiceDto> getSavedDbList() {
         return localBokjiroRepository.findAll();
     }
 }

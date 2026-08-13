@@ -1,9 +1,9 @@
-package com.via.shinvia.policy.localbokjiro.service;
+package com.via.shinvia.welfare.service;
 
-import com.via.shinvia.policy.localbokjiro.client.LocalBokjiroApiClient;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListResponseDTO;
-import com.via.shinvia.policy.localbokjiro.entity.LocalBokjiroEntity;
-import com.via.shinvia.policy.localbokjiro.repository.LocalBokjiroRepository;
+import com.via.shinvia.welfare.client.LocalBokjiroApiClient;
+import com.via.shinvia.welfare.dto.LocalBokjiroListResponseDTO;
+import com.via.shinvia.welfare.dto.LocalWelfareServiceDto;
+import com.via.shinvia.welfare.mapper.LocalWelfareSupportProductMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +18,10 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LocalBokjiroSyncLoader implements ApplicationRunner {
+public class LocalWelfareSyncService implements ApplicationRunner {
 
     private final LocalBokjiroApiClient localBokjiroApiClient;
-    private final LocalBokjiroRepository localBokjiroRepository;
+    private final LocalWelfareSupportProductMapper localBokjiroRepository;
 
     @Value("${finance.api.sync-on-startup:true}")
     private boolean syncOnStartup;
@@ -80,7 +80,7 @@ public class LocalBokjiroSyncLoader implements ApplicationRunner {
                 } catch (NumberFormatException ignored) {}
             }
 
-            LocalBokjiroEntity entity = LocalBokjiroEntity.builder()
+            LocalWelfareServiceDto entity = LocalWelfareServiceDto.builder()
                     .servId(item.getServId())
                     .servNm(item.getServNm())
                     .jurMnofNm(item.getJurMnofNm())

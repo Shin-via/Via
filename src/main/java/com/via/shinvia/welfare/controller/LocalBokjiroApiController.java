@@ -1,10 +1,10 @@
-package com.via.shinvia.policy.localbokjiro.controller;
+package com.via.shinvia.welfare.controller;
 
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroDetailResponseDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListRequestDTO;
-import com.via.shinvia.policy.localbokjiro.dto.LocalBokjiroListResponseDTO;
-import com.via.shinvia.policy.localbokjiro.entity.LocalBokjiroEntity;
-import com.via.shinvia.policy.localbokjiro.service.LocalBokjiroService;
+import com.via.shinvia.welfare.dto.LocalBokjiroDetailResponseDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListRequestDTO;
+import com.via.shinvia.welfare.dto.LocalBokjiroListResponseDTO;
+import com.via.shinvia.welfare.dto.LocalWelfareServiceDto;
+import com.via.shinvia.welfare.service.LocalBokjiroApiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocalBokjiroApiController {
 
-    private final LocalBokjiroService localBokjiroService;
+    private final LocalBokjiroApiService localBokjiroService;
 
     @Operation(summary = "지자체 복지서비스 목록 조회 (API 실시간)", description = "공공데이터포털 지자체 복지서비스 Open API를 호출하여 목록을 조회합니다.")
     @PostMapping("/welfare-list")
@@ -47,8 +47,8 @@ public class LocalBokjiroApiController {
 
     @Operation(summary = "DB 저장된 지자체 복지서비스 목록 전체 조회", description = "DB localbokjiro 테이블에 저장된 모든 지자체 복지서비스 목록을 조회합니다.")
     @GetMapping("/db-list")
-    public ResponseEntity<List<LocalBokjiroEntity>> getSavedDbList() {
-        List<LocalBokjiroEntity> list = localBokjiroService.getSavedDbList();
+    public ResponseEntity<List<LocalWelfareServiceDto>> getSavedDbList() {
+        List<LocalWelfareServiceDto> list = localBokjiroService.getSavedDbList();
         return ResponseEntity.ok(list);
     }
 }
