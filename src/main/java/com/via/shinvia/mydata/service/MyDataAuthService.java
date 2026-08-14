@@ -240,19 +240,24 @@ public class MyDataAuthService {
     }
 
     public Long getAccessTokenTtl(Long userId) {
-        String accessTokenKey =  userId.toString();
-
-        // getExpire(key, timeUnit): 남은 시간을 TimeUnit 단위로 반환
-        Long remainingSeconds = redisTemplate.getExpire(accessTokenKey, TimeUnit.SECONDS);
-
-        // 반환값 예외 처리
-        if (remainingSeconds == null || remainingSeconds < 0) {
-            // -2: 키가 존재하지 않음 (만료됨 또는 발급 안 됨)
-            // -1: 키는 존재하지만 만료 시간이 설정되지 않음 (영구 저장)
+        if (userId == null) {
             return 0L;
         }
 
-        return remainingSeconds; // 남은 시간 (초) 반환 (예: 1795)
+        // 1. mydata:ci:at:{userId} 키의 TTL 조회
+        String accessTokenKey = "mydata:ci:at:" + userId;
+        Long remainingSeconds = redisTemplate.getExpire(accessTokenKey, TimeUnit.SECONDS);
+
+        // 2. 만약 조회가 안 되면 {userId} 단독 키의 TTL 조회
+        if (remainingSeconds == null || remainingSeconds <= 0) {
+            remainingSeconds = redisTemplate.getExpire(userId.toString(), TimeUnit.SECONDS);
+        }
+
+        if (remainingSeconds == null || remainingSeconds < 0) {
+            return 0L;
+        }
+
+        return remainingSeconds;
     }
 }
 

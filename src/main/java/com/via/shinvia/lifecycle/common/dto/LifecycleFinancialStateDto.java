@@ -7,53 +7,83 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class LifecycleFinancialStateDto {
 
-    // 현재 금융상태가 어느 시점 기준인지
+    // 기준 시점 (현재 or 미래 특정 이벤트 시점)
     private LocalDate stateDate;
 
-    // 현재 현금성 자산
-    private BigDecimal cashAsset;
+    // [자산 및 부채]
+    @Builder.Default
+    private BigDecimal cashAsset = BigDecimal.ZERO;          // 통장 현금/유동자산 (지출/저축의 기준)
 
-    // 현재 투자자산
-    private BigDecimal investmentAsset;
+    @Builder.Default
+    private BigDecimal housingAsset = BigDecimal.ZERO;       // 주택/전세보증금 자산 (해당 시)
 
-    // 현재 보유 주택 자산가치
-    private BigDecimal housingAsset;
+    @Builder.Default
+    private BigDecimal totalDebt = BigDecimal.ZERO;          // 총 부채 잔액
 
-    // 현재 보유 차량 자산가치
-    private BigDecimal vehicleAsset;
+    // [소득 및 지원금]
+    @Builder.Default
+    private BigDecimal annualIncome = BigDecimal.ZERO;       // 예상 연소득
 
-    // 현재 전체 부채잔액
-    private BigDecimal totalDebt;
+    @Builder.Default
+    private BigDecimal monthlySupportIncome = BigDecimal.ZERO; // 월 정부/복지지원금
 
-    // 해당 시점의 예상 연소득
-    private BigDecimal annualIncome;
+    // [월 지출 영역]
+    @Builder.Default
+    private BigDecimal monthlyLivingExpense = BigDecimal.ZERO; // 월 생활비
 
-    // 해당 시점의 월 생활비
-    private BigDecimal monthlyLivingExpense;
+    @Builder.Default
+    private BigDecimal monthlyHousingExpense = BigDecimal.ZERO; // 월 주거비 (월세, 관리비)
 
-    // 해당 시점의 월 주거비
-    private BigDecimal monthlyHousingExpense;
+    @Builder.Default
+    private BigDecimal monthlyDebtPayment = BigDecimal.ZERO;   // 계산기(Calculator)가 산출한 월 대출상환액
 
-    // 해당 시점의 월 대출 상환액
-    private BigDecimal monthlyDebtPayment;
+    // [최종 산출 지표]
+    @Builder.Default
+    private BigDecimal monthlySavingCapacity = BigDecimal.ZERO; // 예상 월 저축 가능금액
 
-    // 해당 시점에 매월 들어오는 정부지원금
-    private BigDecimal monthlySupportIncome;
+    @Builder.Default
+    private BigDecimal dsr = BigDecimal.ZERO;                   // DSR 계산 모듈에서 산출된 값
 
-    // 월소득에서 생활비, 주거비, 대출상환액 등을 제외한
-    // 예상 월 저축 가능금액
-    private BigDecimal monthlySavingCapacity;
+    /**
+     * 순자산 = (현금 + 주택보증금) - 총부채
+     */
+    public BigDecimal getNetAsset() {
+        return nvl(cashAsset).add(nvl(housingAsset)).subtract(nvl(totalDebt));
+    }
 
-    // 해당 시점의 DSR
-    // 예: 0.35 = 35%
-    private BigDecimal dsr;
+    /**
+     * 월 저축여력 재계산
+     * 저축여력 = (연소득 / 12) + 월지원금 - 월생활비 - 월주거비 - 월대출상환액
+     */
+    public void recalculateMonthlySavingCapacity() {
+        BigDecimal monthlyIncome = nvl(annualIncome).divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+        this.monthlySavingCapacity = monthlyIncome
+                .add(nvl(monthlySupportIncome))
+                .subtract(nvl(monthlyLivingExpense))
+                .subtract(nvl(monthlyHousingExpense))
+                .subtract(nvl(monthlyDebtPayment));
+    }
+
+    /**
+     * 새 시점으로 복제
+     */
+    public LifecycleFinancialStateDto copy(LocalDate newDate) {
+        return this.toBuilder()
+                .stateDate(newDate)
+                .build();
+    }
+
+    private BigDecimal nvl(BigDecimal val) {
+        return val != null ? val : BigDecimal.ZERO;
+    }
 }

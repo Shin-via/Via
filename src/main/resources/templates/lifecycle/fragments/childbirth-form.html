@@ -70,36 +70,7 @@
                 </span>
 
                 <div class="lifecycle-radio-group">
-
-                    <label>
-                        <input type="radio"
-                               name="childbirthLifestyleLevel"
-                               value="PRACTICAL">
-                        실속형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="childbirthLifestyleLevel"
-                               value="AVERAGE"
-                               checked>
-                        평균형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="childbirthLifestyleLevel"
-                               value="RELAXED">
-                        여유형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="childbirthLifestyleLevel"
-                               value="PREMIUM">
-                        프리미엄
-                    </label>
-
+                    <th:block th:replace="~{lifecycle/fragments/lifestyle-options :: options('childbirthLifestyleLevel', false)}"></th:block>
                 </div>
 
             </div>

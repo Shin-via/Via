@@ -125,21 +125,9 @@
                         선택해주세요
                     </option>
 
-                    <option value="FAMILY">
-                        가족과 거주
-                    </option>
-
-                    <option value="MONTHLY_RENT">
-                        월세
-                    </option>
-
-                    <option value="JEONSE">
-                        전세
-                    </option>
-
-                    <option value="OWN">
-                        자가
-                    </option>
+                    <option th:each="type : ${currentHousingTypes}"
+                            th:value="${type.name()}"
+                            th:text="${type.label}"></option>
 
                 </select>
 
@@ -188,41 +176,9 @@
                         선택해주세요
                     </option>
 
-                    <option value="IT">
-                        IT · 정보통신
-                    </option>
-
-                    <option value="FINANCE">
-                        금융 · 보험
-                    </option>
-
-                    <option value="MANUFACTURING">
-                        제조업
-                    </option>
-
-                    <option value="CONSTRUCTION">
-                        건설업
-                    </option>
-
-                    <option value="SERVICE">
-                        유통 · 서비스
-                    </option>
-
-                    <option value="EDUCATION">
-                        교육
-                    </option>
-
-                    <option value="HEALTHCARE">
-                        보건 · 의료
-                    </option>
-
-                    <option value="PUBLIC">
-                        공공 · 행정
-                    </option>
-
-                    <option value="ETC">
-                        기타
-                    </option>
+                    <option th:each="industry : ${industryCodes}"
+                            th:value="${industry.name()}"
+                            th:text="${industry.label}"></option>
 
                 </select>
 
@@ -242,37 +198,12 @@
 
                 <div class="lifecycle-radio-group">
 
-                    <label>
+                    <label th:each="scenario : ${salaryGrowthScenarios}">
                         <input type="radio"
                                name="salaryGrowthScenario"
-                               value="CONSERVATIVE">
-
-                        보수적
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="salaryGrowthScenario"
-                               value="BASE"
-                               checked>
-
-                        기준
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="salaryGrowthScenario"
-                               value="OPTIMISTIC">
-
-                        낙관적
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="salaryGrowthScenario"
-                               value="CUSTOM">
-
-                        직접입력
+                               th:value="${scenario.name()}"
+                               th:checked="${scenario.name() == 'BASE'}">
+                        <span th:text="${scenario.label}">시나리오</span>
                     </label>
 
                 </div>

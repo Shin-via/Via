@@ -1,6 +1,8 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
+import com.via.shinvia.lifecycle.common.model.VehicleCondition;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,10 +27,10 @@ public class VehicleSurveyRequest {
 
     // NEW : 신차
     // USED : 중고차
-    private String vehicleCondition;
+    private VehicleCondition vehicleCondition;
 
     // 경차, 소형, 준중형, 중형, 준대형, SUV 등
-    private String vehicleClass;
+    private VehicleClass vehicleClass;
 
     // 구매 시 사용할 현금
     private BigDecimal cashPaymentAmount;
