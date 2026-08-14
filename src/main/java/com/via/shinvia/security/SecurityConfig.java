@@ -34,7 +34,8 @@ public class SecurityConfig {
                                 "/api/policy/recommendation/**",
                                 "/api/mydata/oauth/**", //일단 임시허용
                                 "/api/auth/token/**", // 일단 임시허용
-                                "/api/accounts/**" // 계좌 조회 및 동기화 API 임시 허용
+                                "/api/accounts/**", // 계좌 조회 및 동기화 API 임시 허용
+                                "/api/surplus-funds/preferences/**"
                         )
                 )
 
@@ -51,6 +52,7 @@ public class SecurityConfig {
                 // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/surplus-funds/preferences/**",
                                 "/loans/recommendations",
                                 "/loans/recommendations/**",
                                 "/css/loan-recommendation.css",
