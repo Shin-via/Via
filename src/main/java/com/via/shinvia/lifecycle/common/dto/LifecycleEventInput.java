@@ -67,3 +67,4 @@ public class LifecycleEventInput {
     // 해당 이벤트와 관련된 금융상품 추천 목록
     private List<LifecycleProductDto> recommendedProducts;
 }
+
