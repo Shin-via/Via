@@ -2,7 +2,7 @@ package com.via.shinvia.lifecycle.survey.dto;
 
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
 import com.via.shinvia.lifecycle.common.model.HousingType;
-import com.via.shinvia.lifecycle.common.model.RepaymentType;
+import com.via.shinvia.lifecycle.common.model.LifecycleRepaymentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,5 +48,5 @@ public class HomePurchaseSurveyRequest {
 
     // 희망 상환방식
     // EQUAL_PAYMENT, EQUAL_PRINCIPAL 등
-    private RepaymentType repaymentType;
+    private LifecycleRepaymentType repaymentType;
 }
