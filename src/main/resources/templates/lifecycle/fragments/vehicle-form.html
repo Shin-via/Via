@@ -47,43 +47,7 @@
                 </span>
 
                 <div class="lifecycle-radio-group">
-
-                    <label>
-                        <input type="radio"
-                               name="vehicleLifestyleLevel"
-                               value="PRACTICAL">
-                        실속형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="vehicleLifestyleLevel"
-                               value="AVERAGE"
-                               checked>
-                        평균형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="vehicleLifestyleLevel"
-                               value="RELAXED">
-                        여유형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="vehicleLifestyleLevel"
-                               value="PREMIUM">
-                        프리미엄
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="vehicleLifestyleLevel"
-                               value="CUSTOM">
-                        직접입력
-                    </label>
-
+                    <th:block th:replace="~{lifecycle/fragments/lifestyle-options :: options('vehicleLifestyleLevel', true)}"></th:block>
                 </div>
 
             </div>
@@ -101,8 +65,9 @@
                         required>
 
                     <option value="">선택해주세요</option>
-                    <option value="NEW">신차</option>
-                    <option value="USED">중고차</option>
+                    <option th:each="condition : ${vehicleConditions}"
+                            th:value="${condition.name()}"
+                            th:text="${condition.label}"></option>
 
                 </select>
 
@@ -121,12 +86,9 @@
                         required>
 
                     <option value="">선택해주세요</option>
-                    <option value="COMPACT">경차</option>
-                    <option value="SMALL">소형</option>
-                    <option value="SEMI_MIDSIZE">준중형</option>
-                    <option value="MIDSIZE">중형</option>
-                    <option value="LARGE">준대형</option>
-                    <option value="SUV">SUV</option>
+                    <option th:each="vehicleClassOption : ${vehicleClasses}"
+                            th:value="${vehicleClassOption.name()}"
+                            th:text="${vehicleClassOption.label}"></option>
 
                 </select>
 

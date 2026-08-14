@@ -1,6 +1,8 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
+import com.via.shinvia.lifecycle.common.model.HousingType;
+import com.via.shinvia.lifecycle.common.model.RepaymentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +28,7 @@ public class HomePurchaseSurveyRequest {
     private String regionSigungu;
 
     // 아파트, 빌라 등
-    private String housingType;
+    private HousingType housingType;
 
     // 희망 전용면적
     private BigDecimal desiredArea;
@@ -46,5 +48,5 @@ public class HomePurchaseSurveyRequest {
 
     // 희망 상환방식
     // EQUAL_PAYMENT, EQUAL_PRINCIPAL 등
-    private String repaymentType;
+    private RepaymentType repaymentType;
 }

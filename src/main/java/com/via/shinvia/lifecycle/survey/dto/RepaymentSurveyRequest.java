@@ -1,5 +1,6 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
+import com.via.shinvia.lifecycle.common.model.RepaymentAction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,5 +33,5 @@ public class RepaymentSurveyRequest {
 
     // PARTIAL : 부분상환
     // FULL : 전액상환
-    private String repaymentAction;
+    private RepaymentAction repaymentAction;
 }

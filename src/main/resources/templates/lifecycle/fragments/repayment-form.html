@@ -112,21 +112,13 @@
 
                 <div class="lifecycle-radio-group">
 
-                    <label>
+                    <label th:each="action : ${repaymentActions}">
                         <input type="radio"
                                name="repaymentAction"
-                               value="PARTIAL"
-                               checked>
+                               th:value="${action.name()}"
+                               th:checked="${action.name() == 'PARTIAL'}">
 
-                        부분상환
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="repaymentAction"
-                               value="FULL">
-
-                        전액상환
+                        <span th:text="${action.label}">상환 유형</span>
                     </label>
 
                 </div>

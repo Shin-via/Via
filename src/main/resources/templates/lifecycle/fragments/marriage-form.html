@@ -49,43 +49,7 @@
                 </span>
 
                 <div class="lifecycle-radio-group">
-
-                    <label>
-                        <input type="radio"
-                               name="marriageLifestyleLevel"
-                               value="PRACTICAL">
-                        실속형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="marriageLifestyleLevel"
-                               value="AVERAGE"
-                               checked>
-                        평균형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="marriageLifestyleLevel"
-                               value="RELAXED">
-                        여유형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="marriageLifestyleLevel"
-                               value="PREMIUM">
-                        프리미엄
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="marriageLifestyleLevel"
-                               value="CUSTOM">
-                        직접입력
-                    </label>
-
+                    <th:block th:replace="~{lifecycle/fragments/lifestyle-options :: options('marriageLifestyleLevel', true)}"></th:block>
                 </div>
 
             </div>
