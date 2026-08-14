@@ -50,6 +50,9 @@ bin/
 
 *.yml
 
+*.sql
+
+GEMINI.md
 application.properties
 application-db.yml
 application-mail.yml
