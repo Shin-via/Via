@@ -1,5 +1,8 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
+import com.via.shinvia.lifecycle.common.model.CurrentHousingType;
+import com.via.shinvia.lifecycle.common.model.IndustryCode;
+import com.via.shinvia.lifecycle.common.model.SalaryGrowthScenario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +27,7 @@ public class LifecycleBaseSurveyRequest {
     // MONTHLY_RENT : 월세
     // JEONSE : 전세
     // OWN : 자가
-    private String currentHousingType;
+    private CurrentHousingType currentHousingType;
 
     // 현재 매월 발생하는 주거비
     // 월세 + 관리비 등을 합친 월 기준 금액
@@ -34,14 +37,14 @@ public class LifecycleBaseSurveyRequest {
     // 사용자의 산업군
     // 미래 소득 상승률 기준자료 조회 시 사용
     // 예: IT, FINANCE, MANUFACTURING 등
-    private String industryCode;
+    private IndustryCode industryCode;
 
     // 미래 급여상승 시나리오
     // CONSERVATIVE : 보수적
     // BASE : 기준
     // OPTIMISTIC : 낙관적
     // CUSTOM : 직접입력
-    private String salaryGrowthScenario;
+    private SalaryGrowthScenario salaryGrowthScenario;
 
     // 사용자가 CUSTOM을 선택했을 경우 직접 입력한 연평균 급여상승률
     // 예: 0.03 = 연 3%

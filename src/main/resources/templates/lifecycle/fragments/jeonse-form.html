@@ -83,9 +83,9 @@
                         required>
 
                     <option value="">선택해주세요</option>
-                    <option value="APARTMENT">아파트</option>
-                    <option value="VILLA">빌라</option>
-                    <option value="OFFICETEL">오피스텔</option>
+                    <option th:each="type : ${housingTypes}"
+                            th:value="${type.name()}"
+                            th:text="${type.label}"></option>
 
                 </select>
 
@@ -120,36 +120,7 @@
                 </span>
 
                 <div class="lifecycle-radio-group">
-
-                    <label>
-                        <input type="radio"
-                               name="jeonseLifestyleLevel"
-                               value="PRACTICAL">
-                        실속형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="jeonseLifestyleLevel"
-                               value="AVERAGE"
-                               checked>
-                        평균형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="jeonseLifestyleLevel"
-                               value="RELAXED">
-                        여유형
-                    </label>
-
-                    <label>
-                        <input type="radio"
-                               name="jeonseLifestyleLevel"
-                               value="PREMIUM">
-                        프리미엄
-                    </label>
-
+                    <th:block th:replace="~{lifecycle/fragments/lifestyle-options :: options('jeonseLifestyleLevel', false)}"></th:block>
                 </div>
 
             </div>

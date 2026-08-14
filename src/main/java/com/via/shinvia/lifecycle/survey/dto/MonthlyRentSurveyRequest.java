@@ -1,6 +1,7 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
+import com.via.shinvia.lifecycle.common.model.HousingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class MonthlyRentSurveyRequest {
     private String regionSigungu;
 
     // 아파트, 오피스텔, 빌라 등
-    private String housingType;
+    private HousingType housingType;
 
     // 희망 전용면적
     private BigDecimal desiredArea;
