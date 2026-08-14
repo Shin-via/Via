@@ -22,4 +22,69 @@
             #{scenario.description}, #{scenario.baseDate}, #{scenario.status}
         )
     </insert>
+
+    <select id="findScenariosByUserId"
+            resultType="com.via.shinvia.lifecycle.scenario.dto.LifecycleScenarioResponse">
+        SELECT
+            scenario.lifecycle_scenario_id AS scenario_id,
+            scenario.scenario_name,
+            scenario.description,
+            scenario.base_date,
+            scenario.status,
+            COUNT(event.lifecycle_event_id) AS event_count
+        FROM lifecycle_scenario scenario
+        LEFT JOIN lifecycle_event event
+          ON event.lifecycle_scenario_id = scenario.lifecycle_scenario_id
+        WHERE scenario.user_id = #{userId}
+          AND scenario.status != 'ARCHIVED'
+        GROUP BY
+            scenario.lifecycle_scenario_id,
+            scenario.scenario_name,
+            scenario.description,
+            scenario.base_date,
+            scenario.status
+        ORDER BY scenario.updated_at DESC, scenario.lifecycle_scenario_id DESC
+    </select>
+
+    <select id="findScenarioByIdAndUserId"
+            resultType="com.via.shinvia.lifecycle.scenario.dto.LifecycleScenarioResponse">
+        SELECT
+            scenario.lifecycle_scenario_id AS scenario_id,
+            scenario.scenario_name,
+            scenario.description,
+            scenario.base_date,
+            scenario.status,
+            COUNT(event.lifecycle_event_id) AS event_count
+        FROM lifecycle_scenario scenario
+        LEFT JOIN lifecycle_event event
+          ON event.lifecycle_scenario_id = scenario.lifecycle_scenario_id
+        WHERE scenario.lifecycle_scenario_id = #{scenarioId}
+          AND scenario.user_id = #{userId}
+          AND scenario.status != 'ARCHIVED'
+        GROUP BY
+            scenario.lifecycle_scenario_id,
+            scenario.scenario_name,
+            scenario.description,
+            scenario.base_date,
+            scenario.status
+    </select>
+
+    <update id="updateScenario">
+        UPDATE lifecycle_scenario
+        SET
+            scenario_name = #{scenarioName},
+            description = #{description},
+            status = #{status}
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
+          AND status != 'ARCHIVED'
+    </update>
+
+    <update id="archiveScenario">
+        UPDATE lifecycle_scenario
+        SET status = 'ARCHIVED'
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
+          AND status != 'ARCHIVED'
+    </update>
 </mapper>
