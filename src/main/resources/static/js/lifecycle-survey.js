@@ -6,34 +6,21 @@ document.addEventListener("DOMContentLoaded", () => {
      * =========================================================
      */
 
+    const requestedScenarioId = new URLSearchParams(
+        window.location.search
+    ).get("scenarioId");
     let scenarioId = null;
-    let scenarioRequest = null;
+    let scenarioName = null;
+    let baseSurveyReady = false;
 
     async function ensureScenario() {
-        if (scenarioId) {
-            return scenarioId;
+        if (!baseSurveyReady) {
+            throw new Error("기본 생활정보를 먼저 저장해주세요.");
         }
-
-        if (!scenarioRequest) {
-            scenarioRequest = fetch(
-                "/api/lifecycle/scenarios/current",
-                { method: "POST" }
-            ).then(async response => {
-                if (!response.ok) {
-                    throw new Error(
-                        `시나리오 생성 실패: ${response.status}`
-                    );
-                }
-                return response.json();
-            }).then(data => {
-                scenarioId = data.scenarioId;
-                return scenarioId;
-            }).finally(() => {
-                scenarioRequest = null;
-            });
+        if (!scenarioId) {
+            throw new Error("진행할 시나리오를 먼저 선택해주세요.");
         }
-
-        return scenarioRequest;
+        return scenarioId;
     }
 
     const regionData = {
@@ -62,6 +49,54 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     let selectedEventType = null;
     const selectedEventTypes = new Set();
+    let lifecycleEvents = [];
+
+    const lifecycleEventNames = {
+        marriage: "결혼",
+        childbirth: "출산",
+        vehicle: "차량 구매",
+        "monthly-rent": "월세",
+        jeonse: "전세",
+        "home-purchase": "주택 구매",
+        repayment: "대출 상환"
+    };
+
+    const lifecycleEventTypes = {
+        MARRIAGE: "marriage",
+        CHILDBIRTH: "childbirth",
+        VEHICLE_PURCHASE: "vehicle",
+        MONTHLY_RENT: "monthly-rent",
+        JEONSE: "jeonse",
+        HOME_PURCHASE: "home-purchase",
+        REPAYMENT: "repayment"
+    };
+
+    const lifecycleEventDetailPaths = {
+        marriage: "marriage",
+        childbirth: "childbirth",
+        vehicle: "vehicle",
+        "monthly-rent": "monthly-rent",
+        jeonse: "jeonse",
+        "home-purchase": "home-purchase",
+        repayment: "repayment"
+    };
+
+    function toServerDate(yearMonth) {
+        return yearMonth ? `${yearMonth}-01` : null;
+    }
+
+    function toYearMonth(serverDate) {
+        return serverDate ? serverDate.substring(0, 7) : "";
+    }
+
+    function formatYearMonth(yearMonth) {
+        if (!yearMonth) {
+            return "시기 미정";
+        }
+
+        const [year, month] = yearMonth.split("-");
+        return `${year}년 ${Number(month)}월`;
+    }
 
 
     /*
@@ -105,6 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // 이벤트별 상세 폼 영역
     const eventForms =
         document.querySelectorAll("[data-event-form]");
+
+    const scenarioGate = document.getElementById("lifecycleScenarioGate");
+    const scenarioList = document.getElementById("lifecycleScenarioList");
+    const newScenarioNameInput = document.getElementById("newScenarioName");
+    const createScenarioButton = document.getElementById("createLifecycleScenarioBtn");
+    const toggleScenarioListButton = document.getElementById("toggleLifecycleScenarioListBtn");
+    const changeScenarioButton = document.getElementById("changeLifecycleScenarioBtn");
+    const activeScenarioName = document.getElementById("activeLifecycleScenarioName");
 
     function updateSigunguOptions(sidoSelect, selectedValue = "") {
         const sigunguSelect = document.getElementById(
@@ -327,6 +370,227 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
+    function setBaseSurveyReady(ready) {
+        baseSurveyReady = ready;
+        if (scenarioGate) {
+            scenarioGate.hidden = !ready;
+        }
+        stepButtons.forEach(button => {
+            if (button.dataset.step !== "base") {
+                button.disabled = !ready || !scenarioId;
+            }
+        });
+    }
+
+    function resetScenarioWorkspace() {
+        selectedEventType = null;
+        selectedEventTypes.clear();
+        lifecycleEvents = [];
+        Object.keys(savedEventIds).forEach(type => {
+            savedEventIds[type] = null;
+        });
+        eventForms.forEach(formArea => {
+            formArea.hidden = true;
+            formArea.querySelector("form")?.reset();
+        });
+        updateEventSelectionUi();
+        renderTimeline();
+    }
+
+    function updateScenarioUrl(selectedScenarioId) {
+        const url = new URL(window.location.href);
+        if (selectedScenarioId) {
+            url.searchParams.set("scenarioId", selectedScenarioId);
+        } else {
+            url.searchParams.delete("scenarioId");
+        }
+        window.history.replaceState({}, "", url);
+    }
+
+    async function selectScenario(selectedScenarioId) {
+        if (!baseSurveyReady) {
+            alert("기본 생활정보를 먼저 저장해주세요.");
+            return;
+        }
+
+        const response = await fetch(`/api/lifecycle/scenarios/${selectedScenarioId}`);
+        if (!response.ok) {
+            throw new Error(`시나리오 조회 실패: ${response.status}`);
+        }
+
+        const scenario = await response.json();
+        scenarioId = Number(getResponseField(scenario, "scenarioId"));
+        scenarioName = getResponseField(scenario, "scenarioName");
+        updateScenarioUrl(scenarioId);
+        resetScenarioWorkspace();
+        if (activeScenarioName) {
+            activeScenarioName.textContent = scenarioName;
+        }
+        setBaseSurveyReady(true);
+        await loadTimelineEvents();
+        showStep("events");
+    }
+
+    function scenarioStatusLabel(status) {
+        return {
+            DRAFT: "작성 중",
+            ACTIVE: "진행 중",
+            COMPLETED: "입력 완료"
+        }[status] ?? status;
+    }
+
+    function renderScenarioList(scenarios) {
+        if (!scenarioList) {
+            return;
+        }
+        if (scenarios.length === 0) {
+            scenarioList.innerHTML = '<p class="lifecycle-scenario-empty">이전에 진행한 시나리오가 없습니다.</p>';
+            return;
+        }
+
+        scenarioList.innerHTML = scenarios.map(scenario => {
+            const itemId = getResponseField(scenario, "scenarioId");
+            const itemStatus = getResponseField(scenario, "status");
+            const itemName = getResponseField(scenario, "scenarioName");
+            const eventCount = getResponseField(scenario, "eventCount") ?? 0;
+            const baseDate = getResponseField(scenario, "baseDate") ?? "-";
+            return `
+            <article class="lifecycle-scenario-card">
+                <div>
+                    <span>${escapeHtml(scenarioStatusLabel(itemStatus))}</span>
+                    <strong>${escapeHtml(itemName)}</strong>
+                    <small>생활 이벤트 ${Number(eventCount)}개 · 기준일 ${escapeHtml(baseDate)}</small>
+                </div>
+                <div class="lifecycle-scenario-card-actions">
+                    <button type="button" class="lifecycle-primary-button"
+                            data-select-scenario="${itemId}">
+                        ${itemStatus === "COMPLETED" ? "내용 보기" : "이어서 작성"}
+                    </button>
+                    <button type="button" class="lifecycle-secondary-button"
+                            data-archive-scenario="${itemId}">삭제</button>
+                </div>
+            </article>
+        `;
+        }).join("");
+
+        scenarioList.querySelectorAll("[data-select-scenario]").forEach(button => {
+            button.addEventListener("click", async () => {
+                button.disabled = true;
+                try {
+                    await selectScenario(button.dataset.selectScenario);
+                } catch (error) {
+                    console.error(error);
+                    alert("시나리오를 불러오지 못했습니다.");
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+
+        scenarioList.querySelectorAll("[data-archive-scenario]").forEach(button => {
+            button.addEventListener("click", async () => {
+                if (!window.confirm("이 시나리오를 삭제하시겠습니까?")) {
+                    return;
+                }
+                const archivedId = Number(button.dataset.archiveScenario);
+                const response = await fetch(`/api/lifecycle/scenarios/${archivedId}`, {
+                    method: "DELETE"
+                });
+                if (!response.ok) {
+                    alert("시나리오를 삭제하지 못했습니다.");
+                    return;
+                }
+                if (scenarioId === archivedId) {
+                    scenarioId = null;
+                    scenarioName = null;
+                    updateScenarioUrl(null);
+                    resetScenarioWorkspace();
+                    if (activeScenarioName) {
+                        activeScenarioName.textContent = "선택된 시나리오 없음";
+                    }
+                    setBaseSurveyReady(true);
+                }
+                await loadScenarioList();
+            });
+        });
+    }
+
+    async function loadScenarioList() {
+        const response = await fetch("/api/lifecycle/scenarios");
+        if (!response.ok) {
+            throw new Error(`시나리오 목록 조회 실패: ${response.status}`);
+        }
+        renderScenarioList(await response.json());
+    }
+
+    async function createScenario() {
+        const name = newScenarioNameInput?.value.trim();
+        if (!name) {
+            alert("새 시나리오 이름을 입력해주세요.");
+            newScenarioNameInput?.focus();
+            return;
+        }
+
+        createScenarioButton.disabled = true;
+        try {
+            const response = await fetch("/api/lifecycle/scenarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ scenarioName: name })
+            });
+            if (!response.ok) {
+                throw new Error(`시나리오 생성 실패: ${response.status}`);
+            }
+            const scenario = await response.json();
+            newScenarioNameInput.value = "";
+            await selectScenario(getResponseField(scenario, "scenarioId"));
+        } catch (error) {
+            console.error(error);
+            alert("새 시나리오를 만들지 못했습니다.");
+        } finally {
+            createScenarioButton.disabled = false;
+        }
+    }
+
+    createScenarioButton?.addEventListener("click", createScenario);
+    newScenarioNameInput?.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            createScenario();
+        }
+    });
+    function setScenarioListExpanded(expanded) {
+        scenarioList.hidden = !expanded;
+        toggleScenarioListButton.setAttribute(
+            "aria-expanded",
+            String(expanded)
+        );
+        toggleScenarioListButton.classList.toggle("expanded", expanded);
+    }
+
+    toggleScenarioListButton?.addEventListener("click", async () => {
+        const willOpen = scenarioList.hidden;
+        setScenarioListExpanded(willOpen);
+        if (willOpen) {
+            try {
+                await loadScenarioList();
+            } catch (error) {
+                console.error(error);
+                alert("이전 시나리오를 불러오지 못했습니다.");
+            }
+        }
+    });
+    changeScenarioButton?.addEventListener("click", async () => {
+        showStep("base");
+        setScenarioListExpanded(true);
+        try {
+            await loadScenarioList();
+        } catch (error) {
+            console.error(error);
+        }
+        scenarioGate.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     /*
      * =========================================================
      * 2. STEP 화면 이동
@@ -341,6 +605,14 @@ document.addEventListener("DOMContentLoaded", () => {
      * review -> 입력 확인
      */
     function showStep(stepName) {
+
+        if (stepName !== "base" && !baseSurveyReady) {
+            alert("기본 생활정보를 먼저 저장해주세요.");
+            stepName = "base";
+        } else if (stepName !== "base" && !scenarioId) {
+            alert("진행할 시나리오를 먼저 선택해주세요.");
+            stepName = "base";
+        }
 
         // 모든 STEP 패널 숨김
         stepPanels.forEach(panel => {
@@ -444,7 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkBaseSurveyComplete() {
 
         if (!saveBaseSurveyBtn) {
-            return;
+            return false;
         }
 
         const monthlyLivingExpense =
@@ -480,6 +752,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         saveBaseSurveyBtn.hidden = !complete;
+        return complete;
     }
 
     baseSurveyRequiredFieldIds.forEach(id => {
@@ -683,10 +956,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             alert("기본 생활정보가 저장되었습니다.");
-
-
-            // 저장 성공 후 STEP 2 이동
-            showStep("events");
+            setBaseSurveyReady(true);
+            await loadScenarioList();
+            setScenarioListExpanded(false);
+            scenarioGate.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
 
 
         } catch (error) {
@@ -732,8 +1008,9 @@ document.addEventListener("DOMContentLoaded", () => {
              * 아무 처리하지 않는다.
              */
             if (response.status === 404) {
+                setBaseSurveyReady(false);
                 checkBaseSurveyComplete();
-                return;
+                return false;
             }
 
 
@@ -831,7 +1108,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             moneyInputs.forEach(formatMoneyInput);
-            checkBaseSurveyComplete();
+            const complete = checkBaseSurveyComplete();
+            setBaseSurveyReady(complete);
+
+            return complete;
 
 
         } catch (error) {
@@ -845,6 +1125,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 "기본 생활정보 조회 오류",
                 error
             );
+            setBaseSurveyReady(false);
+            return false;
         }
     }
 
@@ -855,63 +1137,298 @@ document.addEventListener("DOMContentLoaded", () => {
      * =========================================================
      */
 
+    function openEventForm(eventType) {
+        selectedEventType = eventType;
+        selectedEventTypes.add(eventType);
+
+        eventForms.forEach(form => {
+            form.hidden = true;
+        });
+
+        const targetForm = document.querySelector(
+            `[data-event-form="${eventType}"]`
+        );
+
+        if (targetForm) {
+            targetForm.hidden = false;
+            targetForm.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        updateEventSelectionUi();
+    }
+
+    function updateEventSelectionUi() {
+        eventButtons.forEach(button => {
+            const selected = selectedEventTypes.has(
+                button.dataset.eventType
+            );
+            button.classList.toggle("selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+    }
+
+    async function removeEvent(eventType) {
+        const eventId = savedEventIds[eventType];
+
+        if (eventId) {
+            const confirmed = window.confirm(
+                `${lifecycleEventNames[eventType]} 이벤트를 삭제하시겠습니까?\n저장된 설문 내용도 함께 삭제됩니다.`
+            );
+
+            if (!confirmed) {
+                openEventForm(eventType);
+                return;
+            }
+
+            const response = await fetch(
+                `/api/lifecycle/survey/event/${eventId}`,
+                { method: "DELETE" }
+            );
+
+            if (!response.ok) {
+                throw new Error(`이벤트 삭제 실패: ${response.status}`);
+            }
+        }
+
+        selectedEventTypes.delete(eventType);
+        savedEventIds[eventType] = null;
+        lifecycleEvents = lifecycleEvents.filter(
+            event => event.type !== eventType
+        );
+
+        const formArea = document.querySelector(
+            `[data-event-form="${eventType}"]`
+        );
+        const form = formArea?.querySelector("form");
+        form?.reset();
+
+        if (formArea) {
+            formArea.hidden = true;
+        }
+        if (selectedEventType === eventType) {
+            selectedEventType = null;
+        }
+
+        updateEventSelectionUi();
+        renderTimeline();
+    }
+
     eventButtons.forEach(button => {
+        button.addEventListener("click", async () => {
+            const eventType = button.dataset.eventType;
 
-        button.addEventListener("click", () => {
+            if (!selectedEventTypes.has(eventType)) {
+                openEventForm(eventType);
+                return;
+            }
 
-            const eventType =
-                button.dataset.eventType;
-
-            selectedEventType = eventType;
-            selectedEventTypes.add(eventType);
-
-
-            /*
-             * 선택 카드 UI 처리
-             */
-            eventButtons.forEach(item => {
-
-                item.classList.toggle(
-                    "selected",
-                    selectedEventTypes.has(
-                        item.dataset.eventType
-                    )
-                );
-            });
-
-
-            /*
-             * 모든 이벤트 폼 숨김
-             */
-            eventForms.forEach(form => {
-
-                form.hidden = true;
-            });
-
-
-            /*
-             * 선택한 이벤트 form만 표시
-             */
-            const selectedForm =
-                document.querySelector(
-                    `[data-event-form="${eventType}"]`
-                );
-
-
-            if (selectedForm) {
-
-                selectedForm.hidden = false;
-
-                /*
-                 * 선택한 폼 위치로 이동
-                 */
-                selectedForm.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+            button.disabled = true;
+            try {
+                await removeEvent(eventType);
+            } catch (error) {
+                console.error(error);
+                alert("이벤트 삭제 중 오류가 발생했습니다.");
+            } finally {
+                button.disabled = false;
             }
         });
     });
+
+    function addOrUpdateTimelineEvent(type, targetDate, eventId = null) {
+        if (!targetDate) {
+            return;
+        }
+
+        const index = lifecycleEvents.findIndex(event => event.type === type);
+        const timelineEvent = {
+            type,
+            targetDate,
+            title: lifecycleEventNames[type] ?? type,
+            eventId
+        };
+
+        if (index >= 0) {
+            lifecycleEvents[index] = timelineEvent;
+        } else {
+            lifecycleEvents.push(timelineEvent);
+        }
+
+        lifecycleEvents.sort((a, b) =>
+            a.targetDate.localeCompare(b.targetDate)
+        );
+        renderTimeline();
+    }
+
+    function renderTimeline() {
+        const timeline = document.getElementById("lifecycleTimeline");
+        const empty = document.getElementById("lifecycleTimelineEmpty");
+
+        if (!timeline || !empty) {
+            return;
+        }
+
+        if (lifecycleEvents.length === 0) {
+            empty.hidden = false;
+            timeline.hidden = true;
+            timeline.replaceChildren();
+            return;
+        }
+
+        empty.hidden = true;
+        timeline.hidden = false;
+        timeline.innerHTML = lifecycleEvents.map((event, index) => `
+            <div class="lifecycle-timeline-item">
+                <button type="button"
+                        class="lifecycle-timeline-node"
+                        data-timeline-event="${event.type}">
+                    <span class="timeline-date">${formatYearMonth(event.targetDate)}</span>
+                    <span class="timeline-dot"></span>
+                    <strong>${event.title}</strong>
+                    <span class="timeline-edit">상세설정</span>
+                </button>
+                ${index < lifecycleEvents.length - 1
+                    ? '<div class="timeline-line"></div>'
+                    : ''}
+            </div>
+        `).join("");
+
+        timeline.querySelectorAll("[data-timeline-event]")
+            .forEach(button => {
+                button.addEventListener("click", () => {
+                    openEventForm(button.dataset.timelineEvent);
+                });
+            });
+    }
+
+    function getResponseField(data, fieldName) {
+        if (Object.hasOwn(data, fieldName)) {
+            return data[fieldName];
+        }
+        const snakeCaseName = fieldName.replace(
+            /[A-Z]/g,
+            letter => `_${letter.toLowerCase()}`
+        );
+        return data[snakeCaseName];
+    }
+
+    function populateEventForm(eventType, data) {
+        const formArea = document.querySelector(
+            `[data-event-form="${eventType}"]`
+        );
+        const form = formArea?.querySelector("form");
+        if (!form) {
+            return;
+        }
+
+        const sidoSelect = form.querySelector("[data-region-sido]");
+        const sigunguValue = getResponseField(data, "regionSigungu") ?? "";
+        if (sidoSelect) {
+            sidoSelect.value = getResponseField(data, "regionSido") ?? "";
+            updateSigunguOptions(sidoSelect, sigunguValue);
+        }
+
+        form.querySelectorAll("input, select, textarea").forEach(control => {
+            if (!control.name || control.matches("[data-region-sigungu]")) {
+                return;
+            }
+            const fieldName = lifestyleFieldNames.has(control.name)
+                ? "lifestyleLevel"
+                : control.name;
+            let value = getResponseField(data, fieldName);
+
+            if (control.name === "targetDate") {
+                value = toYearMonth(value);
+            } else if (control.name === "userContributionRate") {
+                value = Number(value) * 100;
+            }
+            if (value === undefined || value === null) {
+                return;
+            }
+            if (control.type === "radio") {
+                control.checked = control.value === String(value);
+            } else if (control.type === "checkbox") {
+                control.checked = Boolean(value);
+            } else {
+                control.value = value;
+            }
+        });
+
+        form.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+            radio.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        moneyInputs.filter(input => form.contains(input)).forEach(formatMoneyInput);
+    }
+
+    async function loadEventDetails(events) {
+        await Promise.all(events.map(async event => {
+            const type = lifecycleEventTypes[
+                getResponseField(event, "eventType")
+            ];
+            const eventId = getResponseField(event, "eventId");
+            const apiPath = lifecycleEventDetailPaths[type];
+            if (!type || !apiPath) {
+                return;
+            }
+            const response = await fetch(
+                `/api/lifecycle/survey/${apiPath}/${eventId}`
+            );
+            if (!response.ok) {
+                console.error(`이벤트 상세 조회 실패: ${type} ${response.status}`);
+                return;
+            }
+            populateEventForm(type, await response.json());
+        }));
+    }
+
+    async function loadTimelineEvents() {
+        const currentScenarioId = await ensureScenario();
+        const response = await fetch(
+            `/api/lifecycle/survey/scenario/${currentScenarioId}/timeline`
+        );
+
+        if (!response.ok) {
+            throw new Error(`타임라인 조회 실패: ${response.status}`);
+        }
+
+        const events = await response.json();
+        lifecycleEvents = events.flatMap(event => {
+            const type = lifecycleEventTypes[
+                getResponseField(event, "eventType")
+            ];
+            const eventId = getResponseField(event, "eventId");
+            const targetDate = toYearMonth(
+                getResponseField(event, "targetDate")
+            );
+
+            if (!type || !targetDate) {
+                return [];
+            }
+
+            savedEventIds[type] = eventId;
+            selectedEventTypes.add(type);
+
+            const targetDateInput = document.querySelector(
+                `[data-event-form="${type}"] input[name="targetDate"]`
+            );
+            if (targetDateInput) {
+                targetDateInput.value = targetDate;
+            }
+
+            return [{
+                type,
+                targetDate,
+                title: lifecycleEventNames[type] ?? type,
+                eventId
+            }];
+        }).sort((a, b) => a.targetDate.localeCompare(b.targetDate));
+
+        updateEventSelectionUi();
+        renderTimeline();
+        await loadEventDetails(events);
+    }
 
     const eventApiPaths = {
         childbirth: "childbirth",
@@ -960,6 +1477,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 request[fieldName] = control.value === ""
                     ? null
                     : Number(control.value);
+            } else if (control.type === "month") {
+                request[fieldName] = toServerDate(control.value);
             } else {
                 request[fieldName] = control.value === ""
                     ? null
@@ -1003,6 +1522,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             selectedEventTypes.add(eventType);
+            const targetDate = form.querySelector(
+                'input[name="targetDate"]'
+            )?.value;
+            addOrUpdateTimelineEvent(
+                eventType,
+                targetDate,
+                savedEventIds[eventType]
+            );
             button.textContent = "저장 완료";
         } catch (error) {
             console.error(error);
@@ -1181,7 +1708,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const requestData = {
 
             targetDate:
-            targetDate,
+            toServerDate(targetDate),
 
             lifestyleLevel:
             lifestyle.value,
@@ -1292,6 +1819,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 alert("결혼 계획이 수정되었습니다.");
             }
+
+            addOrUpdateTimelineEvent(
+                "marriage",
+                targetDate,
+                savedEventIds.marriage
+            );
 
 
         } catch (error) {
@@ -1626,25 +2159,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (completeSurveyBtn) {
 
-        completeSurveyBtn.addEventListener(
-            "click",
-            () => {
-
-                /*
-                 * A 담당 시뮬레이션 화면/API가 완성되면
-                 * 여기서 해당 주소로 이동한다.
-                 *
-                 * 예:
-                 *
-                 * window.location.href =
-                 *     `/lifecycle/scenario/${scenarioId}`;
-                 */
-
-                alert(
-                    "설문 입력이 완료되었습니다."
-                );
+        completeSurveyBtn.addEventListener("click", async () => {
+            if (!scenarioId) {
+                alert("완료할 시나리오를 먼저 선택해주세요.");
+                return;
             }
-        );
+
+            completeSurveyBtn.disabled = true;
+            try {
+                const response = await fetch(
+                    `/api/lifecycle/scenarios/${scenarioId}`,
+                    {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "COMPLETED" })
+                    }
+                );
+                if (!response.ok) {
+                    throw new Error(`시나리오 완료 처리 실패: ${response.status}`);
+                }
+                alert("시나리오 입력이 완료되었습니다.");
+                showStep("base");
+                setScenarioListExpanded(true);
+                await loadScenarioList();
+            } catch (error) {
+                console.error(error);
+                alert("시나리오를 완료 처리하지 못했습니다.");
+            } finally {
+                completeSurveyBtn.disabled = false;
+            }
+        });
     }
 
 
@@ -1681,12 +2225,30 @@ document.addEventListener("DOMContentLoaded", () => {
      * =========================================================
      */
 
-    /*
-     * 기존 기본 생활정보가 있다면
-     * 화면에 자동으로 채운다.
-     */
-    loadBaseSurvey();
+    async function initializeSurvey() {
+        setBaseSurveyReady(false);
+        checkBaseSurveyComplete();
 
-    checkBaseSurveyComplete();
+        const hasBaseSurvey = await loadBaseSurvey();
+        if (!hasBaseSurvey) {
+            showStep("base");
+            return;
+        }
+
+        if (requestedScenarioId) {
+            try {
+                await selectScenario(requestedScenarioId);
+                return;
+            } catch (error) {
+                console.error("요청한 시나리오 조회 오류", error);
+                updateScenarioUrl(null);
+                alert("선택한 시나리오를 불러올 수 없습니다.");
+            }
+        }
+
+        showStep("base");
+    }
+
+    initializeSurvey();
 
 });

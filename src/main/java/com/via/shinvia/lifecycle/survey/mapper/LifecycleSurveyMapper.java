@@ -233,6 +233,10 @@ public interface LifecycleSurveyMapper {
             @Param("scenarioId") Long scenarioId
     );
 
+    List<LifecycleTimelineEventResponse> findTimelineEventsByScenarioId(
+            @Param("scenarioId") Long scenarioId
+    );
+
     // 이벤트 삭제
     int deleteEvent(
             @Param("lifecycleEventId") Long lifecycleEventId

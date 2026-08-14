@@ -756,6 +756,19 @@
 
     </select>
 
+    <select id="findTimelineEventsByScenarioId"
+            resultType="com.via.shinvia.lifecycle.survey.dto.LifecycleTimelineEventResponse">
+
+        SELECT
+        lifecycle_event_id AS event_id,
+        event_type,
+        target_date
+        FROM lifecycle_event
+        WHERE lifecycle_scenario_id = #{scenarioId}
+        ORDER BY target_date, event_order
+
+    </select>
+
 
     <!-- 이벤트 삭제 -->
     <delete id="deleteEvent">

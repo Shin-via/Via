@@ -479,6 +479,15 @@ public class LifecycleSurveyService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<LifecycleTimelineEventResponse> getTimelineEvents(
+            Long scenarioId
+    ) {
+        return lifecycleSurveyMapper.findTimelineEventsByScenarioId(
+                scenarioId
+        );
+    }
+
 
     /**
      * 이벤트 삭제

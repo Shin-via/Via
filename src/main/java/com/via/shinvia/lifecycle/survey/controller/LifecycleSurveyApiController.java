@@ -456,6 +456,15 @@ public class LifecycleSurveyApiController {
         );
     }
 
+    @GetMapping("/scenario/{scenarioId}/timeline")
+    public ResponseEntity<List<LifecycleTimelineEventResponse>> getTimeline(
+            @PathVariable Long scenarioId
+    ) {
+        return ResponseEntity.ok(
+                lifecycleSurveyService.getTimelineEvents(scenarioId)
+        );
+    }
+
 
     // 이벤트 삭제
     @DeleteMapping("/event/{eventId}")

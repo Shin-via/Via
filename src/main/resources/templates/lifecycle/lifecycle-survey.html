@@ -243,13 +243,55 @@
                         class="lifecycle-primary-button"
                         hidden>
 
-                    저장하고 다음
+                    기본정보 저장
 
                 </button>
 
             </div>
 
         </form>
+
+        <section id="lifecycleScenarioGate"
+                 class="lifecycle-scenario-gate"
+                 hidden>
+            <div class="lifecycle-scenario-gate-heading">
+                <div>
+                    <span>NEXT STEP</span>
+                    <h3>진행할 시나리오를 선택해주세요.</h3>
+                </div>
+                <p>새 계획을 만들거나 이전에 작성한 계획을 이어서 진행할 수 있습니다.</p>
+            </div>
+
+            <div class="lifecycle-scenario-create">
+                <label for="newScenarioName">새 시나리오 이름</label>
+                <div>
+                    <input type="text"
+                           id="newScenarioName"
+                           maxlength="100"
+                           placeholder="예: 결혼 후 전세·주택 구매 계획">
+                    <button type="button"
+                            id="createLifecycleScenarioBtn"
+                            class="lifecycle-primary-button">
+                        새 시나리오 만들기
+                    </button>
+                </div>
+            </div>
+
+            <div class="lifecycle-scenario-history-actions">
+                <button type="button"
+                        id="toggleLifecycleScenarioListBtn"
+                        class="lifecycle-scenario-toggle"
+                        aria-expanded="false"
+                        aria-controls="lifecycleScenarioList">
+                    <span>이전 진행 시나리오</span>
+                    <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+                </button>
+            </div>
+
+            <div id="lifecycleScenarioList"
+                 class="lifecycle-scenario-list"
+                 hidden></div>
+        </section>
 
     </section>
 
@@ -271,6 +313,7 @@
             <p>
                 앞으로 계획하고 있는 생활 이벤트를 선택해주세요.
                 여러 개를 선택할 수 있습니다.
+                선택된 카드를 다시 누르면 이벤트를 제거할 수 있습니다.
             </p>
 
         </div>
@@ -370,6 +413,41 @@
             </button>
 
         </div>
+
+        <div id="activeLifecycleScenario"
+             class="lifecycle-active-scenario">
+            <div>
+                <span>현재 시나리오</span>
+                <strong id="activeLifecycleScenarioName">선택된 시나리오 없음</strong>
+            </div>
+            <button type="button"
+                    id="changeLifecycleScenarioBtn"
+                    class="lifecycle-secondary-button">
+                다른 시나리오 선택
+            </button>
+        </div>
+
+
+        <!-- 저장된 이벤트 미래 타임라인 -->
+        <section class="lifecycle-timeline-section"
+                 aria-labelledby="lifecycleTimelineTitle">
+            <div class="lifecycle-timeline-heading">
+                <div>
+                    <span>FUTURE TIMELINE</span>
+                    <h3 id="lifecycleTimelineTitle">나의 미래 일정</h3>
+                </div>
+                <p>저장한 이벤트가 예정 시기순으로 표시됩니다.</p>
+            </div>
+
+            <p id="lifecycleTimelineEmpty"
+               class="lifecycle-timeline-empty">
+                이벤트의 상세 내용을 저장하면 타임라인에 추가됩니다.
+            </p>
+
+            <div id="lifecycleTimeline"
+                 class="lifecycle-timeline"
+                 hidden></div>
+        </section>
 
 
         <!-- =================================================
@@ -523,7 +601,7 @@
                     id="completeLifecycleSurveyBtn"
                     class="lifecycle-primary-button">
 
-                금융 시뮬레이션 시작
+                시나리오 입력 완료
 
             </button>
 
