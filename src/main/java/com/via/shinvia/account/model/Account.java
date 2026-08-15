@@ -33,4 +33,8 @@ public class Account {
     private LocalDate openedAt;
 
     private LocalDateTime updatedAt;
+
+    private Long connectionId;
+
+    private String orgCode;
 }

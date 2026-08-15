@@ -11,36 +11,34 @@ import com.via.shinvia.account.dto.mock.MockAccountDtos.AccountListResponse;
 import com.via.shinvia.account.dto.request.AccountSyncRequest;
 import com.via.shinvia.account.dto.response.AccountSyncResult;
 import com.via.shinvia.account.service.AccountSyncService;
+import com.via.shinvia.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/accounts")
+@RequiredArgsConstructor
 public class AccountController {
 
     private final AccountSyncService accountSyncService;
     private final MockAccountClient accountClient;
-
-    public AccountController(
-            AccountSyncService accountSyncService,
-            MockAccountClient accountClient
-    ) {
-        this.accountSyncService = accountSyncService;
-        this.accountClient = accountClient;
-    }
+    private final CurrentUser currentUser;
 
     @Operation(summary = "계좌 목록 조회", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping
     public ResponseEntity<AccountListResponse> list(
             @Parameter(hidden = true)
             @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestParam("org_code") String orgCode,
             @RequestParam(value = "next_page", required = false) String nextPage,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        AccountListResponse response = accountClient.getAccounts(authorization, nextPage, limit);
+        AccountListResponse response = accountClient.getAccounts(authorization, orgCode, nextPage, limit);
         return ResponseEntity.ok(response);
     }
 
@@ -80,9 +78,12 @@ public class AccountController {
     @Operation(summary = "계좌 동기화")
     @PostMapping("/sync")
     public ResponseEntity<AccountSyncResult> sync(
-            @RequestBody AccountSyncRequest request
+            @RequestBody AccountSyncRequest request,
+            Authentication authentication
     ) {
-        AccountSyncResult result = accountSyncService.sync(request);
+        Long userId = currentUser.getUserId(authentication);
+
+        AccountSyncResult result = accountSyncService.sync(userId, request);
         return ResponseEntity.ok(result);
     }
 }

@@ -24,18 +24,15 @@ public class MockAccountClient {
     private static final String SUCCESS_CODE = "00000";
     private final MyDataAuthClient mydata;
     private final RestClient restClient;
-    private final MyDataProperties myDataProperties;
     private final StringRedisTemplate redistemplate;
 
     public MockAccountClient(
             MyDataAuthClient mydata,
             RestClient.Builder restClientBuilder,
             @Value("${mock.account.base-url:http://localhost:9090}") String baseUrl,
-            MyDataProperties myDataProperties,
             StringRedisTemplate redistemplate
     ) {
         this.mydata = mydata;
-        this.myDataProperties = myDataProperties;
         this.redistemplate = redistemplate;
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
@@ -53,19 +50,13 @@ public class MockAccountClient {
                    .header("x-api-type", "user");
     }
 
-    public AccountListResponse getAccounts(String nextPage, int limit) {
-        return getAccounts(null, nextPage, limit);
-    }
-
-    public AccountListResponse getAccounts(String authorization, String nextPage, int limit) {
+    public AccountListResponse getAccounts(String authorization, String orgCode, String nextPage, int limit) {
         try {
-            String targetOrgCode = myDataProperties.getOrgCode();
-
             var spec = restClient.get()
                     .uri(uriBuilder -> {
                         var builder = uriBuilder
                                 .path("/v2/bank/accounts")
-                                .queryParam("org_code", targetOrgCode)
+                                .queryParam("org_code", orgCode)
                                 .queryParam("search_timestamp", "0")
                                 .queryParam("limit", limit);
                         if (hasText(nextPage)) {
@@ -102,13 +93,12 @@ public class MockAccountClient {
 
     public DepositBasicResponse getDepositBasic(String authorization, DepositBasicRequest request) {
         try {
-            String effectiveOrgCode = myDataProperties.getOrgCode();
             String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
                     ? request.searchTimestamp()
                     : "0";
 
             DepositBasicRequest finalRequest = new DepositBasicRequest(
-                    effectiveOrgCode,
+                    request != null ?  request.orgCode() : null,
                     request != null ? request.accountNum() : null,
                     request != null ? request.seqno() : null,
                     effectiveSearchTimestamp
@@ -146,13 +136,12 @@ public class MockAccountClient {
 
     public DepositDetailResponse getDepositDetail(String authorization, DepositDetailRequest request) {
         try {
-            String effectiveOrgCode = myDataProperties.getOrgCode();
             String effectiveSearchTimestamp = (request != null && hasText(request.searchTimestamp()))
                     ? request.searchTimestamp()
                     : "0";
 
             DepositDetailRequest finalRequest = new DepositDetailRequest(
-                    effectiveOrgCode,
+                    request != null ? request.orgCode() : null,
                     request != null ? request.accountNum() : null,
                     request != null ? request.seqno() : null,
                     effectiveSearchTimestamp
@@ -190,7 +179,6 @@ public class MockAccountClient {
 
     public DepositTransactionResponse getDepositTransactions(String authorization, DepositTransactionRequest request) {
         try {
-            String effectiveOrgCode = myDataProperties.getOrgCode();
             int limit = (request != null && request.limit() > 0) ? request.limit() : 20;
 
             String defaultToDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -200,7 +188,7 @@ public class MockAccountClient {
             String effectiveToDate = (request != null && hasText(request.toDate())) ? request.toDate() : defaultToDate;
 
             DepositTransactionRequest finalRequest = new DepositTransactionRequest(
-                    effectiveOrgCode,
+                    request != null ? request.orgCode() : null,
                     request != null ? request.accountNum() : null,
                     request != null ? request.seqno() : null,
                     effectiveFromDate,

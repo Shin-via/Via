@@ -14,6 +14,7 @@ public interface AccountMapper {
     int upsertAccount(Account account);
 
     Long findAccountIdByExternalKey(
+            @Param("connectionId") Long connectionId,
             @Param("externalAccountKey") String externalAccountKey
     );
 

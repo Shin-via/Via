@@ -16,6 +16,9 @@ import com.via.shinvia.account.dto.request.AccountSyncRequest;
 import com.via.shinvia.account.dto.response.AccountSyncResult;
 import com.via.shinvia.account.model.Account;
 import com.via.shinvia.account.model.AccountTransaction;
+import com.via.shinvia.mydata.service.MyDataAuthService;
+import com.via.shinvia.mydata.service.MyDataConnectionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,6 +31,7 @@ import java.util.List;
 
 // 전체적인 동기화 순서를 제어하는 서비스
 @Service
+@RequiredArgsConstructor
 public class AccountSyncService {
 
     private static final DateTimeFormatter DATE_FORMATTER =
@@ -36,24 +40,27 @@ public class AccountSyncService {
     private final MockAccountClient mockAccountClient;
     private final AccountDataConverter converter;
     private final AccountPersistenceService persistenceService;
-
-    public AccountSyncService(
-            MockAccountClient mockAccountClient,
-            AccountDataConverter converter,
-            AccountPersistenceService persistenceService
-    ) {
-        this.mockAccountClient = mockAccountClient;
-        this.converter = converter;
-        this.persistenceService = persistenceService;
-    }
+    private final MyDataConnectionService myDataConnectionService;
+    private final MyDataAuthService myDataAuthService;
 
     public AccountSyncResult sync(
+            Long userId,
             AccountSyncRequest request
     ) {
         validateRequest(request);
+        Long connectionId= myDataConnectionService.getConnectedConnectionId(userId);
+        if (connectionId == null) {
+            throw new IllegalStateException(
+                    "연결된 마이데이터 정보가 없습니다."
+            );
+        }
+
+        String accessToken = myDataAuthService.getAccessToken(connectionId);
+
         int limit = request.resolvedLimit();
         List<AccountItem> accountItems =
                 fetchAllAccounts(
+                        accessToken,
                         request.orgCode(),
                         limit
                 );
@@ -87,6 +94,10 @@ public class AccountSyncService {
                                     "0"
                             )
                     );
+            System.out.println("accountNum = " + accountItem.accountNum());
+            System.out.println("seqno = " + accountItem.seqno());
+            System.out.println("detailResponse = " + detailResponse);
+            System.out.println("detailList = " + detailResponse.detailList());
 
             DepositBasicItem basicItem =
                     firstOrNull(
@@ -99,6 +110,7 @@ public class AccountSyncService {
                     );
 
             Account account = converter.toAccount(
+                    connectionId,
                     request.orgCode(),
                     accountItem,
                     basicItem,
@@ -108,6 +120,7 @@ public class AccountSyncService {
 
             List<DepositTransactionItem> mockTransactions =
                     fetchAllTransactions(
+                            accessToken,
                             request,
                             accountItem,
                             limit
@@ -141,6 +154,7 @@ public class AccountSyncService {
     }
 
     private List<AccountItem> fetchAllAccounts(
+            String accessToken,
             String orgCode,
             int limit
     ) {
@@ -152,6 +166,7 @@ public class AccountSyncService {
         do {
             AccountListResponse response =
                     mockAccountClient.getAccounts(
+                            accessToken,
                             orgCode,
                             nextPage,
                             limit
@@ -173,6 +188,7 @@ public class AccountSyncService {
 
     private List<DepositTransactionItem>
     fetchAllTransactions(
+            String accessToken,
             AccountSyncRequest request,
             AccountItem accountItem,
             int limit

@@ -33,6 +33,7 @@ public class AccountPersistenceService {
 
         Long accountId =
                 accountMapper.findAccountIdByExternalKey(
+                        account.getConnectionId(),
                         account.getExternalAccountKey()
                 );
 
