@@ -28,7 +28,7 @@ public class LayoutModelAdvice {
             return "대출";
         }
 
-        if (uri.startsWith("/lifecycle")) {
+        if (uri.startsWith("/lifecycle") || uri.startsWith("/surplus-funds")) {
             return "금융 라이프 플랜";
         }
 

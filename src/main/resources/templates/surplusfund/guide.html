@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/basic :: layout(~{::title}, ~{::surplusGuide}, ${serviceName})}">
+<head>
+    <title>여유자금 운용 가이드 | SHINVIA</title>
+</head>
+<body>
+<div th:fragment="surplusGuide" class="surplus-guide">
+    <link rel="stylesheet" th:href="@{/css/lifecycle-survey.css}">
+    <link rel="stylesheet" th:href="@{/css/surplus-fund-guide.css}">
+
+    <section th:fragment="surplusAmountCalculatorPlaceholder"
+             id="surplusCalculatorSlot"
+             class="surplus-calculator-slot"
+             aria-labelledby="surplusCalculatorTitle">
+        <div>
+            <p class="eyebrow">SURPLUS FUND CALCULATOR</p>
+            <h2 id="surplusCalculatorTitle">여유자금 계산 영역</h2>
+            <p>남경 담당 계산 기능이 연결되기 전까지 아래 운용 가능 금액을 직접 입력해주세요.</p>
+        </div>
+        <span class="placeholder-badge">연동 예정</span>
+    </section>
+
+    <section class="hero">
+        <p class="breadcrumb">자산관리 &gt; 여유자금 운용</p>
+        <h1>여유자금 운용성향 설문</h1>
+        <p class="hero-description">
+            투자 목적과 손실 감내 수준을 확인하여 현금·ETF·펀드의 가이드 비율을 계산합니다.
+        </p>
+    </section>
+
+    <div class="top-notice">
+        본 설문은 교육용 운용 가이드를 제공하기 위한 내부 기준입니다. 실제 금융상품 투자권유·자문이나 수익 보장을 의미하지 않습니다.
+    </div>
+
+    <div id="errorBox" class="message message-error" role="alert" hidden></div>
+
+    <form id="preferenceForm" class="survey-card">
+        <section id="amountSection" class="amount-section">
+            <div>
+                <p class="section-number">운용금액</p>
+                <h2>계산된 여유자금을 확인해주세요.</h2>
+                <p>여유자금 계산 기능과 연동 전에는 금액을 직접 입력할 수 있습니다.</p>
+            </div>
+            <label class="amount-input-wrap" for="operationAmount">
+                <span>운용 가능 금액</span>
+                <span class="amount-field">
+                    <input
+                            id="operationAmount"
+                            name="operationAmount"
+                            type="number"
+                            min="1"
+                            step="1"
+                            th:value="${operationAmount}"
+                            placeholder="예: 1500000"
+                            required>
+                    <b>원</b>
+                </span>
+            </label>
+        </section>
+
+        <fieldset class="question-card">
+            <legend><span>1</span> 여유자금의 주된 운용 목적은 무엇인가요?</legend>
+            <label class="option">
+                <input type="radio" name="investmentPurpose" value="PRINCIPAL_PROTECTION" required>
+                <span><b>원금 보존</b><small>원금 손실 없이 보관하고 싶어요.</small></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="investmentPurpose" value="STABLE_RETURN">
+                <span><b>안정적인 수익</b><small>원금을 지키면서 안정적인 수익을 원해요.</small></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="investmentPurpose" value="BALANCED_GROWTH">
+                <span><b>균형 성장</b><small>안정성과 수익성을 함께 고려하고 싶어요.</small></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="investmentPurpose" value="CAPITAL_GROWTH">
+                <span><b>적극적인 성장</b><small>손실 가능성을 감수하고 높은 성장을 원해요.</small></span>
+            </label>
+        </fieldset>
+
+        <fieldset class="question-card">
+            <legend><span>2</span> 예상 운용기간은 얼마인가요?</legend>
+            <label class="option option-inline">
+                <input type="radio" name="investmentPeriodMonths" value="12" required>
+                <span><b>1년 이하</b></span>
+            </label>
+            <label class="option option-inline">
+                <input type="radio" name="investmentPeriodMonths" value="36">
+                <span><b>1년 초과 3년 이하</b></span>
+            </label>
+            <label class="option option-inline">
+                <input type="radio" name="investmentPeriodMonths" value="60">
+                <span><b>3년 초과</b></span>
+            </label>
+        </fieldset>
+
+        <fieldset class="question-card">
+            <legend><span>3</span> 감내할 수 있는 손실 수준은 어느 정도인가요?</legend>
+            <label class="option">
+                <input type="radio" name="lossToleranceLevel" value="NO_LOSS" required>
+                <span><b>원금 손실을 원하지 않음</b></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="lossToleranceLevel" value="WITHIN_5_PERCENT">
+                <span><b>5% 이내</b><small>소폭의 가격 변동을 감수할 수 있어요.</small></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="lossToleranceLevel" value="WITHIN_15_PERCENT">
+                <span><b>15% 이내</b><small>일정 수준의 가격 하락을 감수할 수 있어요.</small></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="lossToleranceLevel" value="OVER_15_PERCENT">
+                <span><b>15% 초과</b><small>높은 변동성과 손실 가능성을 감수할 수 있어요.</small></span>
+            </label>
+        </fieldset>
+
+        <fieldset class="question-card">
+            <legend><span>4</span> 이 자금을 단기간에 사용할 가능성이 있나요?</legend>
+            <label class="option option-inline">
+                <input type="radio" name="liquidityNeed" value="HIGH" required>
+                <span><b>높다</b></span>
+            </label>
+            <label class="option option-inline">
+                <input type="radio" name="liquidityNeed" value="MEDIUM">
+                <span><b>보통이다</b></span>
+            </label>
+            <label class="option option-inline">
+                <input type="radio" name="liquidityNeed" value="LOW">
+                <span><b>낮다</b></span>
+            </label>
+        </fieldset>
+
+        <fieldset class="question-card">
+            <legend><span>5</span> ETF·펀드의 가격변동과 원금손실 가능성을 이해하나요?</legend>
+            <label class="option">
+                <input type="radio" name="experienceLevel" value="NONE" required>
+                <span><b>투자 경험이 없다</b></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="experienceLevel" value="LIMITED">
+                <span><b>경험은 있으나 위험에 대한 이해가 제한적이다</b></span>
+            </label>
+            <label class="option">
+                <input type="radio" name="experienceLevel" value="UNDERSTANDS_RISK">
+                <span><b>가격변동과 원금손실 가능성을 이해한다</b></span>
+            </label>
+        </fieldset>
+
+        <section class="confirmation-card">
+            <label>
+                <input id="surplusAmountConfirmed" type="checkbox" required>
+                <span>입력한 금액이 생활비와 대출 상환액을 제외한 여유자금임을 확인합니다.</span>
+            </label>
+            <label>
+                <input id="guideNoticeConfirmed" type="checkbox" required>
+                <span>본 결과가 교육용 가이드이며 투자권유·자문이나 수익 보장이 아님을 확인합니다.</span>
+            </label>
+        </section>
+
+        <button id="submitButton" class="primary-button" type="submit">
+            운용 가이드 확인하기
+        </button>
+    </form>
+
+    <section id="resultSection" class="result-section" aria-live="polite" hidden>
+        <div class="result-heading">
+            <div>
+                <p class="eyebrow">YOUR GUIDE</p>
+                <h2>운용성향 분석 결과</h2>
+            </div>
+            <span id="styleBadge" class="style-badge"></span>
+        </div>
+
+        <div class="summary-grid">
+            <article>
+                <span>총점</span>
+                <strong><b id="scoreValue">0</b>점</strong>
+            </article>
+            <article>
+                <span>판정 규칙</span>
+                <strong id="ruleVersion">-</strong>
+            </article>
+            <article>
+                <span>운용계획 번호</span>
+                <strong id="planId">-</strong>
+            </article>
+        </div>
+
+        <div>
+            <h3>자산군별 배분</h3>
+            <div id="allocationGrid" class="allocation-visualization"></div>
+        </div>
+
+        <div class="reason-card">
+            <h3>이렇게 판정했어요</h3>
+            <ul id="reasonList"></ul>
+        </div>
+
+        <p id="guideNotice" class="guide-notice"></p>
+    </section>
+    <script th:src="@{/js/surplus-fund-guide.js}"></script>
+</div>
+</body>
+</html>
