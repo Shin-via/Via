@@ -259,5 +259,35 @@ public class MyDataAuthService {
 
         return remainingSeconds;
     }
+
+    public void refreshAccessToken(Long connectionId) {
+
+        String userCi = String.valueOf(connectionId);
+
+        String refreshToken = redisTemplate.opsForValue().get("mydata:ci:rt:" + userCi);
+
+        if (!StringUtils.hasText(refreshToken)) {
+            log.warn(
+                    "[MyData Token Refresh] Refresh Token 없음 - connectionId: {}",
+                    connectionId
+            );
+            return;
+        }
+
+        MyDataAuthTokenResponseDto response = myDataAuthClient.refreshAccessToken(refreshToken);
+
+        if (response == null || !StringUtils.hasText(response.getAccessToken())) {
+            throw new IllegalStateException("마이데이터 Access Token 재발급 실패");
+        }
+
+        String newRefreshToken = StringUtils.hasText(response.getRefreshToken())
+                        ? response.getRefreshToken() : refreshToken;
+
+        saveTokensToRedis(
+                userCi,
+                response.getAccessToken(),
+                newRefreshToken
+        );
+    }
 }
 

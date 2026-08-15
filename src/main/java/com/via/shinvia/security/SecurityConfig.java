@@ -1,5 +1,6 @@
 package com.via.shinvia.security;
 
+import com.via.shinvia.login.security.LoginSuccessHandler;
 import com.via.shinvia.oauth2.security.OAuth2LoginSuccessHandler;
 import com.via.shinvia.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final LoginSuccessHandler loginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -126,7 +128,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .usernameParameter("loginEmail")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/login?error")
                         .permitAll()
                 )
