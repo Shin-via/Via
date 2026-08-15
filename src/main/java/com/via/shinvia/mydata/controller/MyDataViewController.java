@@ -2,11 +2,13 @@ package com.via.shinvia.mydata.controller;
 
 import com.via.shinvia.account.model.Account;
 import com.via.shinvia.account.service.AccountQueryService;
+import com.via.shinvia.loan.account.entity.LoanAccount;
 import com.via.shinvia.login.security.CustomUserDetails;
 import com.via.shinvia.mydata.client.dto.response.CardListResponseDto;
 import com.via.shinvia.mydata.service.MyDataCardService;
 import com.via.shinvia.mydata.service.MyDataConnectionService;
 import com.via.shinvia.security.CurrentUser;
+import com.via.shinvia.service.mydata.LoanAccountSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +28,7 @@ public class MyDataViewController {
     private final CurrentUser currentUser;
     private final MyDataConnectionService myDataConnectionService;
     private final AccountQueryService accountQueryService;
+    private final LoanAccountSyncService loanAccountSyncService;
 
     @GetMapping("/result")
     public String resultPage(Authentication authentication, Model model) {
@@ -34,12 +37,15 @@ public class MyDataViewController {
         if (connectionId == null) {
             return "redirect:/mydata/connection";
         }
-        List<Account> accountList =
-                accountQueryService
-                        .getAccountsByConnectionId(connectionId);
+        List<Account> accountList = accountQueryService.getAccountsByConnectionId(connectionId);
 
         model.addAttribute("accountList", accountList);
         model.addAttribute("accountCnt", accountList.size());
+
+        List<LoanAccount> loanList = loanAccountSyncService.getMyLoans(userId);
+
+        model.addAttribute("loanList", loanList);
+        model.addAttribute("loanCnt", loanList.size());
 
         CardListResponseDto response = myDataCardService.getCards(userId);
         model.addAttribute("cards", response.getCardList());

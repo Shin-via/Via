@@ -3,6 +3,7 @@ package com.via.shinvia.mydata.service;
 import com.via.shinvia.account.dto.request.AccountSyncRequest;
 import com.via.shinvia.account.service.AccountQueryService;
 import com.via.shinvia.account.service.AccountSyncService;
+import com.via.shinvia.service.mydata.LoanAccountSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class MyDataSyncService {
     private final AccountSyncService accountSyncService;
     private final AccountQueryService accountQueryService;
     private final MyDataConnectionService myDataConnectionService;
+    private final LoanAccountSyncService loanAccountSyncService;
 
     public void syncAll(Long userId) {
 
@@ -53,6 +55,9 @@ public class MyDataSyncService {
             accountSyncService.sync(
                     userId,
                     request
+            );
+            loanAccountSyncService.syncLoans(
+                    userId
             );
         }
     }
