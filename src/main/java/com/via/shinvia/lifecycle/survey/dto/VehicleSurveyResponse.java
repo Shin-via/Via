@@ -1,6 +1,5 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
-import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,18 +29,11 @@ public class VehicleSurveyResponse {
     // 차량 구매 예정일
     private LocalDate targetDate;
 
-    // 차량 구매 수준
-    // PRACTICAL, AVERAGE, RELAXED, PREMIUM, CUSTOM
-    private LifestyleLevel lifestyleLevel;
+    // 사용자가 입력한 차량명
+    private String vehicleName;
 
-    // 차량 상태
-    // NEW = 신차
-    // USED = 중고차
-    private String vehicleCondition;
-
-    // 차량 등급
-    // 경차, 소형, 준중형, 중형, 준대형, SUV 등
-    private String vehicleClass;
+    // 차량 구매 가격
+    private BigDecimal vehiclePrice;
 
     // 차량 구매에 사용할 현금
     private BigDecimal cashPaymentAmount;
@@ -53,12 +45,8 @@ public class VehicleSurveyResponse {
     // 단위: 개월
     private Integer loanPeriodMonths;
 
-    // 연간 예상 주행거리
-    // 향후 유류비 계산 시 사용
-    private Integer annualMileage;
-
-    // CUSTOM 선택 시 사용자가 직접 입력한 차량가격
-    private BigDecimal customVehiclePrice;
+    // 구매 후 월 예상 유지비
+    private BigDecimal monthlyMaintenanceCost;
 
     // 이벤트 최초 생성일시
     private LocalDateTime createdAt;

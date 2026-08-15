@@ -19,8 +19,6 @@ public class LifecycleSurveyViewController {
         model.addAttribute("salaryGrowthScenarios", SalaryGrowthScenario.values());
         model.addAttribute("lifestyleLevels", LifestyleLevel.values());
         model.addAttribute("housingTypes", HousingType.values());
-        model.addAttribute("vehicleConditions", VehicleCondition.values());
-        model.addAttribute("vehicleClasses", VehicleClass.values());
         model.addAttribute("repaymentTypes", LifecycleRepaymentType.values());
         model.addAttribute("repaymentActions", RepaymentAction.values());
 

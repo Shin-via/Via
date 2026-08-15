@@ -267,7 +267,6 @@
         event_type,
         event_order,
         target_date,
-        lifestyle_level,
         survey_data
         )
         VALUES (
@@ -275,7 +274,6 @@
         'VEHICLE_PURCHASE',
         #{eventOrder},
         #{request.targetDate},
-        #{request.lifestyleLevel},
         CAST(#{surveyData} AS JSON)
         )
 
@@ -290,15 +288,15 @@
         lifecycle_scenario_id,
         event_order,
         target_date,
-        lifestyle_level,
-
         JSON_UNQUOTE(
-        JSON_EXTRACT(survey_data, '$.vehicleCondition')
-        ) AS vehicle_condition,
+        JSON_EXTRACT(survey_data, '$.vehicleName')
+        ) AS vehicle_name,
 
+        CAST(
         JSON_UNQUOTE(
-        JSON_EXTRACT(survey_data, '$.vehicleClass')
-        ) AS vehicle_class,
+        JSON_EXTRACT(survey_data, '$.vehiclePrice')
+        ) AS DECIMAL(19,2)
+        ) AS vehicle_price,
 
         CAST(
         JSON_UNQUOTE(
@@ -320,15 +318,9 @@
 
         CAST(
         JSON_UNQUOTE(
-        JSON_EXTRACT(survey_data, '$.annualMileage')
-        ) AS UNSIGNED
-        ) AS annual_mileage,
-
-        CAST(
-        JSON_UNQUOTE(
-        JSON_EXTRACT(survey_data, '$.customVehiclePrice')
+        JSON_EXTRACT(survey_data, '$.monthlyMaintenanceCost')
         ) AS DECIMAL(19,2)
-        ) AS custom_vehicle_price,
+        ) AS monthly_maintenance_cost,
 
         created_at,
         updated_at
@@ -347,7 +339,6 @@
 
         SET
         target_date = #{request.targetDate},
-        lifestyle_level = #{request.lifestyleLevel},
         survey_data = CAST(#{surveyData} AS JSON)
 
         WHERE lifecycle_event_id = #{lifecycleEventId}
