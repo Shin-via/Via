@@ -5,6 +5,8 @@ import com.via.shinvia.account.model.AccountTransaction;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 
 // 사용할 DB 메서드를 정의하는 Mapper Interface
 
@@ -19,4 +21,8 @@ public interface AccountMapper {
     );
 
     int insertTransactionIfAbsent(AccountTransaction transaction);
+
+    List<Account> findAllByConnectionId(
+            @Param("connectionId") Long connectionId
+    );
 }
