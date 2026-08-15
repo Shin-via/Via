@@ -58,3 +58,4 @@ application-db.yml
 application-mail.yml
 claude.md
 application-oauth2.yml
+.gradle-user-home/
