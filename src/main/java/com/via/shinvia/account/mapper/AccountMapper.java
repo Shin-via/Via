@@ -25,4 +25,8 @@ public interface AccountMapper {
     List<Account> findAllByConnectionId(
             @Param("connectionId") Long connectionId
     );
+
+    List<String> findOrgCodesByConnectionId(
+            @Param("connectionId") Long connectionId
+    );
 }

@@ -16,4 +16,10 @@ public class AccountQueryService {
     public List<Account> getAccountsByConnectionId(Long connectionId) {
         return accountMapper.findAllByConnectionId(connectionId);
     }
+
+    public List<String> getOrgCodesByConnectionId(Long connectionId) {
+        return accountMapper.findOrgCodesByConnectionId(
+                connectionId
+        );
+    }
 }

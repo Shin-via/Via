@@ -119,4 +119,14 @@ Service 에서 생성자 주입이 가능
         ORDER BY account_id ASC
 
     </select>
+
+    <select id="findOrgCodesByConnectionId"
+            resultType="string">
+
+        SELECT DISTINCT org_code
+        FROM account
+        WHERE connection_id = #{connectionId}
+        AND org_code IS NOT NULL
+
+    </select>
 </mapper>

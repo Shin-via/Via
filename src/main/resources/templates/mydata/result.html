@@ -14,12 +14,14 @@
     <div class="result-head">
         <h1>마이데이터 조회</h1>
 
-        <!-- 나중에 전체 동기화 버튼으로 사용 -->
-        <button type="button"
-                class="sync-button"
-                id="syncButton">
-            최신 마이데이터 불러오기
-        </button>
+        <form th:action="@{/mydata/sync}"
+              method="post"
+              class="sync-form">
+            <button type="submit"
+                    class="sync-button">
+                최신 마이데이터 불러오기
+            </button>
+        </form>
     </div>
 
     <!-- 카드 -->
