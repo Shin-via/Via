@@ -23,11 +23,14 @@ public class CurrentUser {
         }
 
         if (principal instanceof CustomOAuth2User oAuth2User) {
+            if (oAuth2User.getUser() == null) {
+                throw new IllegalStateException("소셜 회원가입이 완료되지 않은 사용자입니다.");
+            }
             return oAuth2User.getUserId();
         }
+
         throw new IllegalStateException(
-                "지원하지 않는 인증 객체입니다: "
-                        + principal.getClass().getName()
+                "지원하지 않는 인증 객체입니다: " + principal.getClass().getName()
         );
     }
 
@@ -43,6 +46,10 @@ public class CurrentUser {
         }
 
         if (principal instanceof CustomOAuth2User oAuth2User) {
+            if (oAuth2User.getUser() == null) {
+                return null;
+            }
+
             return oAuth2User.getUserId();
         }
 
