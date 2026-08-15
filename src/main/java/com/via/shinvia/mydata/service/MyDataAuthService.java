@@ -76,12 +76,6 @@ public class MyDataAuthService {
             userCi = extractCiFromToken(cleanToken);
         }
 
-        // 4. 그럼에도 userCi를 알 수 없다면 기본값 "1" 적용 (500 에러 예방)
-        if (!StringUtils.hasText(userCi)) {
-            userCi = "1";
-            log.info("[Redis Token Refresh] userCi 식별 불가로 기본값 '1'을 적용합니다.");
-        }
-
         log.info("[Redis Token Refresh] 토큰 갱신 진행 - userCi: {}, cleanToken: {}", userCi, cleanToken);
 
         // 5. 목 서버로 토큰 갱신 요청
@@ -239,19 +233,14 @@ public class MyDataAuthService {
         return accessToken;
     }
 
-    public Long getAccessTokenTtl(Long userId) {
-        if (userId == null) {
+    public Long getAccessTokenTtl(Long connectionId) {
+        if (connectionId == null) {
             return 0L;
         }
 
         // 1. mydata:ci:at:{userId} 키의 TTL 조회
-        String accessTokenKey = "mydata:ci:at:" + userId;
+        String accessTokenKey = "mydata:ci:at:" + connectionId;
         Long remainingSeconds = redisTemplate.getExpire(accessTokenKey, TimeUnit.SECONDS);
-
-        // 2. 만약 조회가 안 되면 {userId} 단독 키의 TTL 조회
-        if (remainingSeconds == null || remainingSeconds <= 0) {
-            remainingSeconds = redisTemplate.getExpire(userId.toString(), TimeUnit.SECONDS);
-        }
 
         if (remainingSeconds == null || remainingSeconds < 0) {
             return 0L;
