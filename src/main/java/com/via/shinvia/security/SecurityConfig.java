@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup/**",
                                 "/social/signup/**",
+                                "/social/link/**",
                                 "/api/email-verify/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",

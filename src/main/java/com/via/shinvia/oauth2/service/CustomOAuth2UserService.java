@@ -81,7 +81,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     providerUserId,
                     providerEmail,
                     OAuth2LoginStatus.LINK_REQUIRED,
-                    sameEmailUser);
+                    null);
         }
 
         //새로 가입하는 회원일 경우
