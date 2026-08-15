@@ -81,6 +81,85 @@
     font-size: 17px;
 }
 
+.surplus-guide .guide-steps {
+    margin-bottom: 24px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    background: #fff;
+    scrollbar-width: thin;
+}
+
+.surplus-guide .guide-step-track {
+    min-width: 680px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+}
+
+.surplus-guide .guide-step {
+    min-height: 64px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    color: #555e69;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.surplus-guide .guide-step:last-child {
+    border-right: 0;
+}
+
+.surplus-guide .guide-step span {
+    width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid #aeb5bf;
+    border-radius: 50%;
+    font-size: 11px;
+}
+
+.surplus-guide .guide-step.active {
+    color: #fff;
+    background: var(--navy);
+}
+
+.surplus-guide .guide-step.active span {
+    border-color: #fff;
+}
+
+.surplus-guide .guide-step.completed {
+    color: var(--navy);
+    background: #eef1f5;
+}
+
+.surplus-guide .guide-step.completed span {
+    border-color: var(--navy);
+    background: #fff;
+}
+
+.surplus-guide .guide-step:disabled {
+    color: #9aa1aa;
+    background: #f4f5f7;
+    cursor: not-allowed;
+}
+
+.surplus-guide .guide-step:focus-visible,
+.surplus-guide .action-button:focus-visible,
+.surplus-guide .product-filter-button:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 3px solid rgba(82, 113, 196, .3);
+    outline-offset: -3px;
+}
+
 .surplus-guide .eyebrow {
     margin: 0 0 7px;
     color: #737b87;
@@ -98,6 +177,7 @@
     font-size: 14px;
 }
 
+.surplus-guide .step-card,
 .surplus-guide .survey-card,
 .surplus-guide .result-section {
     border: 1px solid var(--line);
@@ -105,8 +185,14 @@
     background: var(--surface);
 }
 
+.surplus-guide .step-card,
 .surplus-guide .survey-card {
-    padding: 0 30px 30px;
+    padding: 30px;
+}
+
+.surplus-guide .guide-step-panel[hidden],
+.surplus-guide .question-card[hidden] {
+    display: none;
 }
 
 .surplus-guide .amount-section {
@@ -114,7 +200,7 @@
     grid-template-columns: minmax(0, 1fr) 300px;
     gap: 30px;
     align-items: center;
-    padding: 30px 0;
+    padding: 4px 0 30px;
     border-bottom: 1px solid var(--line);
 }
 
@@ -175,36 +261,73 @@
 
 .surplus-guide .question-card {
     margin: 0;
-    padding: 30px 0;
+    min-width: 0;
+    padding: 0;
     border: 0;
-    border-bottom: 1px solid var(--line);
 }
 
 .surplus-guide .question-card legend {
     width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     padding: 0;
     color: #20252b;
-    font-size: 17px;
-    font-weight: 850;
     letter-spacing: -.02em;
 }
 
-.surplus-guide .question-card legend span {
-    display: inline-grid;
-    width: 26px;
-    height: 26px;
-    margin-right: 8px;
-    place-items: center;
-    color: #fff;
-    background: var(--navy);
+.surplus-guide .question-card legend strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 22px;
+    line-height: 1.4;
+}
+
+.surplus-guide .question-count {
+    display: block;
+    color: #59616d;
     font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+.surplus-guide .question-progress {
+    width: 100%;
+    height: 8px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8eaee;
+}
+
+.surplus-guide .question-progress span {
+    height: 100%;
+    display: block;
+    border-radius: inherit;
+    background: var(--navy);
+}
+
+.surplus-guide .question-progress .progress-20 { width: 20%; }
+.surplus-guide .question-progress .progress-40 { width: 40%; }
+.surplus-guide .question-progress .progress-60 { width: 60%; }
+.surplus-guide .question-progress .progress-80 { width: 80%; }
+.surplus-guide .question-progress .progress-100 { width: 100%; }
+
+.surplus-guide .option-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.surplus-guide .option-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.surplus-guide .option-grid-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .surplus-guide .option {
-    min-height: 60px;
-    margin-top: 9px;
-    padding: 13px 15px;
+    min-height: 88px;
+    margin: 0;
+    padding: 16px;
     display: flex;
     align-items: center;
     border: 1px solid var(--line);
@@ -219,8 +342,8 @@
 
 .surplus-guide .option:has(input:checked) {
     border: 2px solid var(--navy);
-    padding: 12px 14px;
-    background: #f1f3f5;
+    padding: 15px;
+    background: #eef1f5;
 }
 
 .surplus-guide .option input {
@@ -247,13 +370,16 @@
 }
 
 .surplus-guide .option-inline span {
-    flex-direction: row;
+    justify-content: center;
 }
 
 .surplus-guide .confirmation-card {
     display: grid;
     gap: 11px;
-    padding: 26px 0;
+    margin-top: 26px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    background: #f8f9fa;
 }
 
 .surplus-guide .confirmation-card label {
@@ -283,6 +409,38 @@
     cursor: pointer;
 }
 
+.surplus-guide .secondary-button {
+    height: 54px;
+    border: 1px solid var(--line-dark);
+    color: var(--ink);
+    background: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.surplus-guide .secondary-button:hover {
+    background: #f2f3f5;
+}
+
+.surplus-guide .action-button {
+    width: auto;
+    min-width: 150px;
+    padding: 0 22px;
+}
+
+.surplus-guide .panel-actions,
+.surplus-guide .question-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.surplus-guide .panel-actions-end {
+    justify-content: flex-end;
+}
+
 .surplus-guide .primary-button:hover {
     background: var(--navy-soft);
 }
@@ -306,7 +464,7 @@
 }
 
 .surplus-guide .result-section {
-    margin-top: 30px;
+    margin-top: 0;
     padding: 30px;
 }
 
@@ -478,6 +636,81 @@
     font-size: 11px;
 }
 
+.surplus-guide .result-actions {
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+}
+
+.surplus-guide .product-heading h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.surplus-guide .product-heading > p:last-child {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.surplus-guide .product-filter {
+    margin-top: 26px;
+    padding-bottom: 4px;
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.surplus-guide .product-filter-button {
+    min-height: 44px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    border: 1px solid var(--line-dark);
+    border-radius: 999px;
+    color: #4f5864;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.surplus-guide .product-filter-button.active {
+    border-color: var(--navy);
+    color: #fff;
+    background: var(--navy);
+}
+
+.surplus-guide .product-filter-button span {
+    font-weight: 700;
+}
+
+.surplus-guide .product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.surplus-guide .product-empty-state {
+    margin: 24px 0 0;
+    padding: 28px 22px;
+    border: 1px solid var(--line);
+    color: #5d6672;
+    background: #f8f9fa;
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .surplus-guide .option-grid-three,
+    .surplus-guide .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 760px) {
     .surplus-guide .surplus-calculator-slot {
         align-items: flex-start;
@@ -486,14 +719,32 @@
 
     .surplus-guide .amount-section,
     .surplus-guide .summary-grid,
-    .surplus-guide .allocation-visualization {
+    .surplus-guide .allocation-visualization,
+    .surplus-guide .option-grid-two,
+    .surplus-guide .option-grid-three,
+    .surplus-guide .product-grid {
         grid-template-columns: 1fr;
     }
 
+    .surplus-guide .step-card,
     .surplus-guide .survey-card,
     .surplus-guide .result-section {
         padding-right: 18px;
         padding-left: 18px;
+    }
+
+    .surplus-guide .panel-actions,
+    .surplus-guide .question-actions {
+        flex-direction: column-reverse;
+    }
+
+    .surplus-guide .panel-actions-end {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .surplus-guide .action-button {
+        width: 100%;
     }
 
     .surplus-guide .hero h1 {
