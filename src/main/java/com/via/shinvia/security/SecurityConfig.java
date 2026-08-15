@@ -37,7 +37,8 @@ public class SecurityConfig {
                                 "/api/mydata/oauth/**", //일단 임시허용
                                 "/api/auth/token/**", // 일단 임시허용
                                 "/api/accounts/**", // 계좌 조회 및 동기화 API 임시 허용
-                                "/api/surplus-funds/preferences/**"
+                                "/api/surplus-funds/preferences/**",
+                                "/api/welfare-support/sync/**"
                         )
                 )
 

@@ -2,38 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.via.shinvia.welfare.mapper.LocalWelfareSupportProductMapper">
 
-    <update id="createTableIfNotExists">
-        CREATE TABLE IF NOT EXISTS localbokjiro (
-            id BIGINT AUTO_INCREMENT PRIMARY KEY,
-            serv_id VARCHAR(100) NOT NULL UNIQUE,
-            serv_nm VARCHAR(255),
-            jur_mnof_nm VARCHAR(255),
-            jur_org_nm VARCHAR(255),
-            inq_num INT DEFAULT 0,
-            serv_dgst TEXT,
-            serv_dtl_link TEXT,
-            svcfrst_reg_ts VARCHAR(50),
-            life_array VARCHAR(255),
-            intrs_thema_array VARCHAR(255),
-            trgter_indvdl_array VARCHAR(255),
-            sprt_cyc_nm VARCHAR(100),
-            srv_pvsn_nm VARCHAR(100),
-            rprs_ctadr VARCHAR(255),
-            onap_psblt_yn VARCHAR(10),
-            ctpv_nm VARCHAR(100),
-            sgg_nm VARCHAR(100),
-            wlfare_info_outl_cn TEXT,
-            crtr_yr VARCHAR(20),
-            tgtr_dtl_cn TEXT,
-            slct_crit_cn TEXT,
-            alw_serv_cn TEXT,
-            active BOOLEAN DEFAULT TRUE,
-            synced_at DATETIME,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-    </update>
-
     <select id="findAll" resultType="com.via.shinvia.welfare.dto.LocalWelfareServiceDto">
         SELECT * FROM localbokjiro WHERE active = TRUE ORDER BY id ASC
     </select>
