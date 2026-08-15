@@ -238,10 +238,59 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    const vehiclePriceInput = document.getElementById("vehiclePrice");
+    const vehicleCashPaymentInput = document.getElementById(
+        "vehicleCashPaymentAmount"
+    );
+    const vehicleLoanAmountInput = document.getElementById(
+        "vehicleLoanAmount"
+    );
+    const vehicleLoanPeriodInput = document.getElementById(
+        "vehicleLoanPeriodMonths"
+    );
+
+    function updateVehicleFinancingAmounts() {
+        if (
+            !vehiclePriceInput
+            || !vehicleCashPaymentInput
+            || !vehicleLoanAmountInput
+        ) {
+            return;
+        }
+
+        const vehiclePrice = parseMoneyValue(vehiclePriceInput.value);
+        const loanAmount = Math.min(
+            parseMoneyValue(vehicleLoanAmountInput.value),
+            vehiclePrice
+        );
+        vehicleLoanAmountInput.value = loanAmount;
+        vehicleCashPaymentInput.value = Math.max(
+            vehiclePrice - loanAmount,
+            0
+        );
+        formatMoneyInput(vehicleCashPaymentInput);
+        formatMoneyInput(vehicleLoanAmountInput);
+
+        if (vehicleLoanPeriodInput) {
+            const hasLoan = parseMoneyValue(
+                vehicleLoanAmountInput.value
+            ) > 0;
+            vehicleLoanPeriodInput.disabled = !hasLoan;
+            if (!hasLoan) {
+                vehicleLoanPeriodInput.value = "";
+            }
+        }
+    }
+
+    [vehiclePriceInput, vehicleLoanAmountInput].forEach(input => {
+        input?.addEventListener("input", updateVehicleFinancingAmounts);
+    });
+
     function isSurveyControlIncomplete(control, form) {
 
         if (
             control.disabled
+            || control.dataset.optional === "true"
             || control.closest("[hidden]")
             || ["hidden", "button", "submit", "reset", "checkbox"]
                 .includes(control.type)
@@ -1360,6 +1409,9 @@ document.addEventListener("DOMContentLoaded", () => {
             radio.dispatchEvent(new Event("change", { bubbles: true }));
         });
         moneyInputs.filter(input => form.contains(input)).forEach(formatMoneyInput);
+        if (form.id === "vehicleSurveyForm") {
+            updateVehicleFinancingAmounts();
+        }
     }
 
     async function loadEventDetails(events) {
@@ -1440,14 +1492,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const lifestyleFieldNames = new Set([
         "childbirthLifestyleLevel",
-        "vehicleLifestyleLevel",
         "monthlyRentLifestyleLevel",
         "jeonseLifestyleLevel",
         "homePurchaseLifestyleLevel"
     ]);
     const numericFieldNames = new Set([
-        "childOrder", "desiredArea", "loanPeriodMonths",
-        "annualMileage", "loanAccountId"
+        "childOrder", "desiredArea", "loanPeriodMonths", "loanAccountId"
     ]);
 
     function buildEventRequest(form) {
