@@ -24,4 +24,12 @@ public interface WelfareSupportProductRepository {
     int upsert(WelfareSupportProduct product);
 
     int deactivateAll();
+
+    int deactivateBySourceType(@Param("sourceType") String sourceType);
+
+    List<WelfareSupportProduct> findLifecycleCandidates(
+            @Param("keywords") List<String> keywords,
+            @Param("regionSido") String regionSido,
+            @Param("regionSigungu") String regionSigungu
+    );
 }

@@ -10,8 +10,6 @@ import java.util.Optional;
 @Mapper
 public interface LocalWelfareSupportProductMapper {
 
-    void createTableIfNotExists();
-
     int upsert(LocalWelfareServiceDto entity);
 
     int deactivateAll();
