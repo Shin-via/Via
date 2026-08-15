@@ -1,11 +1,13 @@
 package com.via.shinvia.oauth2.security;
 
+import com.via.shinvia.mydata.service.MyDataLoginService;
 import com.via.shinvia.oauth2.domain.OAuth2LoginStatus;
 import com.via.shinvia.oauth2.domain.PendingSocialUser;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -13,8 +15,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public static final String PENDING_SOCIAL_USER = "PENDING_SOCIAL_USER";
+    private final MyDataLoginService myDataLoginService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -28,17 +32,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2LoginStatus loginStatus = customOAuth2User.getLoginStatus();
 
         switch (loginStatus) {
-            case EXISTING_USER -> handleExistingUser(request, response);
-            case LINK_REQUIRED -> handlePendingUser(request, response, customOAuth2User, "/social/link");
-            case NEW_USER -> handlePendingUser(request, response, customOAuth2User, "/social/signup");
+            case EXISTING_USER -> handleExistingUser(request, response, customOAuth2User);
+            case LINK_REQUIRED -> handlePendingUser(request, response, customOAuth2User,"/social/link");
+            case NEW_USER -> handlePendingUser(request, response, customOAuth2User,"/social/signup");
         }
     }
 
-    private void handleExistingUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleExistingUser(HttpServletRequest request, HttpServletResponse response, CustomOAuth2User customOAuth2User) throws IOException {
         HttpSession session = request.getSession(false);
         if(session!=null){
             session.removeAttribute(PENDING_SOCIAL_USER);
         }
+
+        myDataLoginService.refreshTokenOnLogin(
+                customOAuth2User.getUserId()
+        );
+
         response.sendRedirect("/");
     }
 
