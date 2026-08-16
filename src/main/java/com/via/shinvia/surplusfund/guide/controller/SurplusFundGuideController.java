@@ -19,6 +19,8 @@ public class SurplusFundGuideController {
         Long userId = currentUser.getUserId(authentication);
 
         model.addAttribute("totalCurrentBalance", surplusFundService.calculateTotalCurrentBalance(userId));
+        model.addAttribute("scheduledCardAmount", surplusFundService.calculateScheduledCardAmount(userId));
+        model.addAttribute("availableSurplusAmount", surplusFundService.calculateAvailableSurplusAmount(userId));
 
         return "surplusfund/guide";
     }
