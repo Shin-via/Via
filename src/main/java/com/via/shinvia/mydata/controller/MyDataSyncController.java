@@ -18,11 +18,15 @@ public class MyDataSyncController {
 
     @PostMapping("/sync")
     public String sync(
-            Authentication authentication
+            Authentication authentication,  @RequestParam(required = false) String returnTo
     ) {
         Long userId = currentUser.getUserId(authentication);
 
         myDataSyncService.syncAll(userId);
+
+        if ("/surplus-funds/guide".equals(returnTo)) {
+            return "redirect:/surplus-funds/guide";
+        }
 
         return "redirect:/mydata/result";
     }

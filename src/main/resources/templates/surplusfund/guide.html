@@ -13,6 +13,14 @@
     <section class="hero">
         <p class="breadcrumb">자산관리 &gt; 여유자금 운용</p>
         <h1>여유자금 운용성향 설문</h1>
+        <input type="hidden"
+               name="returnTo"
+               value="/surplus-funds/guide">
+
+        <button type="submit"
+                class="sync-button">
+            최신 금융데이터 불러오기
+        </button>
         <p class="hero-description">
             투자 목적과 손실 감내 수준을 확인하여 현금·ETF·펀드의 가이드 비율을 계산합니다.
         </p>
@@ -54,6 +62,8 @@
                      aria-labelledby="surplusCalculatorTitle">
                 <div>
                     <p class="eyebrow">SURPLUS FUND CALCULATOR</p>
+                    <form th:action="@{/mydata/sync}" method="post" class="sync-form">
+                    </form>
                     <h2 id="surplusCalculatorTitle">여유자금 계산</h2>
                     <p>
                         현재 보유 계좌 잔액
@@ -61,6 +71,20 @@
                             0원
                         </strong>
                     </p>
+                    <p>
+                        카드 결제 예정금
+                        <strong th:text="${#numbers.formatInteger(scheduledCardAmount, 0, 'COMMA')} + '원'">
+                            0원
+                        </strong>
+                    </p>
+
+                    <p>
+                        현재 계산된 여유자금
+                        <strong th:text="${#numbers.formatInteger(availableSurplusAmount, 0, 'COMMA')} + '원'">
+                            0원
+                        </strong>
+                    </p>
+
                 </div>
                 <span class="placeholder-badge">연동 예정</span>
             </section>

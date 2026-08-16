@@ -76,4 +76,64 @@
             merchant_name = VALUES(merchant_name)
     </insert>
 
+    <insert id="upsertCardBills">
+        INSERT INTO card_bill (
+            user_id,
+            connection_id,
+            seqno,
+            charge_amount,
+            charge_day,
+            charge_month,
+            paid_out_date
+        )
+        VALUES
+        <foreach collection="cardBills" item="bill" separator=",">
+            (
+                #{bill.userId},
+                #{bill.connectionId},
+                #{bill.seqno},
+                #{bill.chargeAmount},
+                #{bill.chargeDay},
+                #{bill.chargeMonth},
+                #{bill.paidOutDate}
+            )
+        </foreach>
+
+        ON DUPLICATE KEY UPDATE
+            charge_amount = VALUES(charge_amount),
+            charge_day = VALUES(charge_day),
+            paid_out_date = VALUES(paid_out_date),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="sumChargeAmountByUserAndMonth"
+            resultType="java.math.BigDecimal">
+
+        SELECT COALESCE(SUM(charge_amount), 0)
+        FROM card_bill
+        WHERE user_id = #{userId}
+        AND charge_month = #{chargeMonth}
+
+    </select>
+
+    <select id="findAllByConnectionId"
+            resultType="com.via.shinvia.client.card.entity.CardAccount">
+
+        SELECT
+            card_account_id,
+            user_id,
+            institution_id,
+            connection_id,
+            external_card_key,
+            card_name,
+            card_number_masked,
+            payment_day,
+            updated_at,
+            issued_at,
+            data_as_of_at
+        FROM card_account
+        WHERE connection_id = #{connectionId}
+        ORDER BY card_account_id ASC
+
+    </select>
 </mapper>
