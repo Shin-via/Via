@@ -7,7 +7,7 @@ import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.entity.CardAccount;
 import com.via.shinvia.client.card.entity.CardTransaction;
 import com.via.shinvia.client.card.mapper.CardMapper;
-import com.via.shinvia.mydata.config.MyDataProperties;
+import com.via.shinvia.client.card.config.MockServerProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,19 +38,19 @@ class CardSyncServiceTest {
     private CardMapper cardMapper;
 
     @Mock
-    private MyDataProperties myDataProperties;
+    private MockServerProperties mockServerProperties;
 
     @InjectMocks
     private CardSyncService cardSyncService;
 
     @Test
     void 카드_목록_동기화_신규카드는_insert() {
-        when(myDataProperties.getOrgCode()).thenReturn("004");
         when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
         when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(null);
 
         CardInfoDto dto = new CardInfoDto();
         dto.setCardId("CARD00000001");
+        dto.setInstitutionId("004");
         dto.setCardNum("1234-****-****-5678");
         dto.setCardName("via 신용카드");
         dto.setCardMember("1");
@@ -67,8 +67,7 @@ class CardSyncServiceTest {
 
         CardAccount saved = captor.getValue();
         assertThat(saved.getUserId()).isEqualTo(100L);
-        //assertThat(saved.getInstitutionId()).isEqualTo(1L);
-        //assertThat(saved.getconnectionId()).isEqualTo(200L);
+        assertThat(saved.getInstitutionId()).isEqualTo(1L);
         assertThat(saved.getExternalCardKey()).isEqualTo("CARD00000001");
         assertThat(saved.getCardName()).isEqualTo("via 신용카드");
         assertThat(saved.getCardNumberMasked()).isEqualTo("1234-****-****-5678");
@@ -76,13 +75,13 @@ class CardSyncServiceTest {
 
     @Test
     void 카드_목록_동기화_기존카드는_update() {
-        when(myDataProperties.getOrgCode()).thenReturn("004");
         when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
         CardAccount existing = CardAccount.builder().cardAccountId(10L).build();
         when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(existing);
 
         CardInfoDto dto = new CardInfoDto();
         dto.setCardId("CARD00000001");
+        dto.setInstitutionId("004");
         dto.setCardNum("1234-****-****-5678");
         dto.setCardName("via 신용카드");
 
@@ -99,14 +98,69 @@ class CardSyncServiceTest {
 
     @Test
     void 카드_목록_동기화_미등록_금융기관코드는_예외() {
-        when(myDataProperties.getOrgCode()).thenReturn("999");
+        CardInfoDto dto = new CardInfoDto();
+        dto.setCardId("CARD00000001");
+        dto.setInstitutionId("999");
         when(cardMapper.findInstitutionIdByOrgCode("999")).thenReturn(null);
 
         CardListResponse response = new CardListResponse();
-        response.setCardList(List.of(new CardInfoDto()));
+        response.setCardList(List.of(dto));
 
         assertThatThrownBy(() -> cardSyncService.saveCards(response, 100L))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    // 카드마다 발급 은행이 다를 수 있으므로, 응답에 institution_id가 있으면 카드별로 그 값을 그대로 써야 한다
+    // (예전처럼 설정값 하나로 전체 카드에 같은 institution_id를 넣으면 안 됨).
+    @Test
+    void 카드마다_다른_institution_id를_각각_그대로_사용한다() {
+        when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
+        when(cardMapper.findInstitutionIdByOrgCode("011")).thenReturn(2L);
+        when(cardMapper.findByExternalCardKey(any())).thenReturn(null);
+
+        CardInfoDto kbCard = new CardInfoDto();
+        kbCard.setCardId("CARD00000001");
+        kbCard.setInstitutionId("004");
+        kbCard.setCardName("KB 카드");
+
+        CardInfoDto nhCard = new CardInfoDto();
+        nhCard.setCardId("CARD00000002");
+        nhCard.setInstitutionId("011");
+        nhCard.setCardName("NH 카드");
+
+        CardListResponse response = new CardListResponse();
+        response.setCardList(List.of(kbCard, nhCard));
+
+        cardSyncService.saveCards(response, 100L);
+
+        ArgumentCaptor<CardAccount> captor = ArgumentCaptor.forClass(CardAccount.class);
+        verify(cardMapper, times(2)).insertCardAccount(captor.capture());
+
+        List<CardAccount> saved = captor.getAllValues();
+        assertThat(saved.get(0).getInstitutionId()).isEqualTo(1L);
+        assertThat(saved.get(1).getInstitutionId()).isEqualTo(2L);
+        verify(mockServerProperties, never()).getOrgCode();
+    }
+
+    // 응답에 institution_id가 없는(레거시) 카드만 설정된 기본 org_code로 대체한다.
+    @Test
+    void institution_id가_없으면_기본_설정값으로_대체한다() {
+        when(mockServerProperties.getOrgCode()).thenReturn("004");
+        when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
+        when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(null);
+
+        CardInfoDto dto = new CardInfoDto();
+        dto.setCardId("CARD00000001");
+        dto.setCardName("via 신용카드");
+
+        CardListResponse response = new CardListResponse();
+        response.setCardList(List.of(dto));
+
+        cardSyncService.saveCards(response, 100L);
+
+        ArgumentCaptor<CardAccount> captor = ArgumentCaptor.forClass(CardAccount.class);
+        verify(cardMapper).insertCardAccount(captor.capture());
+        assertThat(captor.getValue().getInstitutionId()).isEqualTo(1L);
     }
 
     @Test
