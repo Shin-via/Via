@@ -113,4 +113,25 @@
         AND charge_month = #{chargeMonth}
 
     </select>
+
+    <select id="findAllByConnectionId"
+            resultType="com.via.shinvia.client.card.entity.CardAccount">
+
+        SELECT
+            card_account_id,
+            user_id,
+            institution_id,
+            connection_id,
+            external_card_key,
+            card_name,
+            card_number_masked,
+            payment_day,
+            updated_at,
+            issued_at,
+            data_as_of_at
+        FROM card_account
+        WHERE connection_id = #{connectionId}
+        ORDER BY card_account_id ASC
+
+    </select>
 </mapper>

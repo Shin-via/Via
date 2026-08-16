@@ -26,7 +26,7 @@ public class MydataCardListClient {
     public CardListResponse getCards(String accessToken, CardListRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(mockServerProperties.getBaseUrl())
                 .path("/v2/card/cards")
-                .queryParam("org_code",mockServerProperties.getOrgCode())
+                .queryParam("org_code",request.getOrgCode())
                 .queryParam("limit", request.getLimit());
 
         if (StringUtils.hasText(request.getSearchTimestamp())) {

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -23,8 +23,5 @@ public class CardBill {
     private BigDecimal chargeAmount;
     private String chargeDay;
     private String chargeMonth;
-    private String paidOutDate;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate paidOutDate;
 }

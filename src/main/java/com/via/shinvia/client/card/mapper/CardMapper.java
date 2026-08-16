@@ -31,4 +31,6 @@ public interface CardMapper {
     void upsertCardBills(@Param("cardBills") List<CardBill> cardBills);
 
     BigDecimal sumChargeAmountByUserAndMonth(@Param("userId") Long userId, @Param("chargeMonth") String chargeMonth);
+
+    List<CardAccount> findAllByConnectionId(@Param("connectionId") Long connectionId);
 }

@@ -28,6 +28,9 @@
     <section class="result-section">
         <div class="section-head">
             <h2 class="section-title">연동된 카드</h2>
+            <span class="section-count" th:text="${cardCnt + '개'}">
+                0개
+            </span>
         </div>
 
         <p class="empty-message"
@@ -47,7 +50,7 @@
                 </h3>
 
                 <p class="asset-info"
-                   th:text="${card.cardNum}">
+                   th:text="${card.cardNumberMasked}">
                     카드 번호
                 </p>
             </div>
@@ -98,7 +101,7 @@
             </div>
         </div>
     </section>
-<!--대출 계좌-->
+    <!--대출 계좌-->
     <section class="result-section">
         <div class="section-head">
             <h2 class="section-title">연동된 대출</h2>
