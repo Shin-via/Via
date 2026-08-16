@@ -43,22 +43,94 @@
         INSERT INTO welfare_support_product (
             external_id, product_name, institution_name, support_target, age_condition,
             welfare_type, support_content, application_method, responsible_institution,
-            related_url, active, source_updated_at, synced_at
+            related_url, source_type, region_sido, region_sigungu, support_cycle,
+            support_method, contact_info, online_apply_yn,
+            active, source_updated_at, synced_at
         ) VALUES (
             #{externalId}, #{productName}, #{institutionName}, #{supportTarget}, #{ageCondition},
             #{welfareType}, #{supportContent}, #{applicationMethod}, #{responsibleInstitution},
-            #{relatedUrl}, #{active}, #{sourceUpdatedAt}, #{syncedAt}
+            #{relatedUrl}, COALESCE(#{sourceType}, 'KINFA'), #{regionSido}, #{regionSigungu},
+            #{supportCycle}, #{supportMethod}, #{contactInfo}, #{onlineApplyYn},
+            #{active}, #{sourceUpdatedAt}, #{syncedAt}
         )
         ON DUPLICATE KEY UPDATE
             product_name = VALUES(product_name), institution_name = VALUES(institution_name),
             support_target = VALUES(support_target), age_condition = VALUES(age_condition),
             welfare_type = VALUES(welfare_type), support_content = VALUES(support_content),
             application_method = VALUES(application_method), responsible_institution = VALUES(responsible_institution),
-            related_url = VALUES(related_url), active = VALUES(active),
+            related_url = VALUES(related_url), source_type = VALUES(source_type),
+            region_sido = VALUES(region_sido), region_sigungu = VALUES(region_sigungu),
+            support_cycle = VALUES(support_cycle), support_method = VALUES(support_method),
+            contact_info = VALUES(contact_info), online_apply_yn = VALUES(online_apply_yn),
+            active = VALUES(active),
             source_updated_at = VALUES(source_updated_at), synced_at = VALUES(synced_at)
     </insert>
 
     <update id="deactivateAll">
         UPDATE welfare_support_product SET active = FALSE WHERE active = TRUE
     </update>
+
+    <update id="deactivateBySourceType">
+        UPDATE welfare_support_product
+        SET active = FALSE
+        WHERE source_type = #{sourceType}
+          AND active = TRUE
+    </update>
+
+    <select id="findLifecycleCandidates"
+            resultType="com.via.shinvia.policy.welfare.entity.WelfareSupportProduct">
+        SELECT *
+        FROM welfare_support_product
+        WHERE active = TRUE
+
+        <if test="keywords != null and !keywords.isEmpty()">
+            AND (
+                <foreach collection="keywords" item="keyword" separator=" OR ">
+                    CONCAT_WS(' ',
+                        product_name,
+                        institution_name,
+                        support_target,
+                        age_condition,
+                        welfare_type,
+                        support_content,
+                        application_method,
+                        responsible_institution,
+                        support_cycle,
+                        support_method
+                    ) LIKE CONCAT('%', #{keyword}, '%')
+                </foreach>
+            )
+        </if>
+
+        <if test="regionSido != null and regionSido != ''">
+            AND (
+                source_type != 'BOKJIRO_LOCAL'
+                OR region_sido IS NULL
+                OR region_sido = #{regionSido}
+            )
+        </if>
+
+        <if test="regionSigungu != null and regionSigungu != ''">
+            AND (
+                source_type != 'BOKJIRO_LOCAL'
+                OR region_sigungu IS NULL
+                OR region_sigungu = #{regionSigungu}
+            )
+        </if>
+
+        ORDER BY
+            CASE
+                WHEN source_type = 'BOKJIRO_LOCAL'
+                     AND region_sido = #{regionSido}
+                     AND region_sigungu = #{regionSigungu}
+                    THEN 1
+                WHEN source_type = 'BOKJIRO_LOCAL'
+                     AND region_sido = #{regionSido}
+                    THEN 2
+                WHEN source_type = 'BOKJIRO_NATIONAL'
+                    THEN 3
+                ELSE 4
+            END,
+            welfare_support_product_id DESC
+    </select>
 </mapper>

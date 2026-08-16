@@ -26,7 +26,8 @@ Service 에서 생성자 주입이 가능
         external_account_key,
         maturity_at,
         opened_at,
-        updated_at
+        connection_id,
+        org_code
         )
         VALUES (
         #{accountName},
@@ -37,17 +38,18 @@ Service 에서 생성자 주입이 가능
         #{externalAccountKey},
         #{maturityAt},
         #{openedAt},
-        #{updatedAt}
+        #{connectionId},
+        #{orgCode}
         )
         ON DUPLICATE KEY UPDATE
+        org_code = VALUES(org_code),
         account_name = VALUES(account_name),
         account_status = VALUES(account_status),
         account_type = VALUES(account_type),
         current_balance = VALUES(current_balance),
         data_as_of_at = VALUES(data_as_of_at),
         maturity_at = VALUES(maturity_at),
-        opened_at = VALUES(opened_at),
-        updated_at = VALUES(updated_at)
+        opened_at = VALUES(opened_at)
 
     </insert>
 
@@ -97,4 +99,34 @@ Service 에서 생성자 주입이 가능
 
     </insert>
 
+    <select id="findAllByConnectionId">
+
+        SELECT
+            account_id,
+            external_account_key,
+            account_type,
+            account_name,
+            current_balance,
+            account_status,
+            opened_at,
+            maturity_at,
+            data_as_of_at,
+            updated_at,
+            connection_id,
+            org_code
+        FROM account
+        WHERE connection_id = #{connectionId}
+        ORDER BY account_id ASC
+
+    </select>
+
+    <select id="findOrgCodesByConnectionId"
+            resultType="string">
+
+        SELECT DISTINCT org_code
+        FROM account
+        WHERE connection_id = #{connectionId}
+        AND org_code IS NOT NULL
+
+    </select>
 </mapper>

@@ -29,7 +29,7 @@ public class LocalBokjiroApiClient {
 
     private final RestClient restClient;
 
-    @Value("${localbokjiro.api.base-url:https://apis.data.go.kr/B554287/LocalWelfareInformationsV001}")
+    @Value("${localbokjiro.api.base-url:https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations}")
     private String baseUrl;
 
     @Value("${localbokjiro.api.service-key:}")
@@ -169,26 +169,26 @@ public class LocalBokjiroApiClient {
     }
 
     private String resolveListUrl() {
-        if (baseUrl.contains("LocalGovernmentWelfarelistV001") || baseUrl.contains("LocalWelfarelistV001")) {
+        if (baseUrl.endsWith("/LcgvWelfarelist")) {
             return baseUrl;
         }
         if (baseUrl.endsWith("/")) {
-            return baseUrl + "LocalWelfarelistV001";
+            return baseUrl + "LcgvWelfarelist";
         }
-        return baseUrl + "/LocalWelfarelistV001";
+        return baseUrl + "/LcgvWelfarelist";
     }
 
     private String resolveDetailUrl() {
-        if (baseUrl.contains("LocalGovernmentWelfaredetailedV001") || baseUrl.contains("LocalWelfaredetailedV001")) {
+        if (baseUrl.endsWith("/LcgvWelfaredetailed")) {
             return baseUrl;
         }
-        if (baseUrl.contains("LocalWelfarelistV001")) {
-            return baseUrl.replace("LocalWelfarelistV001", "LocalWelfaredetailedV001");
+        if (baseUrl.endsWith("/LcgvWelfarelist")) {
+            return baseUrl.replace("/LcgvWelfarelist", "/LcgvWelfaredetailed");
         }
         if (baseUrl.endsWith("/")) {
-            return baseUrl + "LocalWelfaredetailedV001";
+            return baseUrl + "LcgvWelfaredetailed";
         }
-        return baseUrl + "/LocalWelfaredetailedV001";
+        return baseUrl + "/LcgvWelfaredetailed";
     }
 
     private LocalBokjiroListResponseDTO parseListXml(String xml) {

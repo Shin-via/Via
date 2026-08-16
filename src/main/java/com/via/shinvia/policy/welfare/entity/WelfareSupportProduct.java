@@ -26,6 +26,13 @@ public class WelfareSupportProduct {
     private String applicationMethod;
     private String responsibleInstitution;
     private String relatedUrl;
+    private String sourceType;
+    private String regionSido;
+    private String regionSigungu;
+    private String supportCycle;
+    private String supportMethod;
+    private String contactInfo;
+    private String onlineApplyYn;
     private Boolean active;
     private LocalDateTime sourceUpdatedAt;
     private LocalDateTime syncedAt;

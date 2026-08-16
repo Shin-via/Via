@@ -29,12 +29,19 @@ public class AccountDataConverter {
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public Account toAccount(
+            Long connectionId,
             String orgCode,
             AccountItem accountItem,
             DepositBasicItem basicItem,
             DepositDetailItem detailItem,
             LocalDateTime syncedAt
     ) {
+        if (connectionId == null) {
+            throw new IllegalArgumentException(
+                    "connectionId가 없습니다."
+            );
+        }
+
         if (detailItem == null || detailItem.balanceAmt() == null) {
             throw new IllegalStateException(
                     "계좌 잔액 정보가 없습니다: "
@@ -43,6 +50,10 @@ public class AccountDataConverter {
         }
 
         Account account = new Account();
+
+        account.setConnectionId(connectionId);
+        account.setOrgCode(orgCode);
+
         // externalAccountKey 만드는 로직 --> 안쓴다면 나중에 없어질 예정
         account.setExternalAccountKey(
                 createExternalAccountKey(
@@ -76,7 +87,6 @@ public class AccountDataConverter {
         }
 
         account.setDataAsOfAt(syncedAt);
-        account.setUpdatedAt(syncedAt);
 
         return account;
     }

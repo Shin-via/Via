@@ -60,11 +60,11 @@ public class LoanRecommendationAdapter {
         }
 
         return switch (eventType) {
-            case MARRIAGE, VEHICLE_PURCHASE, MONTHLY_RENT -> "CREDIT_LIVING";
+            case MARRIAGE, MONTHLY_RENT -> "CREDIT_LIVING";
             case JEONSE -> "JEONSE_DEPOSIT";
             case HOME_PURCHASE -> "MORTGAGE_HOME_PURCHASE";
             case REPAYMENT -> "CREDIT_REFINANCE";
-            case CHILDBIRTH -> null;
+            case CHILDBIRTH, VEHICLE_PURCHASE -> null;
         };
     }
 
@@ -116,7 +116,7 @@ public class LoanRecommendationAdapter {
         return switch (eventType) {
             case HOME_PURCHASE -> 360;
             case JEONSE -> 24;
-            case VEHICLE_PURCHASE, REPAYMENT -> 60;
+            case REPAYMENT -> 60;
             default -> 36;
         };
     }
