@@ -200,14 +200,26 @@ public class CardSyncService {
 
         saveCardBills(billResponse, userId);
 
-        //카드 거래내역 저장
-        CardBillDetailResponse detailResponse = mydataCardBillDetailClient.getCardBillDetails(accessToken, CardBillDetailRequest.builder()
-                                                                                                                            .orgCode(myDataProperties.getOrgCode())
-                                                                                                                            .chargeMonth(currentMonth)
-                                                                                                                            .limit(100)
-                                                                                                                            .build());
+        // 최근 3개월 생활비 추정을 위한 카드 거래내역 저장
+        YearMonth now = YearMonth.now();
 
-        saveCardTransactions(detailResponse);
+        for (int i = 0; i <= 3; i++) {
+
+            String chargeMonth = now.minusMonths(i)
+                    .format(DateTimeFormatter.ofPattern("yyyyMM"));
+
+            CardBillDetailResponse detailResponse =
+                    mydataCardBillDetailClient.getCardBillDetails(
+                            accessToken,
+                            CardBillDetailRequest.builder()
+                                    .orgCode(myDataProperties.getOrgCode())
+                                    .chargeMonth(chargeMonth)
+                                    .limit(100)
+                                    .build()
+                    );
+
+            saveCardTransactions(detailResponse);
+        }
     }
 
     public void syncCardBills(Long userId, Long connectionId) {
