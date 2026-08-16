@@ -1,7 +1,10 @@
 package com.via.shinvia.service.mydata;
 
+import com.via.shinvia.client.card.bill.response.CardBillDto;
+import com.via.shinvia.client.card.bill.response.CardBillResponse;
 import com.via.shinvia.client.card.billdetail.response.CardBillDetailDto;
 import com.via.shinvia.client.card.billdetail.response.CardBillDetailResponse;
+import com.via.shinvia.client.card.entity.CardBill;
 import com.via.shinvia.client.card.list.response.CardInfoDto;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.entity.CardAccount;
@@ -126,5 +129,33 @@ public class CardSyncService {
             throw new IllegalStateException("등록되지 않은 카드입니다: " + externalCardKey);
         }
         return cardAccountId;
+    }
+
+    @Transactional
+    public List<CardBill> saveCardBills(CardBillResponse response, Long userId) {
+
+        List<CardBillDto> billList = response.getBillList();
+
+        if (billList == null || billList.isEmpty()) {
+            return List.of();
+        }
+
+        Long connectionId = resolveConnectionId(userId);
+
+        List<CardBill> bills = billList.stream()
+                .map(dto -> CardBill.builder()
+                        .userId(userId)
+                        .connectionId(connectionId)
+                        .seqno(dto.getSeqno())
+                        .chargeAmount(dto.getChargeAmt())
+                        .chargeDay(dto.getChargeDay())
+                        .chargeMonth(dto.getChargeMonth())
+                        .paidOutDate(dto.getPaidOutDate())
+                        .build())
+                .toList();
+
+        cardMapper.upsertCardBills(bills);
+
+        return bills;
     }
 }

@@ -1,10 +1,12 @@
 package com.via.shinvia.client.card.mapper;
 
 import com.via.shinvia.client.card.entity.CardAccount;
+import com.via.shinvia.client.card.entity.CardBill;
 import com.via.shinvia.client.card.entity.CardTransaction;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Mapper
@@ -25,4 +27,8 @@ public interface CardMapper {
     Long findCardAccountIdByExternalCardKey(@Param("externalCardKey") String externalCardKey);
 
     void upsertCardTransactions(@Param("transactions") List<CardTransaction> transactions);
+
+    void upsertCardBills(@Param("cardBills") List<CardBill> cardBills);
+
+    BigDecimal sumChargeAmountByUserAndMonth(@Param("userId") Long userId, @Param("chargeMonth") String chargeMonth);
 }
