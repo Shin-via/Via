@@ -14,7 +14,6 @@ import com.via.shinvia.client.card.list.request.CardListRequest;
 import com.via.shinvia.client.card.list.response.CardInfoDto;
 import com.via.shinvia.client.card.list.response.CardListResponse;
 import com.via.shinvia.client.card.config.MockServerProperties;
-import com.via.shinvia.mydata.config.MyDataProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
@@ -68,7 +67,7 @@ class CardMydataClientIntegrationTest {
 
     @Test
     void 카드_001_목록_조회() {
-        MydataCardListClient client = new MydataCardListClient(mydataProperties(), restTemplate, mockServerProperties());
+        MydataCardListClient client = new MydataCardListClient(restTemplate, mockServerProperties());
 
         CardListResponse response = client.getCards(ACCESS_TOKEN, CardListRequest.builder()
                 .orgCode(ORG_CODE)
@@ -141,12 +140,6 @@ class CardMydataClientIntegrationTest {
         properties.setBaseUrl(BASE_URL);
         properties.setConnectTimeout(3000);
         properties.setReadTimeout(5000);
-        return properties;
-    }
-
-    private MyDataProperties mydataProperties() {
-        MyDataProperties properties = new MyDataProperties();
-        properties.setOrgCode(ORG_CODE);
         return properties;
     }
 }
