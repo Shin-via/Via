@@ -26,7 +26,4 @@ public class CardInfoDto {
 
     @JsonProperty("card_member")
     private String cardMember;
-
-    @JsonProperty("institution_id")
-    private String institutionId;
 }
