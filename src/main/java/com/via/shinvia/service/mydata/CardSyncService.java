@@ -70,6 +70,18 @@ public class CardSyncService {
         return saved;
     }
 
+    // 카드 목록 응답의 institution_id(카드마다 실제 발급 은행 코드)를 그대로 신뢰해서 조회한다 —
+    // 예전엔 응답 전체에 설정값(mockServerProperties.getOrgCode()) 하나만 적용했는데, 실제로는
+    // 카드마다 발급 은행이 다를 수 있어서 카드 단위로 바꿨다. 응답에 값이 없으면(레거시 등) 그 설정값으로 대체한다.
+    private Long resolveInstitutionId(CardInfoDto dto) {
+        String orgCode = dto.getInstitutionId() != null ? dto.getInstitutionId() : mockServerProperties.getOrgCode();
+        Long institutionId = cardMapper.findInstitutionIdByOrgCode(orgCode);
+        if (institutionId == null) {
+            throw new IllegalStateException("등록되지 않은 금융기관 코드입니다: " + orgCode);
+        }
+        return institutionId;
+    }
+
     private Long resolveConnectionId(Long userId) {
         Long connectionId = cardMapper.findConnectionIdByUserId(userId);
         if (connectionId != null) {
@@ -79,7 +91,8 @@ public class CardSyncService {
         return cardMapper.findConnectionIdByUserId(userId);
     }
 
-    private CardAccount upsertCard(Long userId, Long institutionId, Long connectionId, CardInfoDto dto) {
+    private CardAccount upsertCard(Long userId, Long connectionId, CardInfoDto dto) {
+        Long institutionId = resolveInstitutionId(dto);
         CardAccount existing = cardMapper.findByExternalCardKey(dto.getCardId());
         LocalDateTime now = LocalDateTime.now();
 

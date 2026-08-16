@@ -2,10 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.via.shinvia.client.card.mapper.CardMapper">
 
+    <!-- 목서버 카드 목록 응답의 institution_id는 bank_code_std를 10자리로 LPAD해서 내려주므로('004' -> '0000000004'),
+         financial_institution.org_code('004')와 문자열로는 안 맞을 수 있다. 숫자로 정규화해서 비교한다. -->
     <select id="findInstitutionIdByOrgCode" resultType="long">
         SELECT institution_id
         FROM financial_institution
-        WHERE org_code = #{orgCode}
+        WHERE CAST(org_code AS UNSIGNED) = CAST(#{orgCode} AS UNSIGNED)
     </select>
 
     <select id="findConnectionIdByUserId" resultType="long">
