@@ -543,20 +543,38 @@ function updateProductExplorer() {
         button.classList.toggle('active', isActive);
         button.setAttribute('aria-pressed', String(isActive));
     });
+    const productGrid = document.getElementById('productGrid');
+    const etfProductArea = document.getElementById('etfProductArea');
+    const fundProductArea = document.getElementById('fundProductArea');
+    const productEmptyState = document.getElementById('productEmptyState');
+    const showEtf = currentProductFilter === 'ALL' || currentProductFilter === 'ETF';
+    const showFund = currentProductFilter === 'ALL' || currentProductFilter === 'FUND';
 
-    const productGrid =
-        document.getElementById('productGrid');
+    if (etfProductArea) {
+        etfProductArea.hidden = !showEtf;
+    }
 
-    const productEmptyState =
-        document.getElementById('productEmptyState');
+    if (fundProductArea) {
+        fundProductArea.hidden = !showFund;
+    }
 
-    productGrid.replaceChildren();
+    if (productGrid) {
+        productGrid.classList.toggle(
+            'single',
+            currentProductFilter === 'ETF'
+            || currentProductFilter === 'FUND'
+        );
+    }
 
-    productEmptyState.hidden = false;
-    productEmptyState.textContent =
-        currentProductFilter === 'CASH'
-            ? productEmptyMessages.CASH
-            : productEmptyMessages.DEFAULT;
+    if (productEmptyState) {
+        if (currentProductFilter === 'CASH') {
+            productEmptyState.hidden = false;
+            productEmptyState.textContent = productEmptyMessages.CASH;
+        } else {
+            productEmptyState.hidden = true;
+            productEmptyState.textContent = '';
+        }
+    }
 }
 
 function updateProductFilterAmount(elementId, allocation) {

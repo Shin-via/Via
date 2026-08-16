@@ -25,16 +25,6 @@
     font: inherit;
 }
 
-.surplus-guide {
-    flex: 0 0 auto;
-    padding: 6px 10px;
-    border-radius: 999px;
-    color: var(--muted);
-    background: #eef0f3;
-    font-size: 11px;
-    font-weight: 800;
-}
-
 .surplus-guide .hero {
     margin-bottom: 28px;
 }
@@ -671,6 +661,9 @@
     gap: 16px;
     margin-top: 24px;
 }
+.surplus-guide .product-grid.single {
+    grid-template-columns: minmax(0, 1fr);
+}
 
 .surplus-guide .product-empty-state {
     margin: 24px 0 0;
@@ -745,4 +738,23 @@
     line-height: 1.5;
 
     text-align: right;
+}
+
+.surplus-guide .product-grid:not(.single) .etf-explorer__header {
+    flex-direction: column;
+    gap: 12px;
+}
+
+.surplus-guide .product-grid:not(.single) .etf-explorer__title-group {
+    width: 100%;
+}
+
+.surplus-guide .product-grid:not(.single) .etf-explorer__title {
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+.surplus-guide .product-grid:not(.single) .etf-explorer__meta {
+    width: 100%;
+    justify-content: flex-start;
 }
