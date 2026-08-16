@@ -324,6 +324,13 @@ function renderResult(result) {
     hasAnalysisResult = true;
     currentProductFilter = 'ALL';
     updateProductExplorer();
+
+    window.dispatchEvent (
+        new CustomEvent('surplus:allocation-updated', {
+            detail: { allocations: latestAllocations}
+        })
+    );
+
     showStep(3);
 }
 
@@ -449,8 +456,16 @@ function updateProductExplorer() {
         button.setAttribute('aria-pressed', String(isActive));
     });
 
-    document.getElementById('productGrid').replaceChildren();
-    document.getElementById('productEmptyState').textContent =
+    const productGrid =
+        document.getElementById('productGrid');
+
+    const productEmptyState =
+        document.getElementById('productEmptyState');
+
+    productGrid.replaceChildren();
+
+    productEmptyState.hidden = false;
+    productEmptyState.textContent =
         currentProductFilter === 'CASH'
             ? productEmptyMessages.CASH
             : productEmptyMessages.DEFAULT;
