@@ -54,8 +54,13 @@
                      aria-labelledby="surplusCalculatorTitle">
                 <div>
                     <p class="eyebrow">SURPLUS FUND CALCULATOR</p>
-                    <h2 id="surplusCalculatorTitle">여유자금 계산 영역</h2>
-                    <p>남경 담당 계산 기능이 연결되기 전까지 운용 가능 금액을 직접 입력해주세요.</p>
+                    <h2 id="surplusCalculatorTitle">여유자금 계산</h2>
+                    <p>
+                        현재 보유 계좌 잔액
+                        <strong th:text="${#numbers.formatInteger(totalCurrentBalance, 0, 'COMMA')} + '원'">
+                            0원
+                        </strong>
+                    </p>
                 </div>
                 <span class="placeholder-badge">연동 예정</span>
             </section>
