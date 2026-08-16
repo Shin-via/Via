@@ -342,7 +342,11 @@
             </button>
         </div>
 
-        <div id="productGrid" class="product-grid" aria-live="polite"></div>
+        <div id="productGrid" class="product-grid" aria-live="polite">
+            <div id="etfProductArea"></div>
+            <div id="fundProductArea"></div>
+        </div>
+
         <p id="productEmptyState" class="product-empty-state"></p>
 
         <div class="panel-actions">
@@ -361,7 +365,7 @@
     <script th:src="@{/js/surplus-fund-guide.js}"></script>
     <script th:src="@{/js/surplus-fund-calculator.js}"></script>
     <script th:src="@{/js/etf-product-explorer.js}"></script>
-
+    <script th:src="@{/js/fund-product-explorer.js}"></script>
 </div>
 </body>
 </html>

@@ -7,7 +7,7 @@
     const LOAD_MORE_STEP = 8;
     const COMPARE_PANEL_ID = "etfComparePanel";
 
-    const productGrid = document.getElementById("productGrid");
+    const productGrid = document.getElementById("etfProductArea");
     const productEmptyState = document.getElementById("productEmptyState");
     const exploreProductsButton = document.getElementById("exploreProductsButton");
     const filterButtons = Array.from(document.querySelectorAll("[data-product-filter]"));

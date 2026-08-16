@@ -49,6 +49,8 @@ dependencies {
     // DTO 변환
     implementation 'org.modelmapper:modelmapper:3.2.0'
 
+    implementation 'org.apache.commons:commons-csv:1.11.0'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
