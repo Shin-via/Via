@@ -11,4 +11,5 @@ public interface UserMapper {
     User findByUserId(@Param("userId") Long userId);
     User findByLoginEmail(@Param("loginEmail") String loginEmail);
     User findIdByNameAndPhone(@Param("userName") String userName, @Param("phoneNumber") String phoneNumber);
+    int updatePassword(@Param("loginEmail") String loginEmail, @Param("passwordHash") String passwordHash);
 }

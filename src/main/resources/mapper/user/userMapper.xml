@@ -89,4 +89,11 @@
             AND user_status = 'ACTIVE'
         LIMIT 1
     </select>
+
+    <update id="updatePassword">
+        UPDATE app_user
+        SET password_hash = #{passwordHash}
+        WHERE login_email = #{loginEmail}
+        AND user_status = 'ACTIVE'
+    </update>
 </mapper>
