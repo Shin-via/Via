@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.via.shinvia.futuresim.mapper.PlanSnapshotMapper">
+
+    <insert id="upsert">
+        INSERT INTO futuresim_plan_snapshot (
+            app_user_id, goal_amount, goal_preset_key, selected_levers_json,
+            baseline_months_to_goal, projected_months_to_goal, final_net_worth
+        ) VALUES (
+            #{appUserId}, #{goalAmount}, #{goalPresetKey}, #{selectedLeversJson},
+            #{baselineMonthsToGoal}, #{projectedMonthsToGoal}, #{finalNetWorth}
+        )
+        ON DUPLICATE KEY UPDATE
+            goal_amount = VALUES(goal_amount),
+            goal_preset_key = VALUES(goal_preset_key),
+            selected_levers_json = VALUES(selected_levers_json),
+            baseline_months_to_goal = VALUES(baseline_months_to_goal),
+            projected_months_to_goal = VALUES(projected_months_to_goal),
+            final_net_worth = VALUES(final_net_worth)
+    </insert>
+
+</mapper>
