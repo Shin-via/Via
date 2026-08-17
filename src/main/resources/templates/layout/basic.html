@@ -33,7 +33,7 @@
                         th:with="item=${category.items[0]}">
                         <a th:if="${item.enabled}"
                            th:href="@{${item.path}}"
-                           th:classappend="${currentRequestPath == item.path} ? ' active' : ''"
+                           th:classappend="${currentRequestPath == item.path or (item.path == '/futuresim' and #strings.startsWith(currentRequestPath, '/futuresim/'))} ? ' active' : ''"
                            th:text="${category.name}">서비스</a>
                         <span th:unless="${item.enabled}" class="sidebar-menu-disabled">
                             <span th:text="${category.name}">서비스</span> <small>준비중</small>
