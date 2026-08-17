@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/basic2 :: layout(~{::title}, ~{::main}, ${serviceName})}">
+      th:replace="~{layout/basic2 :: layout(~{::title}, ~{::main}, ~{}, ${serviceName})}">
 
 <head>
   <meta charset="UTF-8">
@@ -74,7 +74,7 @@
     </div>
 
     <section id="findIdResult"
-             class="result-section"
+             class="result-section-find"
              th:if="${searched}">
 
       <div class="result-error"
@@ -85,7 +85,7 @@
       <div class="result-box"
            th:if="${result != null}">
 
-        <h2 class="result-title">아이디 찾기 결과</h2>
+        <h2 class="result-title-find">아이디 찾기 결과</h2>
 
         <div class="result-item">
           <span>가입 아이디</span>

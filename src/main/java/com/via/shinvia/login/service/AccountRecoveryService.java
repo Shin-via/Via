@@ -24,7 +24,7 @@ public class AccountRecoveryService {
         String userName = request.getUserName().trim();
         String phoneNumber = normalizePhoneNumber(request.getPhoneNumber());
 
-         User user = userMapper.findActiveUserByNameAndPhone(userName, phoneNumber);
+         User user = userMapper.findIdByNameAndPhone(userName, phoneNumber);
 
          if (user==null) {
              return null;

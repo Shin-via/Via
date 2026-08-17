@@ -69,4 +69,24 @@
         WHERE login_email=#{loginEmail}
         LIMIT 1
     </select>
+
+    <select id="findIdByNameAndPhone"
+            resultType="com.via.shinvia.user.domain.User">
+        SELECT
+            user_id,
+            login_email,
+            password_hash,
+            user_name,
+            phone_number,
+            birth_date,
+            user_status,
+            created_at,
+            updated_at,
+            user_role
+        FROM app_user
+        WHERE user_name = #{userName}
+            AND phone_number = #{phoneNumber}
+            AND user_status = 'ACTIVE'
+        LIMIT 1
+    </select>
 </mapper>
