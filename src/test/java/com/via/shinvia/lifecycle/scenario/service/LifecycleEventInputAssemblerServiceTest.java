@@ -58,6 +58,7 @@ class LifecycleEventInputAssemblerServiceTest {
                 .supportName("신혼부부 지원")
                 .effectType(SupportEffectType.CASH_INFLOW)
                 .amount(new BigDecimal("1000000"))
+                .recommendationStatus("ELIGIBLE")
                 .build();
 
         when(surveyService.getMarriageSurvey(1L)).thenReturn(survey);
@@ -94,7 +95,8 @@ class LifecycleEventInputAssemblerServiceTest {
         assertEquals(LifecycleEventType.MARRIAGE, input.getEventType());
         assertEquals(new BigDecimal("20000000.00"), input.getEstimatedCost());
         assertEquals(new BigDecimal("6000000.00"), input.getUserRequiredAmount());
-        assertEquals(new BigDecimal("4000000.00"), input.getCashInflowAmount());
+        assertEquals(new BigDecimal("1000000.00"), input.getCashInflowAmount());
+        assertEquals(new BigDecimal("3000000.00"), input.getFamilySupportAmount());
         assertEquals(1, input.getSupports().size());
         assertEquals(1, input.getRecommendedProducts().size());
     }
@@ -115,6 +117,7 @@ class LifecycleEventInputAssemblerServiceTest {
                 .supportName("아동수당")
                 .effectType(SupportEffectType.MONTHLY_CASH_INFLOW)
                 .amount(new BigDecimal("100000"))
+                .recommendationStatus("ELIGIBLE")
                 .build();
 
         when(surveyService.getChildbirthSurvey(2L)).thenReturn(survey);

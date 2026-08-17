@@ -20,6 +20,10 @@ public class MarriageSurveyRequest {
     // 사용자가 원하는 결혼 예정일
     private LocalDate targetDate;
 
+    // 결혼 시점 예상 거주지역. 지자체 복지 추천에 사용한다.
+    private String regionSido;
+    private String regionSigungu;
+
     // 결혼 비용 수준
     // PRACTICAL, AVERAGE, RELAXED, PREMIUM, CUSTOM
     private LifestyleLevel lifestyleLevel;

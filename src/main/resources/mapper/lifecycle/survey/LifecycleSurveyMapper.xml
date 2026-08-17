@@ -110,6 +110,14 @@
         target_date,
         lifestyle_level,
 
+        JSON_UNQUOTE(
+        JSON_EXTRACT(survey_data, '$.regionSido')
+        ) AS region_sido,
+
+        JSON_UNQUOTE(
+        JSON_EXTRACT(survey_data, '$.regionSigungu')
+        ) AS region_sigungu,
+
         CAST(
         JSON_UNQUOTE(
         JSON_EXTRACT(survey_data, '$.guestCount')

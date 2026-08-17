@@ -27,6 +27,79 @@ class LifecycleWelfareServiceTest {
     private LifecycleWelfareService service;
 
     @Test
+    void excludesLocalProgramsWhenRegionIsUnknown() {
+        WelfareSupportProduct national = product(
+                1L, "전국 결혼축하금 지원", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct local = product(
+                2L, "전라남도 결혼축하금", "BOKJIRO_LOCAL", "전라남도", "순천시", false
+        );
+        when(repository.findLifecycleCandidates(
+                List.of("결혼", "신혼", "혼인", "예비부부"), null, null
+        )).thenReturn(List.of(local, national));
+
+        List<LifecycleSupportDto> result = service.getSupports(
+                LifecycleEventType.MARRIAGE, null, null
+        );
+
+        assertEquals(1, result.size());
+        assertEquals("전국 결혼축하금 지원", result.get(0).getSupportName());
+    }
+
+    @Test
+    void excludesMarriageImmigrationAndEmploymentServices() {
+        WelfareSupportProduct marriageGrant = product(
+                1L, "청년부부 결혼축하금", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct interpretation = product(
+                2L, "결혼이민자 통번역 서비스", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct employment = product(
+                3L, "결혼이민자 일자리 지원", "BOKJIRO_NATIONAL", null, null, false
+        );
+        when(repository.findLifecycleCandidates(
+                List.of("결혼", "신혼", "혼인", "예비부부"), null, null
+        )).thenReturn(List.of(interpretation, employment, marriageGrant));
+
+        List<LifecycleSupportDto> result = service.getSupports(
+                LifecycleEventType.MARRIAGE, null, null
+        );
+
+        assertEquals(1, result.size());
+        assertEquals("청년부부 결혼축하금", result.get(0).getSupportName());
+    }
+
+    @Test
+    void homePurchaseKeepsPurchaseSupportAndExcludesCrisisHousing() {
+        WelfareSupportProduct didimdol = product(
+                1L, "내집마련 디딤돌 대출", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct singleParent = product(
+                2L, "한부모가족 공동생활가정형 주거지원", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct crisis = product(
+                3L, "긴급복지 주거지원", "BOKJIRO_NATIONAL", null, null, false
+        );
+        WelfareSupportProduct victim = product(
+                4L, "폭력피해자 주거지원 사업", "BOKJIRO_NATIONAL", null, null, false
+        );
+        when(repository.findLifecycleCandidates(
+                List.of("주택구입", "주택구매", "내집마련", "주택자금", "보금자리", "주거지원"),
+                "서울특별시",
+                "강남구"
+        )).thenReturn(List.of(singleParent, crisis, victim, didimdol));
+
+        List<LifecycleSupportDto> result = service.getSupports(
+                LifecycleEventType.HOME_PURCHASE,
+                "서울특별시",
+                "강남구"
+        );
+
+        assertEquals(1, result.size());
+        assertEquals("내집마련 디딤돌 대출", result.get(0).getSupportName());
+    }
+
+    @Test
     void ranksCandidatesBeforeApplyingFinalLimit() {
         List<WelfareSupportProduct> candidates = List.of(
                 product(1L, "출산 관련 안내", "KINFA", null, null, false),

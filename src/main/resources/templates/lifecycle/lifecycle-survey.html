@@ -56,6 +56,12 @@
             3. 입력 확인
         </button>
 
+        <button type="button"
+                class="lifecycle-step"
+                data-step="result">
+            4. 결과 보기
+        </button>
+
     </nav>
 
 
@@ -317,6 +323,11 @@
             </p>
 
         </div>
+
+        <aside class="lifecycle-planning-guide">
+            <strong>결혼 여부와 관계없이 계획할 수 있어요.</strong>
+            <p>독립을 위한 월세·전세, 결혼 후 이사, 기존 주거 유지 등 실제로 바꾸고 싶은 이벤트만 선택하세요.</p>
+        </aside>
 
 
         <!-- 이벤트 선택 카드 -->
@@ -585,15 +596,142 @@
             </div>
 
         </section>
-
-
         <div class="lifecycle-form-actions">
 
             <button type="button"
                     class="lifecycle-secondary-button"
                     data-go-step="events">
-
                 이전
+            </button>
+
+            <button type="button"
+                    class="lifecycle-primary-button"
+                    data-go-step="result">
+                결과 보기
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STEP 4. 결과 보기
+         ===================================================== -->
+    <section class="lifecycle-panel lifecycle-result-panel"
+             data-step-panel="result"
+             hidden>
+
+        <div class="lifecycle-panel-heading lifecycle-result-heading">
+            <div>
+                <span>STEP 4</span>
+                <h2>시나리오 결과 보기</h2>
+            </div>
+            <p>선택한 생활 이벤트가 자산과 부채에 미치는 영향과 맞춤 지원 정보를 확인하세요.</p>
+        </div>
+
+        <section class="lifecycle-simulation-section">
+
+            <div class="lifecycle-simulation-heading">
+                <div>
+                    <span class="lifecycle-result-eyebrow">FINANCIAL OUTLOOK</span>
+                    <h3>미래 재무 전망</h3>
+                    <p>
+                        저장된 생활 이벤트를 기준으로 미래 자산, 부채, 지원금, 추천상품을 확인합니다.
+                    </p>
+                </div>
+
+                <button type="button"
+                        id="runLifecycleSimulationBtn"
+                        class="lifecycle-primary-button">
+                    시뮬레이션 실행
+                </button>
+            </div>
+
+            <div class="lifecycle-simulation-inputs">
+
+                <div class="lifecycle-form-group">
+                    <label for="simulationAnnualIncome">연소득</label>
+                    <div class="lifecycle-input-unit">
+                        <input type="text"
+                               id="simulationAnnualIncome"
+                               value="40,000,000">
+                        <span>원</span>
+                    </div>
+                </div>
+
+                <div class="lifecycle-form-group">
+                    <label for="simulationLiquidAssetAmount">현금성 자산</label>
+                    <div class="lifecycle-input-unit">
+                        <input type="text"
+                               id="simulationLiquidAssetAmount"
+                               value="15,000,000">
+                        <span>원</span>
+                    </div>
+                </div>
+
+                <div class="lifecycle-form-group">
+                    <label for="simulationSalaryGrowthRate">연평균 소득 상승률</label>
+                    <div class="lifecycle-input-unit">
+                        <input type="number"
+                               id="simulationSalaryGrowthRate"
+                               step="0.1"
+                               value="3.0">
+                        <span>%</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <p id="lifecycleSimulationEmpty"
+               class="lifecycle-timeline-empty">
+                시뮬레이션을 실행하면 결과가 여기에 표시됩니다.
+            </p>
+
+            <div id="lifecycleSimulationSummary"
+                 class="lifecycle-simulation-summary"
+                 hidden></div>
+
+            <div id="lifecycleSimulationSnapshots"
+                 class="lifecycle-simulation-snapshots"
+                 hidden></div>
+
+        </section>
+
+        <div id="lifecycleSnapshotModal"
+             class="lifecycle-snapshot-modal"
+             hidden>
+
+            <div class="lifecycle-snapshot-modal-backdrop"
+                 data-close-snapshot-modal></div>
+
+            <section class="lifecycle-snapshot-modal-panel">
+                <div class="lifecycle-snapshot-modal-header">
+                    <div>
+                        <span id="snapshotModalEventDate"></span>
+                        <h3 id="snapshotModalTitle">이벤트 상세</h3>
+                    </div>
+
+                    <button type="button"
+                            class="lifecycle-snapshot-modal-close"
+                            data-close-snapshot-modal>
+                        닫기
+                    </button>
+                </div>
+
+                <div id="snapshotModalBody"
+                     class="lifecycle-snapshot-modal-body"></div>
+            </section>
+
+        </div>
+
+        <div class="lifecycle-form-actions lifecycle-result-actions">
+
+            <button type="button"
+                    class="lifecycle-secondary-button"
+                    data-go-step="review">
+
+                입력 내용 다시 보기
 
             </button>
 
@@ -601,7 +739,7 @@
                     id="completeLifecycleSurveyBtn"
                     class="lifecycle-primary-button">
 
-                시나리오 입력 완료
+                시나리오 완료
 
             </button>
 

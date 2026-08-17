@@ -44,6 +44,12 @@ public class LifecycleWelfareService {
                 );
 
         return deduplicateCrossSource(candidates).stream()
+                .filter(product -> isRegionEligible(
+                        product,
+                        regionSido,
+                        regionSigungu
+                ))
+                .filter(product -> isRelevantForEvent(product, eventType))
                 .sorted(recommendationOrder(keywordRules, regionSido, regionSigungu))
                 .limit(RECOMMENDATION_LIMIT)
                 .map(this::toLifecycleSupport)
@@ -230,6 +236,71 @@ public class LifecycleWelfareService {
         );
     }
 
+    /**
+     * 대상자 키워드와 실제 지원 목적을 분리한다.
+     * 예를 들어 "신혼부부 전세자금 대출이자 지원"은 신혼부부 대상이지만
+     * 결혼 비용 지원이 아니라 주거 계약을 위한 지원이므로 주거 이벤트에서 추천한다.
+     */
+    private boolean isRelevantForEvent(
+            WelfareSupportProduct product,
+            LifecycleEventType eventType
+    ) {
+        String productName = normalize(product.getProductName());
+        if (productName.isEmpty()) {
+            return false;
+        }
+
+        List<String> purposeKeywords = switch (eventType) {
+            case MARRIAGE -> List.of(
+                    "결혼장려", "결혼축하", "결혼지원금",
+                    "결혼비용", "결혼자금", "혼례비"
+            );
+            case MONTHLY_RENT -> List.of(
+                    "월세지원", "월세대출", "임차료지원", "월임차료"
+            );
+            case JEONSE -> List.of(
+                    "전세자금", "전세대출", "전세보증금",
+                    "임차보증금", "전월세보증금"
+            );
+            case HOME_PURCHASE -> List.of(
+                    "주택구입", "주택구매", "내집마련", "구입자금",
+                    "주택자금", "디딤돌", "모기지", "보금자리론"
+            );
+            default -> List.of();
+        };
+
+        if (purposeKeywords.isEmpty()) {
+            return true;
+        }
+
+        return purposeKeywords.stream()
+                .map(this::normalize)
+                .anyMatch(productName::contains);
+    }
+
+    private boolean isRegionEligible(
+            WelfareSupportProduct product,
+            String regionSido,
+            String regionSigungu
+    ) {
+        if (!SOURCE_BOKJIRO_LOCAL.equals(product.getSourceType())) {
+            return true;
+        }
+
+        // 거주지를 모르면 다른 지역의 지자체 지원을 임의로 추천하지 않는다.
+        if (!hasText(regionSido)) {
+            return false;
+        }
+
+        if (!sameText(product.getRegionSido(), regionSido)) {
+            return false;
+        }
+
+        return !hasText(regionSigungu)
+                || !hasText(product.getRegionSigungu())
+                || sameText(product.getRegionSigungu(), regionSigungu);
+    }
+
     private boolean isBokjiro(WelfareSupportProduct product) {
         return SOURCE_BOKJIRO_LOCAL.equals(product.getSourceType())
                 || SOURCE_BOKJIRO_NATIONAL.equals(product.getSourceType());
@@ -277,13 +348,13 @@ public class LifecycleWelfareService {
                     "자동차", "차량구입", "차량구매", "구입비", "교통"
             );
             case MONTHLY_RENT -> rules(
-                    "월세", "임차료", "임대료", "주거비", "주거지원"
+                    "월세", "전월세", "임차료", "임대료", "주거비", "주거지원"
             );
             case JEONSE -> rules(
-                    "전세", "임차보증금", "전세보증금", "임대차"
+                    "전세", "전월세", "임차보증금", "전세보증금", "보증금", "임대차"
             );
             case HOME_PURCHASE -> rules(
-                    "주택구입", "주택구매", "내집마련", "주택자금", "주거지원"
+                    "주택구입", "주택구매", "내집마련", "주택자금", "보금자리", "주거지원"
             );
             case REPAYMENT -> rules(
                     "대출상환", "채무", "상환", "신용회복", "재기지원", "대환"
