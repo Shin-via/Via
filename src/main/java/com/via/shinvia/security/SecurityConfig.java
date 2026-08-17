@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/accounts/**", // 계좌 조회 및 동기화 API 임시 허용
                                 "/api/surplus-funds/preferences/**",
                                 "/api/welfare-support/sync/**",
+                                "/api/surplus-funds/preferences/**",
                                 "/api/lifecycle/scenarios/**",
                                 "/api/lifecycle/survey/**",
                                 "/api/admin/investment-products/etfs/**",
