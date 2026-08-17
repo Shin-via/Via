@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -27,7 +28,7 @@ public class FundProductImportService {
 
     private static final LocalDate DISCLOSURE_BASE_DATE = LocalDate.of(2024, 12, 31);
 
-    private static final Charset CSV_CHARSET = Charset.forName("MS949");
+    private static final Charset CSV_CHARSET = StandardCharsets.UTF_8;
 
     private static final String PRODUCT_TYPE = "FUND";
     private static final String SOURCE_TYPE = "IBK_FUND_CSV";
