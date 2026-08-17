@@ -41,7 +41,6 @@ public class SecurityConfig {
                                 "/api/welfare-support/sync/**",
                                 "/api/surplus-funds/preferences/**",
                                 "/api/admin/investment-products/etfs/**",
-                                "/api/admin/investment-products/etfs/**",
                                 "/api/admin/investment-products/funds/**"
                         )
                 )
