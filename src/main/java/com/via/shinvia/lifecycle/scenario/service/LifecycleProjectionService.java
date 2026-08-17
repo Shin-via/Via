@@ -112,8 +112,14 @@ public class LifecycleProjectionService {
                 .setScale(0, RoundingMode.HALF_UP);
 
         // 3) 미래 목표 시점(targetDate)의 남은 대출 잔액 및 월 상환액 재계산 (만기 도래 대출은 0원으로 소멸)
-        BigDecimal projectedTotalDebt = calculateProjectedTotalDebt(loans, targetDate);
-        BigDecimal projectedMonthlyDebtPayment = calculateProjectedMonthlyPayment(loans, targetDate);
+        // 대출 상세 목록이 없을 때는 직전 이벤트에서 발생한 대출 상태를 유지한다.
+        // null을 빈 목록처럼 계산하면 전세·주담대가 다음 이벤트 시점에 0으로 사라진다.
+        BigDecimal projectedTotalDebt = loans != null
+                ? calculateProjectedTotalDebt(loans, targetDate)
+                : nvl(currentState.getTotalDebt());
+        BigDecimal projectedMonthlyDebtPayment = loans != null
+                ? calculateProjectedMonthlyPayment(loans, targetDate)
+                : nvl(currentState.getMonthlyDebtPayment());
 
         // 4) 기간 동안 누적 저축액 계산 (시작점과 끝점의 평균 월 저축여력 * 경과 개월수)
         BigDecimal startMonthlyIncome = currentState.getAnnualIncome().divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);

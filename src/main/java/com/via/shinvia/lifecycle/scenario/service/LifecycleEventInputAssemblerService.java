@@ -21,7 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class LifecycleEventInputAssemblerService {
 
     private static final BigDecimal ZERO = BigDecimal.ZERO;
@@ -112,7 +112,11 @@ public class LifecycleEventInputAssemblerService {
                 surveyService.getMarriageSurvey(lifecycleEventId);
 
         List<LifecycleSupportDto> supports =
-                welfareService.getSupports(LifecycleEventType.MARRIAGE, null, null);
+                welfareService.getSupports(
+                        LifecycleEventType.MARRIAGE,
+                        survey.getRegionSido(),
+                        survey.getRegionSigungu()
+                );
 
         BigDecimal estimatedCost = positiveOrDefault(
                 survey.getCustomEstimatedCost(),
@@ -127,10 +131,15 @@ public class LifecycleEventInputAssemblerService {
                 defaultIfNull(survey.getUserContributionRate(), ONE)
         );
 
-        BigDecimal cashInflow = nvl(survey.getFamilySupportAmount())
-                .add(sumSupportAmount(supports, SupportEffectType.CASH_INFLOW));
+        BigDecimal familySupport = nvl(survey.getFamilySupportAmount());
+        BigDecimal cashInflow = sumSupportAmount(
+                supports,
+                SupportEffectType.CASH_INFLOW
+        );
 
-        BigDecimal userRequiredAmount = maxZero(userShare.subtract(cashInflow));
+        BigDecimal userRequiredAmount = maxZero(
+                userShare.subtract(familySupport).subtract(cashInflow)
+        );
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -148,8 +157,10 @@ public class LifecycleEventInputAssemblerService {
                 survey.getLifestyleLevel())
                 .estimatedCost(money(estimatedCost))
                 .userRequiredAmount(money(userRequiredAmount))
+                .userContributionAmount(money(userShare))
                 .additionalMonthlyExpense(ZERO)
                 .cashInflowAmount(money(cashInflow))
+                .familySupportAmount(money(familySupport))
                 .newLoanAmount(ZERO)
                 .acquiredAssetAmount(ZERO)
                 .supports(supports)
@@ -655,6 +666,9 @@ public class LifecycleEventInputAssemblerService {
         }
 
         return supports.stream()
+                .filter(support -> "ELIGIBLE".equals(
+                        support.getRecommendationStatus()
+                ))
                 .filter(support -> support.getEffectType() == effectType)
                 .map(LifecycleSupportDto::getAmount)
                 .filter(amount -> amount != null)
