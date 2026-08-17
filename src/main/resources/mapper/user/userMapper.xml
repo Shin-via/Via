@@ -94,6 +94,16 @@
         UPDATE app_user
         SET password_hash = #{passwordHash}
         WHERE login_email = #{loginEmail}
-        AND user_status = 'ACTIVE'
+            AND user_status = 'ACTIVE'
+    </update>
+
+    <update id="updateProfile">
+        UPDATE app_user
+        SET
+            user_name = #{userName},
+            phone_number = #{phoneNumber},
+            birth_date = #{birthDate}
+        WHERE user_id = #{userId}
+            AND user_status = 'ACTIVE'
     </update>
 </mapper>

@@ -3,6 +3,7 @@ package com.via.shinvia.user.service;
 import com.via.shinvia.user.domain.User;
 import com.via.shinvia.user.domain.UserRole;
 import com.via.shinvia.user.domain.UserStatus;
+import com.via.shinvia.user.dto.UserProfileRequestDto;
 import com.via.shinvia.user.dto.UserSignupRequestDto;
 import com.via.shinvia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,40 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.", e);
         }
         return user.getUserId();
+    }
+
+    @Transactional(readOnly = true)
+    public User findByUserId(Long userId) {
+        User user = userMapper.findByUserId(userId);
+
+        if (user == null) {
+            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
+        }
+
+        return user;
+    }
+
+    @Transactional
+    public void updateProfile(Long userId, UserProfileRequestDto request) {
+        int updatedCount = userMapper.updateProfile(
+                userId,
+                request.getUserName(),
+                request.getPhoneNumber(),
+                request.getBirthDate()
+        );
+
+        if (updatedCount != 1) {
+            throw new IllegalStateException("회원 정보 수정에 실패했습니다.");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public boolean matchesPassword(Long userId, String password) {
+        User user = findByUserId(userId);
+
+        return passwordEncoder.matches(
+                password,
+                user.getPasswordHash()
+        );
     }
 }
