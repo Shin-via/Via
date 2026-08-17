@@ -6,8 +6,11 @@ import com.via.shinvia.oauth2.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,8 +42,8 @@ public class SecurityConfig {
                                 "/api/accounts/**", // 계좌 조회 및 동기화 API 임시 허용
                                 "/api/surplus-funds/preferences/**",
                                 "/api/welfare-support/sync/**",
-                                "/api/surplus-funds/preferences/**",
-                                "/api/admin/investment-products/etfs/**",
+                                "/api/lifecycle/scenarios/**",
+                                "/api/lifecycle/survey/**",
                                 "/api/admin/investment-products/etfs/**",
                                 "/api/admin/investment-products/funds/**"
                         )
@@ -114,6 +117,7 @@ public class SecurityConfig {
                                 //생애주기시나리오
                                 "/api/lifecycle/survey/**"
 
+
                         )
                         .permitAll()
 
@@ -138,6 +142,20 @@ public class SecurityConfig {
                         .successHandler(loginSuccessHandler)
                         .failureUrl("/login?error")
                         .permitAll()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                                    response.setCharacterEncoding("UTF-8");
+                                    response.getWriter().write(
+                                            "{\"status\":401,\"error\":\"Unauthorized\","
+                                                    + "\"message\":\"로그인이 필요합니다.\"}"
+                                    );
+                                },
+                                PathPatternRequestMatcher.pathPattern("/api/**")
+                        )
                 )
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login")

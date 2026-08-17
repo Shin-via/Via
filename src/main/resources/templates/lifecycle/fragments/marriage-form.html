@@ -44,6 +44,29 @@
 
             </div>
 
+            <div class="lifecycle-form-group">
+                <label for="marriageRegionSido">결혼 시점 예상 거주 시·도</label>
+                <select id="marriageRegionSido"
+                        name="regionSido"
+                        data-region-sido
+                        data-region-target="marriageRegionSigungu"
+                        required>
+                    <option value="">시·도를 선택해주세요</option>
+                </select>
+            </div>
+
+            <div class="lifecycle-form-group">
+                <label for="marriageRegionSigungu">결혼 시점 예상 시·군·구</label>
+                <select id="marriageRegionSigungu"
+                        name="regionSigungu"
+                        data-region-sigungu
+                        required
+                        disabled>
+                    <option value="">먼저 시·도를 선택해주세요</option>
+                </select>
+                <small>선택한 지역과 전국 단위 지원만 추천합니다.</small>
+            </div>
+
 
             <!-- 결혼 준비 수준 -->
             <div class="lifecycle-form-group">

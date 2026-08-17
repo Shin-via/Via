@@ -34,7 +34,8 @@ public class MarriageEventCalculator implements LifecycleEventCalculator {
                 : nvl(input.getEstimatedCost());
         
         BigDecimal totalCost = nvl(input.getEstimatedCost());
-        BigDecimal supportBenefit = totalCost.subtract(requiredAmount).max(BigDecimal.ZERO);
+        // 추천 후보(NEEDS_CONFIRMATION)와 배우자·가족 분담금은 공공 지원 혜택이 아니다.
+        BigDecimal supportBenefit = nvl(input.getCashInflowAmount());
 
         BigDecimal afterCash;
         BigDecimal fundingShortage = BigDecimal.ZERO;

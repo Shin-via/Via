@@ -30,6 +30,10 @@ public class PolicyRecommendationAdapter {
             return policyRecommendationService.recommend(userId).stream()
                     .filter(this::isDisplayable)
                     .filter(result -> isRelevant(eventType, result.getProductType()))
+                    .filter(result -> isPurposeRelevant(
+                            eventType,
+                            result.getProductName()
+                    ))
                     .limit(limit)
                     .map(this::toLifecycleProduct)
                     .toList();
@@ -60,6 +64,22 @@ public class PolicyRecommendationAdapter {
                     productType == ProductType.POLICY_LOAN;
             case VEHICLE_PURCHASE, REPAYMENT -> false;
         };
+    }
+
+    private boolean isPurposeRelevant(
+            LifecycleEventType eventType,
+            String productName
+    ) {
+        if (eventType != LifecycleEventType.MARRIAGE || productName == null) {
+            return true;
+        }
+
+        String normalizedName = productName.replaceAll("\\s+", "");
+        return List.of(
+                        "모기지", "주택구입", "주택구매", "구입자금",
+                        "전세", "월세", "임차", "보증금", "주거"
+                ).stream()
+                .noneMatch(normalizedName::contains);
     }
 
     private LifecycleProductDto toLifecycleProduct(

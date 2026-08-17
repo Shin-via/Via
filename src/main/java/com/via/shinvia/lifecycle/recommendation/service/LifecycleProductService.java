@@ -46,6 +46,7 @@ public class LifecycleProductService {
         ));
 
         return deduplicate(products).stream()
+                .filter(product -> isPurposeRelevant(product, eventType))
                 .limit(TOTAL_LIMIT)
                 .toList();
     }
@@ -80,5 +81,31 @@ public class LifecycleProductService {
         }
 
         return new ArrayList<>(result.values());
+    }
+
+    private boolean isPurposeRelevant(
+            LifecycleProductDto product,
+            LifecycleEventType eventType
+    ) {
+        String name = product.getProductName();
+        if (name == null || name.isBlank()) {
+            return false;
+        }
+
+        String normalizedName = name.replaceAll("\\s+", "");
+        List<String> purposeKeywords = switch (eventType) {
+            case MARRIAGE -> List.of("결혼", "혼례", "웨딩");
+            case MONTHLY_RENT -> List.of("월세", "임차료", "전월세");
+            case JEONSE -> List.of("전세", "임차보증금", "전월세보증금");
+            case HOME_PURCHASE -> List.of(
+                    "주택", "내집", "구입자금", "디딤돌",
+                    "모기지", "보금자리"
+            );
+            default -> List.of();
+        };
+
+        return purposeKeywords.isEmpty()
+                || purposeKeywords.stream()
+                .anyMatch(normalizedName::contains);
     }
 }

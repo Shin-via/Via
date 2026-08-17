@@ -286,6 +286,42 @@ document.addEventListener("DOMContentLoaded", () => {
         input?.addEventListener("input", updateVehicleFinancingAmounts);
     });
 
+    const jeonseDesiredAmountInput =
+        document.getElementById("jeonseDesiredAmount");
+    const jeonseOwnFundAmountInput =
+        document.getElementById("jeonseOwnFundAmount");
+    const jeonseDesiredLoanAmountInput =
+        document.getElementById("jeonseDesiredLoanAmount");
+
+    function updateJeonseLoanAmount() {
+        if (
+            !jeonseDesiredAmountInput
+            || !jeonseOwnFundAmountInput
+            || !jeonseDesiredLoanAmountInput
+        ) {
+            return;
+        }
+
+        const desiredAmount = parseMoneyValue(
+            jeonseDesiredAmountInput.value
+        );
+        const ownFundAmount = parseMoneyValue(
+            jeonseOwnFundAmountInput.value
+        );
+
+        jeonseDesiredLoanAmountInput.value = Math.max(
+            desiredAmount - ownFundAmount,
+            0
+        );
+        formatMoneyInput(jeonseDesiredLoanAmountInput);
+    }
+
+    [jeonseDesiredAmountInput, jeonseOwnFundAmountInput].forEach(input => {
+        input?.addEventListener("input", updateJeonseLoanAmount);
+    });
+
+    updateJeonseLoanAmount();
+
     function isSurveyControlIncomplete(control, form) {
 
         if (
@@ -652,6 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * base   -> 기본정보
      * events -> 생활 이벤트
      * review -> 입력 확인
+     * result -> 결과 보기
      */
     function showStep(stepName) {
 
@@ -684,6 +721,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // review 화면 진입 시 요약 갱신
         if (stepName === "review") {
             loadReview();
+        }
+
+        if (stepName === "result" && latestSimulationResult) {
+            renderSimulationResult(latestSimulationResult);
         }
 
         const activePanel =
@@ -1411,6 +1452,9 @@ document.addEventListener("DOMContentLoaded", () => {
         moneyInputs.filter(input => form.contains(input)).forEach(formatMoneyInput);
         if (form.id === "vehicleSurveyForm") {
             updateVehicleFinancingAmounts();
+        }
+        if (form.id === "jeonseSurveyForm") {
+            updateJeonseLoanAmount();
         }
     }
 
@@ -2240,7 +2284,396 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+    /*
+     * =========================================================
+     * 7. 시뮬레이션 결과
+     * =========================================================
+     */
 
+    const runSimulationBtn =
+        document.getElementById("runLifecycleSimulationBtn");
+
+    const simulationEmpty =
+        document.getElementById("lifecycleSimulationEmpty");
+
+    const simulationSummary =
+        document.getElementById("lifecycleSimulationSummary");
+
+    const simulationSnapshots =
+        document.getElementById("lifecycleSimulationSnapshots");
+
+    const snapshotModal =
+        document.getElementById("lifecycleSnapshotModal");
+
+    const snapshotModalTitle =
+        document.getElementById("snapshotModalTitle");
+
+    const snapshotModalEventDate =
+        document.getElementById("snapshotModalEventDate");
+
+    const snapshotModalBody =
+        document.getElementById("snapshotModalBody");
+
+    let latestSimulationResult = null;
+
+    function buildSimulationBaseState() {
+        const annualIncome =
+            document.getElementById("simulationAnnualIncome");
+
+        const liquidAssetAmount =
+            document.getElementById("simulationLiquidAssetAmount");
+
+        const salaryGrowthRate =
+            document.getElementById("simulationSalaryGrowthRate");
+
+        const monthlyLivingExpense =
+            document.getElementById("monthlyLivingExpense");
+
+        const monthlyHousingExpense =
+            document.getElementById("monthlyHousingExpense");
+
+        return {
+            baseDate: new Date().toISOString().substring(0, 10),
+            annualIncome: parseMoneyValue(annualIncome?.value),
+            liquidAssetAmount: parseMoneyValue(liquidAssetAmount?.value),
+            monthlyLivingExpense: parseMoneyValue(monthlyLivingExpense?.value),
+            monthlyHousingExpense: parseMoneyValue(monthlyHousingExpense?.value),
+            annualSalaryGrowthRate: Number(salaryGrowthRate?.value || 0) / 100,
+            loans: []
+        };
+    }
+
+    async function runLifecycleSimulation() {
+        if (!scenarioId) {
+            alert("시뮬레이션할 시나리오를 먼저 선택해주세요.");
+            return;
+        }
+
+        runSimulationBtn.disabled = true;
+        runSimulationBtn.textContent = "계산 중...";
+
+        try {
+            const response = await fetch(
+                `/api/lifecycle/scenarios/${scenarioId}/simulate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(buildSimulationBaseState())
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`시뮬레이션 실패: ${response.status}`);
+            }
+
+            latestSimulationResult = await response.json();
+            renderSimulationResult(latestSimulationResult);
+
+        } catch (error) {
+            console.error(error);
+            alert("시뮬레이션 실행 중 오류가 발생했습니다.");
+        } finally {
+            runSimulationBtn.disabled = false;
+            runSimulationBtn.textContent = "시뮬레이션 실행";
+        }
+    }
+
+    function renderSimulationResult(result) {
+        const snapshots = result.eventSnapshots ?? [];
+
+        if (simulationEmpty) {
+            simulationEmpty.hidden = snapshots.length > 0;
+        }
+
+        if (simulationSummary) {
+            simulationSummary.hidden = false;
+            simulationSummary.innerHTML = `
+                <article>
+                    <span>최종 순자산</span>
+                    <strong>${formatMoney(result.finalNetAsset)}원</strong>
+                </article>
+                <article>
+                    <span>순자산 변화</span>
+                    <strong>${formatMoney(result.netAssetChange)}원</strong>
+                </article>
+                <article>
+                    <span>총 이벤트 비용</span>
+                    <strong>${formatMoney(result.totalEventCost)}원</strong>
+                </article>
+                <article>
+                    <span>총 지원 혜택</span>
+                    <strong>${formatMoney(result.totalSupportBenefit)}원</strong>
+                </article>
+                <article>
+                    <span>최종 DSR</span>
+                    <strong>${formatPercent(result.finalDsr)}</strong>
+                </article>
+            `;
+        }
+
+        if (simulationSnapshots) {
+            simulationSnapshots.hidden = snapshots.length === 0;
+            simulationSnapshots.innerHTML = snapshots.map((snapshot, index) =>
+                renderSnapshotCard(snapshot, index)
+            ).join("");
+
+            simulationSnapshots
+                .querySelectorAll("[data-snapshot-index]")
+                .forEach(button => {
+                    button.addEventListener("click", () => {
+                        openSnapshotModal(
+                            snapshots[Number(button.dataset.snapshotIndex)]
+                        );
+                    });
+                });
+        }
+    }
+
+    function renderSnapshotCard(snapshot, index) {
+        const supportCount = (snapshot.supports ?? []).length;
+        const productCount = (snapshot.recommendedProducts ?? []).length;
+        const feasibility = snapshot.feasibility ?? {};
+        const feasibilityStatus = feasibility.status ?? "READY";
+
+        return `
+            <button type="button"
+                    class="lifecycle-snapshot-card"
+                    data-snapshot-index="${index}">
+                <span>${escapeHtml(formatEventDate(snapshot.eventDate))}</span>
+                <strong>${escapeHtml(eventTypeLabel(snapshot.eventType))}</strong>
+                <small>${escapeHtml(snapshot.summary ?? "")}</small>
+                <span class="lifecycle-feasibility-badge ${escapeHtml(feasibilityStatus.toLowerCase())}">
+                    ${escapeHtml(feasibility.title ?? "계획 분석")}
+                </span>
+
+                <div class="lifecycle-snapshot-metrics">
+                    <em>비용 ${formatMoney(snapshot.eventCost)}원</em>
+                    <em>부족 ${formatMoney(snapshot.fundingShortage)}원</em>
+                    <em>복지 ${supportCount}개</em>
+                    <em>상품 ${productCount}개</em>
+                </div>
+            </button>
+        `;
+    }
+
+    function openSnapshotModal(snapshot) {
+        if (!snapshotModal || !snapshot) {
+            return;
+        }
+
+        snapshotModalTitle.textContent =
+            eventTypeLabel(snapshot.eventType);
+
+        snapshotModalEventDate.textContent =
+            formatEventDate(snapshot.eventDate);
+
+        const contributionMetrics = snapshot.eventType === "MARRIAGE"
+            ? `
+                ${modalMetric("본인 비용 분담액", snapshot.userContributionAmount)}
+                ${modalMetric("가족 지원금", snapshot.familySupportAmount)}
+            `
+            : "";
+
+        snapshotModalBody.innerHTML = `
+            ${renderFeasibility(snapshot.feasibility)}
+
+            <section class="lifecycle-modal-block">
+                <h4>비용 요약</h4>
+                <div class="lifecycle-modal-grid">
+                    ${modalMetric("예상비용", snapshot.estimatedCost)}
+                    ${contributionMetrics}
+                    ${modalMetric("확정 공공지원금", snapshot.supportBenefit)}
+                    ${modalMetric("최종 사용자 부담금", snapshot.userRequiredAmount)}
+                    ${modalMetric("부족 금액", snapshot.fundingShortage)}
+                    ${modalMetric("신규 대출", snapshot.newLoanAmount)}
+                    ${modalMetric("월 추가지출", snapshot.additionalMonthlyExpense)}
+                </div>
+            </section>
+
+            <section class="lifecycle-modal-block">
+                <h4>재무상태 변화</h4>
+                <div class="lifecycle-modal-grid">
+                    ${modalMetric("현금 변화", snapshot.cashAssetChange)}
+                    ${modalMetric("부채 변화", snapshot.totalDebtChange)}
+                    ${modalMetric("순자산 변화", snapshot.netAssetChange)}
+                    ${modalMetric("월 저축여력 변화", snapshot.monthlySavingCapacityChange)}
+                    ${modalPlainMetric("DSR 변화", formatPercent(snapshot.dsrChange))}
+                </div>
+            </section>
+
+            <section class="lifecycle-modal-block">
+                <h4>복지 추천</h4>
+                ${renderSupportList(snapshot.supports)}
+            </section>
+
+            <section class="lifecycle-modal-block">
+                <h4>금융상품 추천</h4>
+                ${renderProductList(snapshot.recommendedProducts)}
+            </section>
+
+            <div class="lifecycle-modal-actions">
+                <button type="button"
+                        class="lifecycle-secondary-button"
+                        data-edit-lifecycle-survey>
+                    설문 내역 수정하기
+                </button>
+            </div>
+        `;
+
+        snapshotModalBody
+            .querySelector("[data-edit-lifecycle-survey]")
+            ?.addEventListener("click", () => {
+                closeSnapshotModal();
+                showStep("review");
+            });
+
+        snapshotModal.hidden = false;
+        document.body.classList.add("lifecycle-modal-open");
+    }
+
+    function renderFeasibility(feasibility) {
+        if (!feasibility) {
+            return "";
+        }
+
+        const status = String(feasibility.status ?? "READY").toLowerCase();
+        const delayText = feasibility.recommendedDelayMonths
+            ? `<strong>권장 준비기간: 약 ${Number(feasibility.recommendedDelayMonths).toLocaleString("ko-KR")}개월</strong>`
+            : "";
+
+        return `
+            <section class="lifecycle-feasibility ${escapeHtml(status)}">
+                <span>PLAN CHECK</span>
+                <h4>${escapeHtml(feasibility.title ?? "계획 분석")}</h4>
+                <p>${escapeHtml(feasibility.message ?? "")}</p>
+                ${delayText}
+            </section>
+        `;
+    }
+
+    function closeSnapshotModal() {
+        if (!snapshotModal) {
+            return;
+        }
+
+        snapshotModal.hidden = true;
+        document.body.classList.remove("lifecycle-modal-open");
+    }
+
+    document
+        .querySelectorAll("[data-close-snapshot-modal]")
+        .forEach(button => {
+            button.addEventListener("click", closeSnapshotModal);
+        });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeSnapshotModal();
+        }
+    });
+
+    function modalMetric(label, value) {
+        return modalPlainMetric(label, `${formatMoney(value)}원`);
+    }
+
+    function modalPlainMetric(label, value) {
+        return `
+            <article>
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(value)}</strong>
+            </article>
+        `;
+    }
+
+    function renderSupportList(supports) {
+        if (!supports || supports.length === 0) {
+            return `<p class="lifecycle-modal-empty">추천 복지 정보가 없습니다.</p>`;
+        }
+
+        return `
+            <div class="lifecycle-recommendation-list">
+                ${supports.map(support => `
+                    <article class="lifecycle-recommendation-item">
+                        <strong>${escapeHtml(support.supportName ?? "복지 지원")}</strong>
+                        <p>
+                            ${escapeHtml(support.sourceName ?? "출처 확인 필요")}
+                            · ${escapeHtml(support.recommendationStatus ?? "확인 필요")}
+                        </p>
+                        <span>${escapeHtml(support.effectType ?? "-")} · ${formatMoney(support.amount)}원</span>
+                        ${support.sourceUrl
+            ? `<a href="${escapeHtml(support.sourceUrl)}" target="_blank" rel="noopener">출처 보기</a>`
+            : ""}
+                    </article>
+                `).join("")}
+            </div>
+        `;
+    }
+
+    function renderProductList(products) {
+        if (!products || products.length === 0) {
+            return `<p class="lifecycle-modal-empty">추천 금융상품이 없습니다.</p>`;
+        }
+
+        return `
+            <div class="lifecycle-recommendation-list">
+                ${products.map(product => `
+                    <article class="lifecycle-recommendation-item">
+                        <strong>${escapeHtml(product.productName ?? "금융상품")}</strong>
+                        <p>
+                            ${escapeHtml(product.institutionName ?? "기관 정보 없음")}
+                            · ${escapeHtml(product.productType ?? "-")}
+                        </p>
+                        <span>
+                            ${escapeHtml(product.interestRate ?? "금리 정보 없음")}
+                            · ${escapeHtml(product.loanLimit ?? "한도 정보 없음")}
+                        </span>
+                        ${product.relatedUrl
+            ? `<a href="${escapeHtml(product.relatedUrl)}" target="_blank" rel="noopener">상품 보기</a>`
+            : ""}
+                    </article>
+                `).join("")}
+            </div>
+        `;
+    }
+
+    function eventTypeLabel(eventType) {
+        return {
+            MARRIAGE: "결혼",
+            CHILDBIRTH: "출산",
+            VEHICLE_PURCHASE: "차량 구매",
+            MONTHLY_RENT: "월세",
+            JEONSE: "전세",
+            HOME_PURCHASE: "주택 구매",
+            REPAYMENT: "대출 상환"
+        }[eventType] ?? eventType ?? "-";
+    }
+
+    function formatEventDate(value) {
+        if (!value) {
+            return "일자 미정";
+        }
+
+        const [year, month, day] = String(value).split("-");
+        return `${year}.${month}.${day}`;
+    }
+
+    function formatPercent(value) {
+        if (value === null || value === undefined || value === "") {
+            return "0%";
+        }
+
+        return `${Number(value).toLocaleString("ko-KR", {
+            maximumFractionDigits: 2
+        })}%`;
+    }
+
+    runSimulationBtn?.addEventListener(
+        "click",
+        runLifecycleSimulation
+    );
 
     /*
      * =========================================================
@@ -2265,7 +2698,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return "0";
         }
 
-        return Number(value).toLocaleString("ko-KR");
+        const amount = Number(value);
+
+        if (!Number.isFinite(amount)) {
+            return "0";
+        }
+
+        return Math.round(amount).toLocaleString("ko-KR", {
+            maximumFractionDigits: 0
+        });
     }
 
 
@@ -2302,3 +2743,49 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeSurvey();
 
 });
+function formatKoreanMoney(value) {
+    if (
+        value === null
+        || value === undefined
+        || value === ""
+    ) {
+        return "0원";
+    }
+
+    const numberValue = Number(
+        String(value).replace(/,/g, "")
+    );
+
+    if (!Number.isFinite(numberValue)) {
+        return "0원";
+    }
+
+    const sign = numberValue < 0 ? "-" : "";
+    const amount = Math.abs(Math.trunc(numberValue));
+
+    if (amount < 10000) {
+        return `${sign}${amount.toLocaleString("ko-KR")}원`;
+    }
+
+    const eok = Math.floor(amount / 100000000);
+    const man = Math.floor((amount % 100000000) / 10000);
+
+    if (eok > 0 && man > 0) {
+        return `${sign}${eok.toLocaleString("ko-KR")}억 ${man.toLocaleString("ko-KR")}만원`;
+    }
+
+    if (eok > 0) {
+        return `${sign}${eok.toLocaleString("ko-KR")}억원`;
+    }
+
+    return `${sign}${man.toLocaleString("ko-KR")}만원`;
+}
+
+function formatMoneyDisplay(value) {
+    const wonText = `${formatMoney(value)}원`;
+    const koreanText = formatKoreanMoney(value);
+
+    return wonText === koreanText
+        ? wonText
+        : `${wonText} (${koreanText})`;
+}
