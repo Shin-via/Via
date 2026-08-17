@@ -44,6 +44,26 @@ const wonFormatter = new Intl.NumberFormat('ko-KR', {
     maximumFractionDigits: 0
 });
 
+const stepCopy = {
+    1: {
+        title: '여유자금 설정',
+        description: '마이데이터를 기반으로 실제 운용 가능한 여유자금을 계산합니다.'
+    },
+    2: {
+        title: '운용성향 설문',
+        description: '투자 목적과 손실 감내 수준을 확인합니다.'
+    },
+    3: {
+        title: '자산배분 결과',
+        description: '설문 결과를 바탕으로 자산군별 가이드 비율을 확인합니다.'
+    },
+    4: {
+        title: '관련 상품 탐색',
+        description: '자산배분 결과에 맞는 관련 상품을 살펴봅니다.'
+    }
+};
+
+
 let currentStep = 1;
 let currentQuestionIndex = 0;
 let hasAnalysisResult = false;
@@ -64,15 +84,36 @@ window.applySurplusFundAmount = (amount) => {
     return true;
 };
 
-document.getElementById('startSurveyButton').addEventListener('click', () => {
-    if (!validateOperationAmount()) {
-        return;
-    }
+document.getElementById('startSurveyButton')
+    .addEventListener('click', async () => {
 
-    hideError();
-    showQuestion(0, false);
-    showStep(2);
-});
+        if (!validateOperationAmount()) {
+            return;
+        }
+
+        hideError();
+
+        try {
+
+            if (
+                typeof window.saveSurplusFundCalculation
+                === 'function'
+            ) {
+                await window
+                    .saveSurplusFundCalculation();
+            }
+
+            showQuestion(0, false);
+            showStep(2);
+
+        } catch (error) {
+
+            showError(
+                error.message
+                || '여유자금 계산 결과 저장에 실패했습니다.'
+            );
+        }
+    });
 
 stepTabs.forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -217,22 +258,69 @@ function showStep(step, shouldScroll = true) {
         const tabStep = Number(tab.dataset.stepTarget);
         const isActive = tabStep === step;
         const isLocked = tabStep >= 3 && !hasAnalysisResult;
-        const isCompleted = tabStep < step || (hasAnalysisResult && tabStep <= 2);
+        const isCompleted =
+            tabStep < step
+            || (hasAnalysisResult && tabStep <= 2);
 
         tab.classList.toggle('active', isActive);
-        tab.classList.toggle('completed', !isActive && isCompleted);
+        tab.classList.toggle(
+            'completed',
+            !isActive && isCompleted
+        );
+
         tab.disabled = isLocked;
-        tab.setAttribute('aria-disabled', String(isLocked));
+        tab.setAttribute(
+            'aria-disabled',
+            String(isLocked)
+        );
 
         if (isActive) {
-            tab.setAttribute('aria-current', 'step');
+            tab.setAttribute(
+                'aria-current',
+                'step'
+            );
         } else {
-            tab.removeAttribute('aria-current');
+            tab.removeAttribute(
+                'aria-current'
+            );
         }
     });
 
+
+    // 현재 단계에 맞게 제목/설명 변경
+    const copy = stepCopy[step];
+
+    if (copy) {
+        const guideTitle =
+            document.getElementById('guideTitle');
+
+        const guideDescription =
+            document.getElementById('guideDescription');
+
+        if (guideTitle) {
+            guideTitle.textContent = copy.title;
+        }
+
+        if (guideDescription) {
+            guideDescription.textContent = copy.description;
+        }
+    }
+
+
+    const syncWrap = document.getElementById('syncWrap');
+
+    if (syncWrap) {
+        syncWrap.hidden =
+            step !== 1;
+    }
+
+
     if (shouldScroll) {
-        document.querySelector('.guide-steps').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelector('.guide-steps')
+            .scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
     }
 }
 
@@ -324,6 +412,13 @@ function renderResult(result) {
     hasAnalysisResult = true;
     currentProductFilter = 'ALL';
     updateProductExplorer();
+
+    window.dispatchEvent (
+        new CustomEvent('surplus:allocation-updated', {
+            detail: { allocations: latestAllocations}
+        })
+    );
+
     showStep(3);
 }
 
@@ -448,12 +543,38 @@ function updateProductExplorer() {
         button.classList.toggle('active', isActive);
         button.setAttribute('aria-pressed', String(isActive));
     });
+    const productGrid = document.getElementById('productGrid');
+    const etfProductArea = document.getElementById('etfProductArea');
+    const fundProductArea = document.getElementById('fundProductArea');
+    const productEmptyState = document.getElementById('productEmptyState');
+    const showEtf = currentProductFilter === 'ALL' || currentProductFilter === 'ETF';
+    const showFund = currentProductFilter === 'ALL' || currentProductFilter === 'FUND';
 
-    document.getElementById('productGrid').replaceChildren();
-    document.getElementById('productEmptyState').textContent =
-        currentProductFilter === 'CASH'
-            ? productEmptyMessages.CASH
-            : productEmptyMessages.DEFAULT;
+    if (etfProductArea) {
+        etfProductArea.hidden = !showEtf;
+    }
+
+    if (fundProductArea) {
+        fundProductArea.hidden = !showFund;
+    }
+
+    if (productGrid) {
+        productGrid.classList.toggle(
+            'single',
+            currentProductFilter === 'ETF'
+            || currentProductFilter === 'FUND'
+        );
+    }
+
+    if (productEmptyState) {
+        if (currentProductFilter === 'CASH') {
+            productEmptyState.hidden = false;
+            productEmptyState.textContent = productEmptyMessages.CASH;
+        } else {
+            productEmptyState.hidden = true;
+            productEmptyState.textContent = '';
+        }
+    }
 }
 
 function updateProductFilterAmount(elementId, allocation) {

@@ -3,6 +3,8 @@ package com.via.shinvia.mydata.service;
 import com.via.shinvia.account.dto.request.AccountSyncRequest;
 import com.via.shinvia.account.service.AccountQueryService;
 import com.via.shinvia.account.service.AccountSyncService;
+import com.via.shinvia.mydata.config.MyDataProperties;
+import com.via.shinvia.service.mydata.CardSyncService;
 import com.via.shinvia.service.mydata.LoanAccountSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,12 +24,11 @@ public class MyDataSyncService {
     private final AccountQueryService accountQueryService;
     private final MyDataConnectionService myDataConnectionService;
     private final LoanAccountSyncService loanAccountSyncService;
+    private final CardSyncService cardSyncService;
 
     public void syncAll(Long userId) {
 
-        Long connectionId =
-                myDataConnectionService
-                        .getConnectedConnectionId(userId);
+        Long connectionId = myDataConnectionService.getConnectedConnectionId(userId);
 
         if (connectionId == null) {
             throw new IllegalStateException(
@@ -35,9 +36,7 @@ public class MyDataSyncService {
             );
         }
 
-        List<String> orgCodes =
-                accountQueryService
-                        .getOrgCodesByConnectionId(connectionId);
+        List<String> orgCodes = accountQueryService.getOrgCodesByConnectionId(connectionId);
 
         LocalDate today = LocalDate.now();
 
@@ -46,19 +45,16 @@ public class MyDataSyncService {
             AccountSyncRequest request =
                     new AccountSyncRequest(
                             orgCode,
-                            today.minusMonths(3)
-                                    .format(FORMATTER),
+                            today.minusMonths(3).format(FORMATTER),
                             today.format(FORMATTER),
                             100
                     );
 
-            accountSyncService.sync(
-                    userId,
-                    request
-            );
-            loanAccountSyncService.syncLoans(
-                    userId
-            );
+            accountSyncService.sync(userId, request);
         }
+
+        loanAccountSyncService.syncLoans(userId);
+        cardSyncService.syncCards(userId, connectionId);
     }
+
 }

@@ -43,8 +43,9 @@ public class SecurityConfig {
                                 "/api/surplus-funds/preferences/**",
                                 "/api/welfare-support/sync/**",
                                 "/api/lifecycle/scenarios/**",
-                                "/api/lifecycle/survey/**"
-
+                                "/api/lifecycle/survey/**",
+                                "/api/admin/investment-products/etfs/**",
+                                "/api/admin/investment-products/funds/**"
                         )
                 )
 
@@ -61,6 +62,7 @@ public class SecurityConfig {
                 // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/admin/investment-products/etfs/**",
                                 "/api/surplus-funds/preferences/**",
                                 "/loans/recommendations",
                                 "/loans/recommendations/**",

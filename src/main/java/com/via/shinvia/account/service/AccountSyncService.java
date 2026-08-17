@@ -94,10 +94,6 @@ public class AccountSyncService {
                                     "0"
                             )
                     );
-            System.out.println("accountNum = " + accountItem.accountNum());
-            System.out.println("seqno = " + accountItem.seqno());
-            System.out.println("detailResponse = " + detailResponse);
-            System.out.println("detailList = " + detailResponse.detailList());
 
             DepositBasicItem basicItem =
                     firstOrNull(
