@@ -31,6 +31,9 @@ public class MarriageSurveyResponse {
     // 결혼 예정일
     private LocalDate targetDate;
 
+    private String regionSido;
+    private String regionSigungu;
+
     // 결혼 비용 수준
     // PRACTICAL, AVERAGE, RELAXED, PREMIUM, CUSTOM
     private LifestyleLevel lifestyleLevel;

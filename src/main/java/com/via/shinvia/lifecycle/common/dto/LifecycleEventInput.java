@@ -45,6 +45,9 @@ public class LifecycleEventInput {
     // 가족지원, 복지 등을 고려한 사용자 부담금
     private BigDecimal userRequiredAmount;
 
+    // 가족·공공 지원을 차감하기 전 사용자의 비용 분담액
+    private BigDecimal userContributionAmount;
+
     // 이벤트 이후 매월 추가되는 지출
     // 예: 출산 후 월 양육비, 차량 구매 후 유지비
     private BigDecimal additionalMonthlyExpense;
@@ -52,6 +55,9 @@ public class LifecycleEventInput {
     // 이벤트 발생 시 들어오는 일회성 현금
     // 예: 가족지원금 등
     private BigDecimal cashInflowAmount;
+
+    // 가족 또는 부모 등 민간 지원금. 공공 복지 혜택과 구분한다.
+    private BigDecimal familySupportAmount;
 
     // 이벤트로 새롭게 발생하는 대출금액
     // 예: 자동차대출, 전세대출, 주택담보대출
