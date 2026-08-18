@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/basic2 :: layout(~{::title}, ~{::main}, ~{::script}, ${serviceName})}">
+      th:replace="~{layout/basic2 :: layout(~{::title}, ~{::main}, ~{}, ${serviceName})}">
 <head>
     <meta charset="UTF-8">
     <title>마이데이터 조회</title>
@@ -154,7 +154,5 @@
         </div>
     </section>
 </main>
-
-<script th:src="@{/js/mydata-result.js}"></script>
 </body>
 </html>
