@@ -42,11 +42,20 @@ public class LifecycleProjectionService {
         BigDecimal totalDebt = calculateTotalDebt(baseState.getLoans());
         BigDecimal monthlyDebtPayment = calculateTotalMonthlyPayment(baseState.getLoans(), baseDate);
 
+        java.util.List<LifecycleLoanDto> initialLoans = new java.util.ArrayList<>();
+        if (baseState.getLoans() != null) {
+            initialLoans.addAll(baseState.getLoans());
+        }
+
         LifecycleFinancialStateDto initialState = LifecycleFinancialStateDto.builder()
                 .stateDate(baseDate)
                 .cashAsset(nvl(baseState.getLiquidAssetAmount()))
+                .realEstateAsset(BigDecimal.ZERO)
+                .depositAsset(BigDecimal.ZERO)
                 .housingAsset(BigDecimal.ZERO)
+                .currentHousingType(baseState.getCurrentHousingType() != null ? baseState.getCurrentHousingType() : "FAMILY")
                 .totalDebt(totalDebt)
+                .loans(initialLoans)
                 .annualIncome(nvl(baseState.getAnnualIncome()))
                 .monthlySupportIncome(BigDecimal.ZERO)
                 .monthlyLivingExpense(nvl(baseState.getMonthlyLivingExpense()))
@@ -85,6 +94,8 @@ public class LifecycleProjectionService {
             return currentState;
         }
 
+        List<LifecycleLoanDto> effectiveLoans = loans != null ? loans : currentState.getLoans();
+
         LocalDate startDate = currentState.getStateDate();
         if (startDate == null || !targetDate.isAfter(startDate)) {
             return currentState.copy(targetDate);
@@ -112,13 +123,11 @@ public class LifecycleProjectionService {
                 .setScale(0, RoundingMode.HALF_UP);
 
         // 3) 미래 목표 시점(targetDate)의 남은 대출 잔액 및 월 상환액 재계산 (만기 도래 대출은 0원으로 소멸)
-        // 대출 상세 목록이 없을 때는 직전 이벤트에서 발생한 대출 상태를 유지한다.
-        // null을 빈 목록처럼 계산하면 전세·주담대가 다음 이벤트 시점에 0으로 사라진다.
-        BigDecimal projectedTotalDebt = loans != null
-                ? calculateProjectedTotalDebt(loans, targetDate)
+        BigDecimal projectedTotalDebt = effectiveLoans != null
+                ? calculateProjectedTotalDebt(effectiveLoans, targetDate)
                 : nvl(currentState.getTotalDebt());
-        BigDecimal projectedMonthlyDebtPayment = loans != null
-                ? calculateProjectedMonthlyPayment(loans, targetDate)
+        BigDecimal projectedMonthlyDebtPayment = effectiveLoans != null
+                ? calculateProjectedMonthlyPayment(effectiveLoans, targetDate)
                 : nvl(currentState.getMonthlyDebtPayment());
 
         // 4) 기간 동안 누적 저축액 계산 (시작점과 끝점의 평균 월 저축여력 * 경과 개월수)
@@ -150,6 +159,7 @@ public class LifecycleProjectionService {
                 .stateDate(targetDate)
                 .cashAsset(projectedCashAsset)
                 .totalDebt(projectedTotalDebt)
+                .loans(effectiveLoans)
                 .annualIncome(projectedAnnualIncome)
                 .monthlyLivingExpense(projectedLivingExpense)
                 .monthlyDebtPayment(projectedMonthlyDebtPayment)

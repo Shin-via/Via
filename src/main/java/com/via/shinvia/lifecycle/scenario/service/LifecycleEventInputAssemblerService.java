@@ -115,7 +115,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.MARRIAGE,
                         survey.getRegionSido(),
-                        survey.getRegionSigungu()
+                        survey.getRegionSigungu(),
+                        userId
                 );
 
         BigDecimal estimatedCost = positiveOrDefault(
@@ -180,7 +181,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.CHILDBIRTH,
                         survey.getRegionSido(),
-                        survey.getRegionSigungu()
+                        survey.getRegionSigungu(),
+                        userId
                 );
 
         BigDecimal initialCost = Boolean.TRUE.equals(survey.getPostpartumCare())
@@ -301,7 +303,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.MONTHLY_RENT,
                         survey.getRegionSido(),
-                        survey.getRegionSigungu()
+                        survey.getRegionSigungu(),
+                        userId
                 );
 
         BigDecimal deposit = positiveOrDefault(
@@ -359,6 +362,7 @@ public class LifecycleEventInputAssemblerService {
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(ZERO)
                 .acquiredAssetAmount(money(deposit))
+                .keepExistingHome(survey.getKeepExistingHome())
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();
@@ -376,7 +380,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.JEONSE,
                         survey.getRegionSido(),
-                        survey.getRegionSigungu()
+                        survey.getRegionSigungu(),
+                        userId
                 );
 
         BigDecimal deposit = positiveOrDefault(
@@ -425,6 +430,8 @@ public class LifecycleEventInputAssemblerService {
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(money(newLoanAmount))
                 .acquiredAssetAmount(money(deposit))
+                .keepExistingHome(survey.getKeepExistingHome())
+                .loanPeriodMonths(24)
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();
@@ -442,7 +449,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.HOME_PURCHASE,
                         survey.getRegionSido(),
-                        survey.getRegionSigungu()
+                        survey.getRegionSigungu(),
+                        userId
                 );
 
         BigDecimal purchasePrice = positiveOrDefault(
@@ -499,6 +507,7 @@ public class LifecycleEventInputAssemblerService {
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(money(newLoanAmount))
                 .acquiredAssetAmount(money(purchasePrice))
+                .loanPeriodMonths(survey.getLoanPeriodMonths())
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();
@@ -516,7 +525,8 @@ public class LifecycleEventInputAssemblerService {
                 welfareService.getSupports(
                         LifecycleEventType.REPAYMENT,
                         null,
-                        null
+                        null,
+                        userId
                 );
 
         BigDecimal repaymentAmount = nvl(survey.getRepaymentAmount());
@@ -548,6 +558,8 @@ public class LifecycleEventInputAssemblerService {
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(ZERO)
                 .acquiredAssetAmount(ZERO)
+                .targetLoanAccountId(survey.getLoanAccountId())
+                .repaymentAction(survey.getRepaymentAction())
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();

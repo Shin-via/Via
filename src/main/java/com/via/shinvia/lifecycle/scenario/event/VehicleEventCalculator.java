@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 
 @Slf4j
 @Component
@@ -60,25 +61,46 @@ public class VehicleEventCalculator implements LifecycleEventCalculator {
         BigDecimal newLoanAmount = nvl(input.getNewLoanAmount());
         BigDecimal newTotalDebt = nvl(beforeState.getTotalDebt());
         BigDecimal newDebtPayment = nvl(beforeState.getMonthlyDebtPayment());
+        java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> updatedLoans = new java.util.ArrayList<>();
+        if (beforeState.getLoans() != null) {
+            for (var l : beforeState.getLoans()) {
+                if (l != null) updatedLoans.add(l);
+            }
+        }
 
         if (newLoanAmount.compareTo(BigDecimal.ZERO) > 0) {
             newTotalDebt = newTotalDebt.add(newLoanAmount);
+            int periodMonths = input.getLoanPeriodMonths() != null ? input.getLoanPeriodMonths() : 60;
+            BigDecimal rate = input.getLoanInterestRate() != null ? input.getLoanInterestRate() : new BigDecimal("5.0");
             
-            // 5년(60개월) 연 5.0% 원리금균등 분할상환 계산
+            // 연 5.0% 원리금균등 분할상환 계산
             try {
                 var calcResult = loanRepaymentCalculator.calculate(
                         newLoanAmount,
-                        new BigDecimal("5.0"),
-                        60,
+                        rate,
+                        periodMonths,
                         "원리금균등상환"
                 );
                 if (calcResult != null && calcResult.monthlyPayment() != null) {
                     newDebtPayment = newDebtPayment.add(calcResult.monthlyPayment());
                 }
             } catch (Exception e) {
-                BigDecimal monthlyPrincipal = newLoanAmount.divide(BigDecimal.valueOf(60), 0, RoundingMode.HALF_UP);
-                newDebtPayment = newDebtPayment.add(monthlyPrincipal);
+                BigDecimal monthlyPrincipal = newLoanAmount.divide(BigDecimal.valueOf(periodMonths), 0, RoundingMode.HALF_UP);
+                BigDecimal monthlyInterest = newLoanAmount.multiply(rate.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP))
+                        .divide(BigDecimal.valueOf(12), 0, RoundingMode.HALF_UP);
+                newDebtPayment = newDebtPayment.add(monthlyPrincipal).add(monthlyInterest);
             }
+
+            LocalDate eventDate = input.getTargetDate() != null ? input.getTargetDate() : LocalDate.now();
+            updatedLoans.add(com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto.builder()
+                    .loanAccountId(System.currentTimeMillis())
+                    .loanType("AUTO")
+                    .currentBalance(newLoanAmount)
+                    .interestRate(rate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP))
+                    .rateType("FIXED")
+                    .repaymentType("원리금균등상환")
+                    .maturityAt(eventDate.plusMonths(periodMonths))
+                    .build());
         }
 
         // 4. 이벤트 직후 재정 상태(afterState) 생성
@@ -86,6 +108,7 @@ public class VehicleEventCalculator implements LifecycleEventCalculator {
                 .stateDate(input.getTargetDate() != null ? input.getTargetDate() : beforeState.getStateDate())
                 .cashAsset(afterCash)
                 .totalDebt(newTotalDebt)
+                .loans(updatedLoans)
                 .monthlyLivingExpense(newLivingExpense)
                 .monthlyDebtPayment(newDebtPayment)
                 .build();

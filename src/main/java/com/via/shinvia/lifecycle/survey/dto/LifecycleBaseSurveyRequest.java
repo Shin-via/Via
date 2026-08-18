@@ -40,14 +40,22 @@ public class LifecycleBaseSurveyRequest {
     private IndustryCode industryCode;
 
     // 미래 급여상승 시나리오
-    // CONSERVATIVE : 보수적
-    // BASE : 기준
-    // OPTIMISTIC : 낙관적
-    // CUSTOM : 직접입력
     private SalaryGrowthScenario salaryGrowthScenario;
 
     // 사용자가 CUSTOM을 선택했을 경우 직접 입력한 연평균 급여상승률
-    // 예: 0.03 = 연 3%
-    // CUSTOM이 아니면 null 가능
     private BigDecimal customSalaryGrowthRate;
+
+    public SalaryGrowthScenario getSalaryGrowthScenario() {
+        if (salaryGrowthScenario != null) {
+            return salaryGrowthScenario;
+        }
+        if (customSalaryGrowthRate != null && customSalaryGrowthRate.compareTo(BigDecimal.ZERO) > 0) {
+            return SalaryGrowthScenario.CUSTOM;
+        }
+        return SalaryGrowthScenario.BASE;
+    }
+
+    public IndustryCode getIndustryCode() {
+        return industryCode != null ? industryCode : IndustryCode.ETC;
+    }
 }

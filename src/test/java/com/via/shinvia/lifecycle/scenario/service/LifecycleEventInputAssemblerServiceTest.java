@@ -67,7 +67,8 @@ class LifecycleEventInputAssemblerServiceTest {
         when(welfareService.getSupports(
                 eq(LifecycleEventType.MARRIAGE),
                 isNull(),
-                isNull()
+                isNull(),
+                eq(10L)
         )).thenReturn(List.of(support));
         when(referenceService.getNationalAmount(
                 eq(LifecycleEventType.MARRIAGE),
@@ -126,7 +127,8 @@ class LifecycleEventInputAssemblerServiceTest {
         when(welfareService.getSupports(
                 eq(LifecycleEventType.CHILDBIRTH),
                 eq("서울특별시"),
-                eq("강남구")
+                eq("강남구"),
+                eq(10L)
         )).thenReturn(List.of(monthlySupport));
         when(referenceService.getNationalAmount(
                 eq(LifecycleEventType.CHILDBIRTH),
@@ -262,7 +264,8 @@ class LifecycleEventInputAssemblerServiceTest {
         when(welfareService.getSupports(
                 eq(LifecycleEventType.JEONSE),
                 eq("서울특별시"),
-                eq("강남구")
+                eq("강남구"),
+                eq(10L)
         )).thenReturn(List.of());
         when(referenceService.getNationalAmount(
                 eq(LifecycleEventType.JEONSE),

@@ -87,4 +87,19 @@
           AND user_id = #{userId}
           AND status != 'ARCHIVED'
     </update>
+
+    <update id="updateSimulationResult">
+        UPDATE lifecycle_scenario
+        SET result_data = CAST(#{resultJson} AS JSON),
+            status = 'COMPLETED'
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
+    </update>
+
+    <select id="findSimulationResult" resultType="java.lang.String">
+        SELECT result_data
+        FROM lifecycle_scenario
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
+    </select>
 </mapper>

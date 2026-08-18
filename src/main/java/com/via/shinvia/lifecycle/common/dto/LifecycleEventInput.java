@@ -72,5 +72,20 @@ public class LifecycleEventInput {
 
     // 해당 이벤트와 관련된 금융상품 추천 목록
     private List<LifecycleProductDto> recommendedProducts;
+
+    // 자가 보유 중 전세/월세 이사 시 기존 주택 보유 여부 (true: 보유, false: 매각)
+    private Boolean keepExistingHome;
+
+    // 대출 상환 이벤트 시 특정 대상 대출 계좌 식별자
+    private Long targetLoanAccountId;
+
+    // 대출 상환 액션 (FULL, PARTIAL 등)
+    private String repaymentAction;
+
+    // 신규 발생 대출의 희망 만기 기간(개월)
+    private Integer loanPeriodMonths;
+
+    // 신규 발생 대출의 적용 금리(%)
+    private BigDecimal loanInterestRate;
 }
 

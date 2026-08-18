@@ -27,8 +27,17 @@ public class LifecycleProductDto {
     private String institutionName;
 
     // 사용자 조건 기준 추천상태
-    // ELIGIBLE, NEEDS_CONFIRMATION 등
+    // ELIGIBLE(신청 가능), NEEDS_CONFIRMATION(확인 필요), NOT_ELIGIBLE(대상 아님)
     private String recommendationStatus;
+
+    // 적격성 판정 사유 및 충족 조건 안내
+    private String eligibilityReason;
+
+    // 출처 기관 / 데이터 출처
+    private String sourceName;
+
+    // 정보 기준일 / 갱신일시
+    private String sourceUpdatedAt;
 
     // 기존 추천엔진의 정렬용 추천점수
     private Integer recommendationScore;

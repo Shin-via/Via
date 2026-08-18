@@ -22,6 +22,7 @@ public class LifecycleProductService {
 
     private final LoanRecommendationAdapter loanRecommendationAdapter;
     private final PolicyRecommendationAdapter policyRecommendationAdapter;
+    private final LifecycleEligibilityService lifecycleEligibilityService;
 
     public List<LifecycleProductDto> getRecommendedProducts(
             Long userId,
@@ -45,8 +46,29 @@ public class LifecycleProductService {
                 EACH_SOURCE_LIMIT
         ));
 
+        var userContext = lifecycleEligibilityService != null
+                ? lifecycleEligibilityService.buildUserContext(userId, loginEmail, null, null, null)
+                : null;
+
         return deduplicate(products).stream()
                 .filter(product -> isPurposeRelevant(product, eventType))
+                .peek(product -> {
+                    String status = "ELIGIBLE";
+                    String reason = "추천 상품";
+                    if (lifecycleEligibilityService != null) {
+                        var evalResult = lifecycleEligibilityService.evaluateProduct(product, userContext);
+                        status = evalResult.status();
+                        reason = evalResult.reason();
+                    }
+                    product.setRecommendationStatus(status);
+                    product.setEligibilityReason(reason);
+                    if (product.getSourceName() == null || product.getSourceName().isBlank()) {
+                        product.setSourceName(product.getInstitutionName() != null ? product.getInstitutionName() : "금융감독원 / 서민금융진흥원");
+                    }
+                    if (product.getSourceUpdatedAt() == null) {
+                        product.setSourceUpdatedAt("2026-08-01");
+                    }
+                })
                 .limit(TOTAL_LIMIT)
                 .toList();
     }

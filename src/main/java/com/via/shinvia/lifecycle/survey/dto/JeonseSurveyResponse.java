@@ -57,6 +57,9 @@ public class JeonseSurveyResponse {
     // 아직 미정이면 null 가능
     private BigDecimal desiredLoanAmount;
 
+    // 기존 소유 주택 유지 여부
+    private Boolean keepExistingHome;
+
     // 이벤트 최초 생성일시
     private LocalDateTime createdAt;
 

@@ -428,6 +428,12 @@
         ) AS DECIMAL(19,2)
         ) AS monthly_management_fee,
 
+        CASE
+        WHEN JSON_EXTRACT(survey_data, '$.keepExistingHome') = FALSE
+        THEN FALSE
+        ELSE TRUE
+        END AS keep_existing_home,
+
         created_at,
         updated_at
 
@@ -526,6 +532,12 @@
         JSON_EXTRACT(survey_data, '$.desiredLoanAmount')
         ) AS DECIMAL(19,2)
         ) AS desired_loan_amount,
+
+        CASE
+        WHEN JSON_EXTRACT(survey_data, '$.keepExistingHome') = FALSE
+        THEN FALSE
+        ELSE TRUE
+        END AS keep_existing_home,
 
         created_at,
         updated_at

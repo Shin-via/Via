@@ -33,13 +33,48 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
             return null;
         }
 
-        // 1. 기존 주거 보증금 회수 (기존 전세/월세에서 살고 있었다면 보증금을 현금으로 환원)
-        BigDecimal previousDeposit = nvl(beforeState.getHousingAsset());
-        BigDecimal currentCash = nvl(beforeState.getCashAsset()).add(previousDeposit);
+        // 1. 기존 주택 처분 및 기존 보증금 회수 처리
+        BigDecimal currentCash = nvl(beforeState.getCashAsset());
+        BigDecimal afterRealEstateAsset = nvl(beforeState.getRealEstateAsset());
+        BigDecimal newTotalDebt = nvl(beforeState.getTotalDebt());
+        BigDecimal newDebtPayment = nvl(beforeState.getMonthlyDebtPayment());
+
+        java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> updatedLoans = new java.util.ArrayList<>();
+        if (beforeState.getLoans() != null) {
+            for (var l : beforeState.getLoans()) {
+                if (l != null) updatedLoans.add(l);
+            }
+        }
+
+        // 기존 소유 주택이 있는 경우: 매각 선택 여부 확인
+        boolean isSellingHome = Boolean.FALSE.equals(input.getKeepExistingHome()) 
+                && afterRealEstateAsset.compareTo(BigDecimal.ZERO) > 0;
+
+        if (isSellingHome) {
+            // 집 매각 -> 매각대금 현금 유입
+            currentCash = currentCash.add(afterRealEstateAsset);
+            afterRealEstateAsset = BigDecimal.ZERO;
+
+            // 기존 주담대(MORTGAGE) 완납 처리
+            var mortgageLoans = updatedLoans.stream()
+                    .filter(l -> l.getLoanType() != null && l.getLoanType().toUpperCase().contains("MORTGAGE"))
+                    .toList();
+            for (var mLoan : mortgageLoans) {
+                if (mLoan.getCurrentBalance() != null) {
+                    newTotalDebt = newTotalDebt.subtract(mLoan.getCurrentBalance()).max(BigDecimal.ZERO);
+                }
+                updatedLoans.remove(mLoan);
+            }
+        }
+
+        // 기존 임차 보증금 회수
+        BigDecimal previousDeposit = nvl(beforeState.getDepositAsset());
+        if (previousDeposit.compareTo(BigDecimal.ZERO) == 0 && nvl(beforeState.getRealEstateAsset()).compareTo(BigDecimal.ZERO) == 0) {
+            previousDeposit = nvl(beforeState.getHousingAsset());
+        }
+        currentCash = currentCash.add(previousDeposit);
 
         // 2. 신규 월세 보증금 및 월세 비용 파악
-        // estimatedCost: 신규 월세 보증금 (예: 1,000만 원)
-        // additionalMonthlyExpense: 매월 나갈 월세 + 관리비 (예: 월 70만 원)
         BigDecimal newDeposit = input.getUserRequiredAmount() != null 
                 ? input.getUserRequiredAmount() 
                 : nvl(input.getEstimatedCost());
@@ -52,8 +87,16 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
         // 3. 신규 보증금 지출 처리
         if (currentCash.compareTo(newDeposit) >= 0) {
             afterCash = currentCash.subtract(newDeposit);
-            summary = String.format("월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
-                    formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+            if (isSellingHome) {
+                summary = String.format("기존 주택을 매각하고 월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
+                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+            } else if (afterRealEstateAsset.compareTo(BigDecimal.ZERO) > 0) {
+                summary = String.format("기존 주택을 보유한 채 월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
+                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+            } else {
+                summary = String.format("월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
+                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+            }
         } else {
             fundingShortage = newDeposit.subtract(currentCash);
             afterCash = BigDecimal.ZERO;
@@ -64,8 +107,14 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
         LifecycleFinancialStateDto afterState = beforeState.toBuilder()
                 .stateDate(input.getTargetDate() != null ? input.getTargetDate() : beforeState.getStateDate())
                 .cashAsset(afterCash)
-                .housingAsset(newDeposit)                       // 보증금 자산 등록
+                .realEstateAsset(afterRealEstateAsset)          // 기존 주택 보유 or 0원
+                .depositAsset(newDeposit)                       // 월세 보증금 등록
+                .housingAsset(afterRealEstateAsset.add(newDeposit)) // 하위 호환
+                .currentHousingType("MONTHLY_RENT")             // 월세 거주 형태
+                .totalDebt(newTotalDebt)
+                .loans(updatedLoans)
                 .monthlyHousingExpense(monthlyRentAndFee)       // 매월 나갈 월 주거비(월세+관리비) 갱신
+                .monthlyDebtPayment(newDebtPayment)
                 .build();
 
         // 5. 월 저축여력 재계산 (월세가 늘어났으므로 저축여력 감소)

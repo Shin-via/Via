@@ -723,8 +723,12 @@ document.addEventListener("DOMContentLoaded", () => {
             loadReview();
         }
 
-        if (stepName === "result" && latestSimulationResult) {
-            renderSimulationResult(latestSimulationResult);
+        if (stepName === "result") {
+            if (latestSimulationResult) {
+                renderSimulationResult(latestSimulationResult);
+            } else {
+                loadSavedSimulationResult();
+            }
         }
 
         const activePanel =
@@ -1230,6 +1234,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function openEventForm(eventType) {
         selectedEventType = eventType;
         selectedEventTypes.add(eventType);
+
+        if (eventType === "repayment") {
+            loadUserLoansForRepayment();
+        }
 
         eventForms.forEach(form => {
             form.hidden = true;
@@ -2355,6 +2363,61 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
+    async function loadUserLoansForRepayment() {
+        const loanSelect = document.querySelector('select[name="loanAccountId"]');
+        if (!loanSelect) return;
+
+        try {
+            const res = await fetch("/api/lifecycle/loans", {
+                headers: { "Accept": "application/json" }
+            });
+            if (!res.ok) return;
+            const loans = await res.json();
+            if (!loans || loans.length === 0) {
+                loanSelect.innerHTML = `<option value="">보유 중인 금융 대출 없음 (고금리 대출 우선 상환)</option>`;
+                return;
+            }
+
+            const currentVal = loanSelect.value;
+            loanSelect.innerHTML = `<option value="">선택 안 함 (금리 높은 대출부터 우선 상환)</option>` +
+                loans.map(loan => {
+                    const typeLabel = {
+                        MORTGAGE: "주택담보대출",
+                        JEONSE: "전세자금대출",
+                        CREDIT: "신용대출",
+                        AUTO: "자동차대출"
+                    }[loan.loanType] ?? loan.loanType ?? "대출";
+                    const rate = loan.interestRate ? `${loan.interestRate}%` : "";
+                    const balance = loan.currentBalance ? formatCompactMoney(loan.currentBalance) : "0원";
+                    return `<option value="${loan.loanAccountId}">${escapeHtml(typeLabel)} (잔액: ${balance}, 금리: ${rate})</option>`;
+                }).join("");
+
+            if (currentVal) {
+                loanSelect.value = currentVal;
+            }
+        } catch (e) {
+            console.error("Failed to load active loans:", e);
+        }
+    }
+
+    async function loadSavedSimulationResult() {
+        if (!scenarioId) return;
+        try {
+            const res = await fetch(`/api/lifecycle/scenarios/${scenarioId}/result`, {
+                headers: { "Accept": "application/json" }
+            });
+            if (res.ok && res.status === 200) {
+                const savedResult = await res.json();
+                if (savedResult && savedResult.eventSnapshots && savedResult.eventSnapshots.length > 0) {
+                    latestSimulationResult = savedResult;
+                    renderSimulationResult(savedResult);
+                }
+            }
+        } catch (e) {
+            console.log("No saved simulation result yet.");
+        }
+    }
+
     async function runLifecycleSimulation() {
         if (!scenarioId) {
             alert("시뮬레이션할 시나리오를 먼저 선택해주세요.");
@@ -2362,7 +2425,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         runSimulationBtn.disabled = true;
-        runSimulationBtn.textContent = "계산 중...";
+        
+        // 4. 시뮬레이션 진행 단계 애니메이션
+        const steps = [
+            "1/3 기초 금융 데이터 및 자산 분석 중...",
+            "2/3 복리 소득/물가 및 생애 이벤트 전진 중...",
+            "3/3 DSR 정밀 산출 및 맞춤 상품 진단 중..."
+        ];
+        let stepIdx = 0;
+        runSimulationBtn.textContent = steps[0];
+        const stepInterval = setInterval(() => {
+            stepIdx = (stepIdx + 1) % steps.length;
+            runSimulationBtn.textContent = steps[stepIdx];
+        }, 350);
 
         try {
             const response = await fetch(
@@ -2388,8 +2463,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(error);
             alert("시뮬레이션 실행 중 오류가 발생했습니다.");
         } finally {
+            clearInterval(stepInterval);
             runSimulationBtn.disabled = false;
-            runSimulationBtn.textContent = "시뮬레이션 실행";
+            runSimulationBtn.textContent = "시뮬레이션 다시 실행";
         }
     }
 
@@ -2673,6 +2749,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </section>
 
             <section class="lifecycle-modal-block">
+                <h4>자산 및 부채 구성 (이벤트 직후)</h4>
+                <div class="lifecycle-modal-grid">
+                    ${modalMetric("자가 부동산 자산", snapshot.afterRealEstateAsset)}
+                    ${modalMetric("임차 보증금", snapshot.afterDepositAsset)}
+                    ${modalMetric("보유 현금 자산", snapshot.afterCashAsset)}
+                    ${modalMetric("총 부채 잔액", snapshot.afterTotalDebt)}
+                    ${modalMetric("최종 순자산", snapshot.afterNetAsset)}
+                    ${modalPlainMetric("직후 DSR", formatPercent(snapshot.afterDsr))}
+                </div>
+            </section>
+
+            <section class="lifecycle-modal-block">
                 <h4>재무상태 변화</h4>
                 <div class="lifecycle-modal-grid">
                     ${modalMetric("현금 변화", snapshot.cashAssetChange)}
@@ -2774,19 +2862,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return `
             <div class="lifecycle-recommendation-list">
-                ${supports.map(support => `
-                    <article class="lifecycle-recommendation-item">
-                        <strong>${escapeHtml(support.supportName ?? "복지 지원")}</strong>
-                        <p>
-                            ${escapeHtml(support.sourceName ?? "출처 확인 필요")}
-                            · ${escapeHtml(support.recommendationStatus ?? "확인 필요")}
-                        </p>
-                        <span>${escapeHtml(support.effectType ?? "-")} · ${formatMoney(support.amount)}원</span>
-                        ${support.sourceUrl
-            ? `<a href="${escapeHtml(support.sourceUrl)}" target="_blank" rel="noopener">출처 보기</a>`
-            : ""}
-                    </article>
-                `).join("")}
+                ${supports.map(support => {
+                    const status = support.recommendationStatus ?? "NEEDS_CONFIRMATION";
+                    const statusClass = status.toLowerCase().replace(/_/g, "-");
+                    const statusLabel = {
+                        ELIGIBLE: "신청 가능",
+                        NEEDS_CONFIRMATION: "확인 필요",
+                        NOT_ELIGIBLE: "대상 아님"
+                    }[status] ?? status;
+
+                    const dateText = support.sourceUpdatedAt ? `기준일: ${escapeHtml(support.sourceUpdatedAt)}` : "";
+                    const reasonText = support.eligibilityReason ? `<div class="lifecycle-eligibility-reason">${escapeHtml(support.eligibilityReason)}</div>` : "";
+
+                    return `
+                        <article class="lifecycle-recommendation-item">
+                            <div class="lifecycle-recommendation-header">
+                                <strong>${escapeHtml(support.supportName ?? "복지 지원")}</strong>
+                                <span class="lifecycle-status-badge ${escapeHtml(statusClass)}">${escapeHtml(statusLabel)}</span>
+                            </div>
+                            <p class="lifecycle-source-meta">
+                                <span>${escapeHtml(support.sourceName ?? "복지로 / 서민금융진흥원")}</span>
+                                ${dateText ? `<span>· ${dateText}</span>` : ""}
+                            </p>
+                            ${reasonText}
+                            <span class="lifecycle-benefit-tag">${escapeHtml(support.effectType ?? "-")}${support.amount ? ` · ${formatMoney(support.amount)}원` : ""}</span>
+                            ${support.sourceUrl
+                                ? `<a href="${escapeHtml(support.sourceUrl)}" target="_blank" rel="noopener" class="lifecycle-link-btn">출처 보기</a>`
+                                : ""}
+                        </article>
+                    `;
+                }).join("")}
             </div>
         `;
     }
@@ -2798,22 +2903,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return `
             <div class="lifecycle-recommendation-list">
-                ${products.map(product => `
-                    <article class="lifecycle-recommendation-item">
-                        <strong>${escapeHtml(product.productName ?? "금융상품")}</strong>
-                        <p>
-                            ${escapeHtml(product.institutionName ?? "기관 정보 없음")}
-                            · ${escapeHtml(product.productType ?? "-")}
-                        </p>
-                        <span>
-                            ${escapeHtml(product.interestRate ?? "금리 정보 없음")}
-                            · ${escapeHtml(product.loanLimit ?? "한도 정보 없음")}
-                        </span>
-                        ${product.relatedUrl
-            ? `<a href="${escapeHtml(product.relatedUrl)}" target="_blank" rel="noopener">상품 보기</a>`
-            : ""}
-                    </article>
-                `).join("")}
+                ${products.map(product => {
+                    const status = product.recommendationStatus ?? "ELIGIBLE";
+                    const statusClass = status.toLowerCase().replace(/_/g, "-");
+                    const statusLabel = {
+                        ELIGIBLE: "신청 가능",
+                        NEEDS_CONFIRMATION: "확인 필요",
+                        NOT_ELIGIBLE: "대상 아님"
+                    }[status] ?? status;
+
+                    const dateText = product.sourceUpdatedAt ? `기준일: ${escapeHtml(product.sourceUpdatedAt)}` : "";
+                    const reasonText = product.eligibilityReason ? `<div class="lifecycle-eligibility-reason">${escapeHtml(product.eligibilityReason)}</div>` : "";
+
+                    return `
+                        <article class="lifecycle-recommendation-item">
+                            <div class="lifecycle-recommendation-header">
+                                <strong>${escapeHtml(product.productName ?? "금융상품")}</strong>
+                                <span class="lifecycle-status-badge ${escapeHtml(statusClass)}">${escapeHtml(statusLabel)}</span>
+                            </div>
+                            <p class="lifecycle-source-meta">
+                                <span>${escapeHtml(product.institutionName ?? product.sourceName ?? "금융기관")}</span>
+                                <span>· ${escapeHtml(product.productType ?? "-")}</span>
+                                ${dateText ? `<span>· ${dateText}</span>` : ""}
+                            </p>
+                            ${reasonText}
+                            <div class="lifecycle-product-terms">
+                                <span>금리: <strong>${escapeHtml(product.interestRate ?? "상담 후 결정")}</strong></span>
+                                <span>한도: <strong>${escapeHtml(product.loanLimit ?? "-")}</strong></span>
+                            </div>
+                            ${product.relatedUrl
+                                ? `<a href="${escapeHtml(product.relatedUrl)}" target="_blank" rel="noopener" class="lifecycle-link-btn">상품 보기</a>`
+                                : ""}
+                        </article>
+                    `;
+                }).join("")}
             </div>
         `;
     }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 
 /**
  * [대출 상환 이벤트 계산기]
@@ -20,9 +21,11 @@ import java.text.DecimalFormat;
  */
 @Slf4j
 @Component
+@lombok.RequiredArgsConstructor
 public class RepaymentEventCalculator implements LifecycleEventCalculator {
 
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,###");
+    private final com.via.shinvia.loan.ratesimulation.common.service.LoanRepaymentCalculator loanRepaymentCalculator;
 
     @Override
     public LifecycleEventType getEventType() {
@@ -37,9 +40,8 @@ public class RepaymentEventCalculator implements LifecycleEventCalculator {
 
         BigDecimal beforeCash = nvl(beforeState.getCashAsset());
         BigDecimal beforeDebt = nvl(beforeState.getTotalDebt());
-        BigDecimal beforePayment = nvl(beforeState.getMonthlyDebtPayment());
 
-        // 사용자가 상환하고자 하는 희망 금액 (예: 2,000만 원)
+        // 사용자가 상환하고자 하는 희망 금액
         BigDecimal targetRepayAmount = input.getUserRequiredAmount() != null 
                 ? input.getUserRequiredAmount() 
                 : nvl(input.getEstimatedCost());
@@ -66,17 +68,63 @@ public class RepaymentEventCalculator implements LifecycleEventCalculator {
                     formatMoney(actualRepaidAmount), formatMoney(fundingShortage));
         }
 
-        // 2. 부채 잔액 감소
-        BigDecimal afterTotalDebt = beforeDebt.subtract(actualRepaidAmount).max(BigDecimal.ZERO);
+        // 2. 보유 대출 목록에서 특정 대출 차감 또는 금리 높은 순 차감
+        java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> updatedLoans = new java.util.ArrayList<>();
+        if (beforeState.getLoans() != null) {
+            for (var l : beforeState.getLoans()) {
+                if (l != null) updatedLoans.add(l);
+            }
+        }
 
-        // 3. 월 대출 상환액 비율 축소 (전액 상환 시 0원)
+        BigDecimal remainingToRepay = actualRepaidAmount;
+        Long targetLoanId = input.getTargetLoanAccountId();
+
+        if (targetLoanId != null && !updatedLoans.isEmpty()) {
+            // 특정 대출 지정 상환
+            for (int i = 0; i < updatedLoans.size(); i++) {
+                var loan = updatedLoans.get(i);
+                if (targetLoanId.equals(loan.getLoanAccountId())) {
+                    BigDecimal balance = nvl(loan.getCurrentBalance());
+                    if (remainingToRepay.compareTo(balance) >= 0) {
+                        remainingToRepay = remainingToRepay.subtract(balance);
+                        updatedLoans.remove(i);
+                    } else {
+                        loan.setCurrentBalance(balance.subtract(remainingToRepay));
+                        remainingToRepay = BigDecimal.ZERO;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // 특정 대출로 다 못 갚았거나 지정되지 않았으면 금리 높은 순 차감
+        if (remainingToRepay.compareTo(BigDecimal.ZERO) > 0 && !updatedLoans.isEmpty()) {
+            updatedLoans.sort((a, b) -> nvl(b.getInterestRate()).compareTo(nvl(a.getInterestRate())));
+            var it = updatedLoans.iterator();
+            while (it.hasNext() && remainingToRepay.compareTo(BigDecimal.ZERO) > 0) {
+                var loan = it.next();
+                BigDecimal balance = nvl(loan.getCurrentBalance());
+                if (remainingToRepay.compareTo(balance) >= 0) {
+                    remainingToRepay = remainingToRepay.subtract(balance);
+                    it.remove();
+                } else {
+                    loan.setCurrentBalance(balance.subtract(remainingToRepay));
+                    remainingToRepay = BigDecimal.ZERO;
+                }
+            }
+        }
+
+        // 3. 부채 잔액 및 월 상환액 재계산
+        BigDecimal afterTotalDebt = beforeDebt.subtract(actualRepaidAmount).max(BigDecimal.ZERO);
         BigDecimal afterDebtPayment;
-        if (afterTotalDebt.compareTo(BigDecimal.ZERO) == 0 || beforeDebt.compareTo(BigDecimal.ZERO) == 0) {
+
+        if (!updatedLoans.isEmpty()) {
+            afterDebtPayment = calculateLoansMonthlyPayment(updatedLoans, input.getTargetDate());
+        } else if (afterTotalDebt.compareTo(BigDecimal.ZERO) == 0 || beforeDebt.compareTo(BigDecimal.ZERO) == 0) {
             afterDebtPayment = BigDecimal.ZERO;
         } else {
-            // 남은 빚 비율만큼 월 상환액 축소: beforePayment * (afterTotalDebt / beforeDebt)
             BigDecimal remainingRatio = afterTotalDebt.divide(beforeDebt, 6, RoundingMode.HALF_UP);
-            afterDebtPayment = beforePayment.multiply(remainingRatio).setScale(0, RoundingMode.HALF_UP);
+            afterDebtPayment = nvl(beforeState.getMonthlyDebtPayment()).multiply(remainingRatio).setScale(0, RoundingMode.HALF_UP);
         }
 
         // 4. 이벤트 직후 재정 상태(afterState) 생성
@@ -84,6 +132,7 @@ public class RepaymentEventCalculator implements LifecycleEventCalculator {
                 .stateDate(input.getTargetDate() != null ? input.getTargetDate() : beforeState.getStateDate())
                 .cashAsset(afterCash)
                 .totalDebt(afterTotalDebt)
+                .loans(updatedLoans)
                 .monthlyDebtPayment(afterDebtPayment)
                 .build();
 
@@ -108,6 +157,22 @@ public class RepaymentEventCalculator implements LifecycleEventCalculator {
                 .fundingShortage(fundingShortage)
                 .summary(summary)
                 .build();
+    }
+
+    private BigDecimal calculateLoansMonthlyPayment(java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> loans, LocalDate baseDate) {
+        if (loans == null || loans.isEmpty()) return BigDecimal.ZERO;
+        BigDecimal sum = BigDecimal.ZERO;
+        for (var loan : loans) {
+            if (loan.getCurrentBalance() == null || loan.getCurrentBalance().compareTo(BigDecimal.ZERO) <= 0) continue;
+            BigDecimal ratePercent = loan.getInterestRate() != null ? loan.getInterestRate().multiply(BigDecimal.valueOf(100)) : new BigDecimal("4.0");
+            try {
+                var res = loanRepaymentCalculator.calculate(loan.getCurrentBalance(), ratePercent, 60, loan.getRepaymentType() != null ? loan.getRepaymentType() : "만기일시상환");
+                if (res != null && res.monthlyPayment() != null) sum = sum.add(res.monthlyPayment());
+            } catch (Exception ignored) {
+                sum = sum.add(loan.getCurrentBalance().multiply(new BigDecimal("0.04")).divide(BigDecimal.valueOf(12), 0, RoundingMode.HALF_UP));
+            }
+        }
+        return sum;
     }
 
     private String formatMoney(BigDecimal amount) {

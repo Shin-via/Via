@@ -34,12 +34,18 @@ public class LifecycleSupportDto {
     private Integer durationMonths;
 
     // 사용자 조건 기준 추천 상태
-    // 예: ELIGIBLE, NEEDS_CONFIRMATION, INELIGIBLE
+    // 예: ELIGIBLE(신청 가능), NEEDS_CONFIRMATION(확인 필요), NOT_ELIGIBLE(대상 아님)
     private String recommendationStatus;
 
+    // 적격성 판정 사유 및 충족 조건 안내
+    private String eligibilityReason;
+
     // 지원정보 출처기관
-    // 예: 보건복지부, 복지로
+    // 예: 보건복지부, 복지로, 서민금융진흥원
     private String sourceName;
+
+    // 정보 기준일 / 갱신일시
+    private String sourceUpdatedAt;
 
     // 지원정보 원문 URL
     private String sourceUrl;

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 
 /**
  * [주택구매 이벤트 계산기]
@@ -40,8 +41,11 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
             return null;
         }
 
-        // 1. 기존 주거 보증금 전액 회수 (현금으로 전환)
-        BigDecimal previousDeposit = nvl(beforeState.getHousingAsset());
+        // 1. 기존 임차 보증금 전액 회수 (현금으로 전환)
+        BigDecimal previousDeposit = nvl(beforeState.getDepositAsset());
+        if (previousDeposit.compareTo(BigDecimal.ZERO) == 0 && nvl(beforeState.getRealEstateAsset()).compareTo(BigDecimal.ZERO) == 0) {
+            previousDeposit = nvl(beforeState.getHousingAsset());
+        }
         BigDecimal currentCash = nvl(beforeState.getCashAsset()).add(previousDeposit);
 
         // 2. 주택 매매 총액, 자기자금, 주담대, 관리비 파악
@@ -59,46 +63,70 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
         // 3. 자기자금 지출 처리 및 부족자금 계산
         if (currentCash.compareTo(requiredCash) >= 0) {
             afterCash = currentCash.subtract(requiredCash);
-            summary = String.format("주택구매 자기자금 %s원 투입 및 주택 취득이 완료되었습니다.", formatMoney(requiredCash));
+            summary = String.format("주택구매 자기자금 %s원 투입 및 내 집 마련이 완료되었습니다.", formatMoney(requiredCash));
         } else {
             fundingShortage = requiredCash.subtract(currentCash);
             afterCash = BigDecimal.ZERO;
             summary = String.format("주택구매 시 자기자금이 약 %s원 부족합니다.", formatMoney(fundingShortage));
         }
 
-        // 4. 주택담보대출 발생 처리 (30년/360개월, 연 4.2% 원리금균등분할상환 가정)
+        // 4. 주택담보대출 발생 처리 (기본 30년/360개월, 연 4.2% 원리금균등분할상환)
         BigDecimal newTotalDebt = nvl(beforeState.getTotalDebt());
         BigDecimal newDebtPayment = nvl(beforeState.getMonthlyDebtPayment());
+        java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> updatedLoans = new java.util.ArrayList<>();
+        if (beforeState.getLoans() != null) {
+            for (var l : beforeState.getLoans()) {
+                if (l != null) updatedLoans.add(l);
+            }
+        }
 
         if (mortgageLoanAmount.compareTo(BigDecimal.ZERO) > 0) {
             newTotalDebt = newTotalDebt.add(mortgageLoanAmount);
+            int periodMonths = input.getLoanPeriodMonths() != null ? input.getLoanPeriodMonths() : 360;
+            BigDecimal rate = input.getLoanInterestRate() != null ? input.getLoanInterestRate() : new BigDecimal("4.2");
+
             try {
                 var calcResult = loanRepaymentCalculator.calculate(
                         mortgageLoanAmount,
-                        new BigDecimal("4.2"), // 주담대 평균 금리 4.2%
-                        360,                   // 30년 (360개월)
+                        rate,
+                        periodMonths,
                         "원리금균등상환"
                 );
                 if (calcResult != null && calcResult.monthlyPayment() != null) {
                     newDebtPayment = newDebtPayment.add(calcResult.monthlyPayment());
                 }
             } catch (Exception e) {
-                // 폴백: 360개월 단순 분할 + 이자
-                BigDecimal monthlyPrincipal = mortgageLoanAmount.divide(BigDecimal.valueOf(360), 0, RoundingMode.HALF_UP);
-                BigDecimal monthlyInterest = mortgageLoanAmount.multiply(new BigDecimal("0.042"))
+                // 폴백: 단순 분할 + 이자
+                BigDecimal monthlyPrincipal = mortgageLoanAmount.divide(BigDecimal.valueOf(periodMonths), 0, RoundingMode.HALF_UP);
+                BigDecimal monthlyInterest = mortgageLoanAmount.multiply(rate.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP))
                         .divide(BigDecimal.valueOf(12), 0, RoundingMode.HALF_UP);
                 newDebtPayment = newDebtPayment.add(monthlyPrincipal).add(monthlyInterest);
             }
+
+            LocalDate eventDate = input.getTargetDate() != null ? input.getTargetDate() : LocalDate.now();
+            updatedLoans.add(com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto.builder()
+                    .loanAccountId(System.currentTimeMillis())
+                    .loanType("MORTGAGE")
+                    .currentBalance(mortgageLoanAmount)
+                    .interestRate(rate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP))
+                    .rateType("FIXED")
+                    .repaymentType("원리금균등상환")
+                    .maturityAt(eventDate.plusMonths(periodMonths))
+                    .build());
         }
 
         // 5. 이벤트 직후 재정 상태(afterState) 생성
         LifecycleFinancialStateDto afterState = beforeState.toBuilder()
                 .stateDate(input.getTargetDate() != null ? input.getTargetDate() : beforeState.getStateDate())
                 .cashAsset(afterCash)
-                .housingAsset(homePrice)                      // 매매 주택가격을 내 자산으로 등록
+                .realEstateAsset(homePrice)                   // 자가 주택 부동산 자산 등록
+                .depositAsset(BigDecimal.ZERO)                // 임차 보증금은 0원
+                .housingAsset(homePrice)                      // 하위 호환
+                .currentHousingType("OWN")                    // 자가로 전환
                 .totalDebt(newTotalDebt)                      // 주담대 부채 등록
+                .loans(updatedLoans)                          // 대출 목록 갱신
                 .monthlyHousingExpense(monthlyMaintenanceFee) // 아파트 관리비로 갱신
-                .monthlyDebtPayment(newDebtPayment)           // 30년 주담대 상환액 반영
+                .monthlyDebtPayment(newDebtPayment)           // 주담대 상환액 반영
                 .build();
 
         // 6. 월 저축여력 및 DSR 재계산
