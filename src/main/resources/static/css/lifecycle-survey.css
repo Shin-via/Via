@@ -1085,9 +1085,21 @@
         margin-bottom: 16px;
     }
 
+    .lifecycle-profile-value-guide {
+        display: block;
+        margin-top: 7px;
+        color: #4776ac;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .lifecycle-profile-value-guide.is-empty {
+        color: #8a6418;
+    }
+
     .lifecycle-simulation-summary {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 16px;
     }
@@ -1110,8 +1122,258 @@
     .lifecycle-simulation-summary strong {
         display: block;
         color: #1f2935;
-        font-size: 15px;
+        overflow-wrap: anywhere;
+        font-size: clamp(14px, 1.3vw, 17px);
+        line-height: 1.4;
         word-break: keep-all;
+    }
+
+    .lifecycle-asset-journey {
+        margin: 22px 0;
+        padding: 24px;
+        overflow: hidden;
+        border: 1px solid #d8e3ef;
+        border-radius: 16px;
+        background: linear-gradient(155deg, #f7fbff 0%, #fff 58%);
+    }
+
+    .lifecycle-journey-heading,
+    .lifecycle-chart-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .lifecycle-journey-heading h4 {
+        margin: 0;
+        color: #17283d;
+        font-size: 20px;
+    }
+
+    .lifecycle-journey-heading p,
+    .lifecycle-chart-heading span {
+        margin: 0;
+        color: #718096;
+        font-size: 12px;
+    }
+
+    .lifecycle-asset-timeline {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+        margin: 26px 0 24px;
+        overflow-x: auto;
+    }
+
+    .lifecycle-journey-point {
+        position: relative;
+        min-width: 132px;
+        padding: 0 10px;
+        text-align: center;
+    }
+
+    .lifecycle-journey-point::before {
+        position: absolute;
+        z-index: 0;
+        top: 37px;
+        right: 50%;
+        width: 100%;
+        height: 3px;
+        background: #cbd9e8;
+        content: "";
+    }
+
+    .lifecycle-journey-point:first-child::before {
+        display: none;
+    }
+
+    .lifecycle-journey-point time {
+        display: block;
+        margin-bottom: 10px;
+        color: #536b85;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .lifecycle-journey-dot {
+        position: relative;
+        z-index: 1;
+        width: 15px;
+        height: 15px;
+        margin: 0 auto 12px;
+        border: 4px solid #fff;
+        border-radius: 50%;
+        background: #3778bd;
+        box-shadow: 0 0 0 2px #3778bd;
+    }
+
+    .lifecycle-journey-point.is-current .lifecycle-journey-dot {
+        background: #1e3f66;
+        box-shadow: 0 0 0 2px #1e3f66;
+    }
+
+    .lifecycle-journey-point strong,
+    .lifecycle-journey-point b,
+    .lifecycle-journey-point small {
+        display: block;
+    }
+
+    .lifecycle-journey-point strong {
+        color: #27384c;
+        font-size: 13px;
+    }
+
+    .lifecycle-journey-point b {
+        margin-top: 5px;
+        color: #205b96;
+        font-size: 15px;
+    }
+
+    .lifecycle-journey-point small {
+        margin-top: 7px;
+        color: #7a8795;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .lifecycle-asset-chart-card {
+        padding: 20px 20px 12px;
+        border: 1px solid #e0e7ef;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .lifecycle-event-cost-card {
+        margin-top: 14px;
+        padding-bottom: 20px;
+    }
+
+    .lifecycle-event-cost-chart {
+        display: grid;
+        gap: 15px;
+        margin-top: 22px;
+    }
+
+    .lifecycle-cost-row {
+        display: grid;
+        grid-template-columns: minmax(100px, 150px) minmax(0, 1fr);
+        align-items: center;
+        gap: 16px;
+    }
+
+    .lifecycle-cost-label strong,
+    .lifecycle-cost-label time {
+        display: block;
+    }
+
+    .lifecycle-cost-label strong {
+        color: #2c3e52;
+        font-size: 13px;
+    }
+
+    .lifecycle-cost-label time {
+        margin-top: 3px;
+        color: #8290a0;
+        font-size: 11px;
+    }
+
+    .lifecycle-cost-track {
+        height: 12px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #edf1f5;
+    }
+
+    .lifecycle-cost-track span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #efb168, #e47e5d);
+    }
+
+    .lifecycle-cost-values {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 7px;
+    }
+
+    .lifecycle-cost-values b,
+    .lifecycle-cost-values em {
+        font-size: 11px;
+        font-style: normal;
+    }
+
+    .lifecycle-cost-values b {
+        color: #9a573f;
+    }
+
+    .lifecycle-cost-values em {
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: #edf7f1;
+        color: #28714b;
+        font-weight: 750;
+    }
+
+    .lifecycle-cost-values em.is-negative {
+        background: #fff0ed;
+        color: #b24f42;
+    }
+
+    .lifecycle-chart-heading strong {
+        color: #27384c;
+        font-size: 15px;
+    }
+
+    .lifecycle-asset-chart {
+        min-height: 250px;
+        margin-top: 12px;
+        overflow-x: auto;
+    }
+
+    .lifecycle-asset-chart svg {
+        display: block;
+        width: 100%;
+        min-width: 620px;
+        height: auto;
+    }
+
+    .lifecycle-chart-grid line {
+        stroke: #e4ebf2;
+        stroke-dasharray: 4 5;
+    }
+
+    .lifecycle-chart-grid text,
+    .lifecycle-chart-year {
+        fill: #7b8794;
+        font-size: 11px;
+    }
+
+    .lifecycle-chart-area {
+        fill: url(#none);
+        fill: rgba(67, 133, 198, .10);
+    }
+
+    .lifecycle-chart-line {
+        fill: none;
+        stroke: #3478bb;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 4;
+    }
+
+    .lifecycle-chart-marker circle {
+        fill: #fff;
+        stroke: #3478bb;
+        stroke-width: 4;
+    }
+
+    .lifecycle-chart-value {
+        fill: #205b96;
+        font-size: 11px;
+        font-weight: 800;
     }
 
     .lifecycle-simulation-snapshots {
@@ -1349,7 +1611,8 @@
         }
 
         .lifecycle-simulation-heading,
-        .lifecycle-snapshot-modal-header {
+        .lifecycle-snapshot-modal-header,
+        .lifecycle-journey-heading {
             align-items: stretch;
             flex-direction: column;
         }
@@ -1360,5 +1623,25 @@
 
         .lifecycle-simulation-section {
             padding: 20px;
+        }
+
+        .lifecycle-asset-journey {
+            padding: 18px 14px;
+        }
+
+        .lifecycle-asset-timeline {
+            display: flex;
+            padding-bottom: 8px;
+        }
+
+        .lifecycle-cost-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .lifecycle-cost-values {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 6px;
         }
     }
