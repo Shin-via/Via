@@ -665,9 +665,20 @@
                     <div class="lifecycle-input-unit">
                         <input type="text"
                                id="simulationLiquidAssetAmount"
-                               value="15,000,000">
+                               th:value="${financialProfile != null and financialProfile.liquidAssetAmount != null
+                                   ? #numbers.formatDecimal(financialProfile.liquidAssetAmount, 1, 0, 'COMMA')
+                                   : '15,000,000'}"
+                               inputmode="numeric">
                         <span>원</span>
                     </div>
+                    <small class="lifecycle-profile-value-guide"
+                           th:if="${financialProfile != null and financialProfile.liquidAssetAmount != null}">
+                        금융프로필에서 불러온 값입니다. 시뮬레이션 전에 바로 수정할 수 있습니다.
+                    </small>
+                    <small class="lifecycle-profile-value-guide is-empty"
+                           th:unless="${financialProfile != null and financialProfile.liquidAssetAmount != null}">
+                        금융프로필 값이 없어 기본값이 표시되었습니다. 현재 금액으로 수정해 주세요.
+                    </small>
                 </div>
 
                 <div class="lifecycle-form-group">
@@ -691,6 +702,40 @@
             <div id="lifecycleSimulationSummary"
                  class="lifecycle-simulation-summary"
                  hidden></div>
+
+            <section id="lifecycleAssetJourney"
+                     class="lifecycle-asset-journey"
+                     aria-label="생애주기 자산 변화"
+                     hidden>
+                <div class="lifecycle-journey-heading">
+                    <div>
+                        <span class="lifecycle-result-eyebrow">ASSET JOURNEY</span>
+                        <h4>내 자산의 변화</h4>
+                    </div>
+                    <p>생활 이벤트 전후의 순자산 흐름을 한눈에 확인하세요.</p>
+                </div>
+
+                <div id="lifecycleAssetTimeline"
+                     class="lifecycle-asset-timeline"></div>
+
+                <div class="lifecycle-asset-chart-card">
+                    <div class="lifecycle-chart-heading">
+                        <strong>순자산 변화</strong>
+                        <span>이벤트 실행 후 기준</span>
+                    </div>
+                    <div id="lifecycleAssetChart"
+                         class="lifecycle-asset-chart"></div>
+                </div>
+
+                <div class="lifecycle-asset-chart-card lifecycle-event-cost-card">
+                    <div class="lifecycle-chart-heading">
+                        <strong>이벤트 비용 충격</strong>
+                        <span>이벤트 당일의 지출과 순자산 변화를 비교합니다.</span>
+                    </div>
+                    <div id="lifecycleEventCostChart"
+                         class="lifecycle-event-cost-chart"></div>
+                </div>
+            </section>
 
             <div id="lifecycleSimulationSnapshots"
                  class="lifecycle-simulation-snapshots"

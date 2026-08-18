@@ -2302,6 +2302,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const simulationSnapshots =
         document.getElementById("lifecycleSimulationSnapshots");
 
+    const assetJourney =
+        document.getElementById("lifecycleAssetJourney");
+
+    const assetTimeline =
+        document.getElementById("lifecycleAssetTimeline");
+
+    const assetChart =
+        document.getElementById("lifecycleAssetChart");
+
+    const eventCostChart =
+        document.getElementById("lifecycleEventCostChart");
+
     const snapshotModal =
         document.getElementById("lifecycleSnapshotModal");
 
@@ -2393,19 +2405,15 @@ document.addEventListener("DOMContentLoaded", () => {
             simulationSummary.innerHTML = `
                 <article>
                     <span>최종 순자산</span>
-                    <strong>${formatMoney(result.finalNetAsset)}원</strong>
+                    <strong>${formatApproxMoney(result.finalNetAsset)}</strong>
                 </article>
                 <article>
                     <span>순자산 변화</span>
-                    <strong>${formatMoney(result.netAssetChange)}원</strong>
+                    <strong>${formatApproxMoney(result.netAssetChange)}</strong>
                 </article>
                 <article>
                     <span>총 이벤트 비용</span>
-                    <strong>${formatMoney(result.totalEventCost)}원</strong>
-                </article>
-                <article>
-                    <span>총 지원 혜택</span>
-                    <strong>${formatMoney(result.totalSupportBenefit)}원</strong>
+                    <strong>${formatApproxMoney(result.totalEventCost)}</strong>
                 </article>
                 <article>
                     <span>최종 DSR</span>
@@ -2413,6 +2421,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </article>
             `;
         }
+
+        renderAssetJourney(result, snapshots);
 
         if (simulationSnapshots) {
             simulationSnapshots.hidden = snapshots.length === 0;
@@ -2430,6 +2440,175 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 });
         }
+    }
+
+    function renderAssetJourney(result, snapshots) {
+        if (!assetJourney || !assetTimeline || !assetChart || !eventCostChart) {
+            return;
+        }
+
+        assetJourney.hidden = snapshots.length === 0;
+        if (snapshots.length === 0) {
+            assetTimeline.innerHTML = "";
+            assetChart.innerHTML = "";
+            eventCostChart.innerHTML = "";
+            return;
+        }
+
+        const baseDate = result.initialState?.baseDate
+            ?? new Date().toISOString().substring(0, 10);
+        const points = [{
+            date: baseDate,
+            label: "현재",
+            netAsset: Number(result.initialNetAsset ?? 0),
+            eventCost: 0,
+            newLoanAmount: 0
+        }, ...snapshots.map(snapshot => ({
+            date: snapshot.eventDate,
+            label: eventTypeLabel(snapshot.eventType),
+            netAsset: Number(snapshot.afterNetAsset ?? 0),
+            eventCost: Number(snapshot.eventCost ?? 0),
+            newLoanAmount: Number(snapshot.newLoanAmount ?? 0)
+        }))];
+
+        assetTimeline.innerHTML = points.map((point, index) => {
+            const detail = index === 0
+                ? "시뮬레이션 시작"
+                : buildJourneyDetail(point);
+            return `
+                <article class="lifecycle-journey-point ${index === 0 ? "is-current" : ""}">
+                    <time>${escapeHtml(journeyYear(point.date))}</time>
+                    <div class="lifecycle-journey-dot" aria-hidden="true"></div>
+                    <strong>${escapeHtml(point.label)}</strong>
+                    <b>${escapeHtml(formatCompactMoney(point.netAsset))}</b>
+                    <small>${escapeHtml(detail)}</small>
+                </article>
+            `;
+        }).join("");
+
+        assetChart.innerHTML = buildAssetChart(points);
+        eventCostChart.innerHTML = buildEventCostChart(snapshots);
+    }
+
+    function buildEventCostChart(snapshots) {
+        const costs = snapshots.map(snapshot => Math.max(0, Number(snapshot.eventCost ?? 0)));
+        const maxCost = Math.max(...costs, 1);
+
+        return snapshots.map((snapshot, index) => {
+            const cost = costs[index];
+            const immediateChange = Number(snapshot.afterNetAsset ?? 0)
+                - Number(snapshot.beforeNetAsset ?? 0);
+            const width = cost === 0 ? 0 : Math.max(4, cost / maxCost * 100);
+            const impactClass = immediateChange < 0 ? "is-negative" : "is-positive";
+            const impactLabel = immediateChange < 0
+                ? `순자산 ${formatCompactMoney(immediateChange)}`
+                : `순자산 +${formatCompactMoney(immediateChange)}`;
+
+            return `
+                <article class="lifecycle-cost-row">
+                    <div class="lifecycle-cost-label">
+                        <strong>${escapeHtml(eventTypeLabel(snapshot.eventType))}</strong>
+                        <time>${escapeHtml(formatEventDate(snapshot.eventDate))}</time>
+                    </div>
+                    <div class="lifecycle-cost-visual">
+                        <div class="lifecycle-cost-track" aria-hidden="true">
+                            <span style="width: ${width.toFixed(1)}%"></span>
+                        </div>
+                        <div class="lifecycle-cost-values">
+                            <b>지출 ${escapeHtml(formatApproxMoney(cost))}</b>
+                            <em class="${impactClass}">${escapeHtml(impactLabel)}</em>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join("");
+    }
+
+    function buildJourneyDetail(point) {
+        const details = [];
+        if (point.eventCost > 0) {
+            details.push(`비용 ${formatCompactMoney(point.eventCost)}`);
+        }
+        if (point.newLoanAmount > 0) {
+            details.push(`대출 ${formatCompactMoney(point.newLoanAmount)}`);
+        }
+        return details.join(" · ") || "자산 변화 반영";
+    }
+
+    function buildAssetChart(points) {
+        const width = 920;
+        const height = 280;
+        const padding = {top: 28, right: 28, bottom: 48, left: 72};
+        const values = points.map(point => point.netAsset);
+        const rawMin = Math.min(0, ...values);
+        const rawMax = Math.max(0, ...values);
+        const range = Math.max(rawMax - rawMin, 10000000);
+        const min = rawMin - range * .12;
+        const max = rawMax + range * .12;
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+        const x = index => padding.left + (
+            points.length === 1 ? chartWidth / 2 : chartWidth * index / (points.length - 1)
+        );
+        const y = value => padding.top + (max - value) / (max - min) * chartHeight;
+        const path = points.map((point, index) =>
+            `${index === 0 ? "M" : "L"} ${x(index).toFixed(1)} ${y(point.netAsset).toFixed(1)}`
+        ).join(" ");
+        const area = `${path} L ${x(points.length - 1).toFixed(1)} ${(padding.top + chartHeight).toFixed(1)} L ${x(0).toFixed(1)} ${(padding.top + chartHeight).toFixed(1)} Z`;
+        const grid = [0, 1, 2, 3].map(index => {
+            const value = max - (max - min) * index / 3;
+            const py = y(value);
+            return `
+                <line x1="${padding.left}" y1="${py}" x2="${width - padding.right}" y2="${py}" />
+                <text x="${padding.left - 12}" y="${py + 4}" text-anchor="end">${escapeHtml(formatAxisMoney(value))}</text>
+            `;
+        }).join("");
+        const markers = points.map((point, index) => `
+            <g class="lifecycle-chart-marker">
+                <circle cx="${x(index)}" cy="${y(point.netAsset)}" r="6" />
+                <text class="lifecycle-chart-value" x="${x(index)}" y="${y(point.netAsset) - 14}" text-anchor="middle">${escapeHtml(formatCompactMoney(point.netAsset))}</text>
+                <text class="lifecycle-chart-year" x="${x(index)}" y="${height - 17}" text-anchor="middle">${escapeHtml(journeyYear(point.date))}</text>
+            </g>
+        `).join("");
+
+        return `
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="연도별 순자산 변화 차트">
+                <g class="lifecycle-chart-grid">${grid}</g>
+                <path class="lifecycle-chart-area" d="${area}" />
+                <path class="lifecycle-chart-line" d="${path}" />
+                ${markers}
+            </svg>
+        `;
+    }
+
+    function journeyYear(dateValue) {
+        const year = String(dateValue ?? "").substring(0, 4);
+        return /^\d{4}$/.test(year) ? year : "현재";
+    }
+
+    function formatCompactMoney(value) {
+        const amount = Number(value ?? 0);
+        const sign = amount < 0 ? "-" : "";
+        const absolute = Math.abs(amount);
+        const eok = Math.floor(absolute / 100000000);
+        const remainder = absolute % 100000000;
+        const man = Math.round(remainder / 10000);
+        if (eok > 0 && man > 0) return `${sign}${eok}억 ${man.toLocaleString("ko-KR")}만원`;
+        if (eok > 0) return `${sign}${eok}억원`;
+        if (man > 0) return `${sign}${man.toLocaleString("ko-KR")}만원`;
+        return "0원";
+    }
+
+    function formatApproxMoney(value) {
+        return `약 ${formatCompactMoney(value)}`;
+    }
+
+    function formatAxisMoney(value) {
+        const amount = Number(value ?? 0);
+        if (Math.abs(amount) >= 100000000) {
+            return `${(amount / 100000000).toFixed(1).replace(".0", "")}억`;
+        }
+        return `${Math.round(amount / 10000).toLocaleString("ko-KR")}만`;
     }
 
     function renderSnapshotCard(snapshot, index) {
