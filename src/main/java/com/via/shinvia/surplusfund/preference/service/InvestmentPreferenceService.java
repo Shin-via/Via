@@ -42,7 +42,7 @@ public class InvestmentPreferenceService {
         }
 
         // request 설문 입력 -> ClassificationResult (성향, 점수, 판정 근거) - > 자산 배분 계산 -> Response (최종 API 응답)
-         InvestmentStyleClassifier.ClassificationResult classification = investmentStyleClassifier.classify(request);
+        InvestmentStyleClassifier.ClassificationResult classification = investmentStyleClassifier.classify(request);
 
         List<AssetAllocationResponse> allocations = assetAllocationService.allocate(
                 request.operationAmount(),
@@ -75,6 +75,18 @@ public class InvestmentPreferenceService {
         if (insertedAllocationCount != allocations.size()) {
             throw new IllegalStateException("자산배분 결과 저장에 실패했습니다.");
         }
+
+        for (int index = 0; index < classification.reasons().size(); index++) {
+            int insertedReasonCount = surplusFundPlanMapper.insertReason(
+                    plan.getSurplusFundPlanId(),
+                    index + 1,
+                    classification.reasons().get(index)
+            );
+            if (insertedReasonCount != 1) {
+                throw new IllegalStateException("운용성향 판정 이유 저장에 실패했습니다.");
+            }
+        }
+
         // 결과 응답 만들기
         return new InvestmentPreferenceResponse(
                 plan.getSurplusFundPlanId(),

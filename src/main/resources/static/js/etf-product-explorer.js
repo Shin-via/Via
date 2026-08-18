@@ -29,11 +29,31 @@
     let products = [];
     const selectedProducts = new Map();
 
+    window.getSelectedEtfProductIds = function () {
+        return Array.from(selectedProducts.keys());
+    };
+
+    window.getSelectedEtfProducts = function () {
+        return Array.from(selectedProducts.values()).map(function (product) {
+            return {...product};
+        });
+    };
+
+    window.clearSelectedEtfProducts = function () {
+        selectedProducts.clear();
+        comparePanelOpen = false;
+        notifySelectionChanged();
+
+        if (products.length > 0 && (activeFilter === "ALL" || activeFilter === "ETF")) {
+            renderExplorer(products, currentDataBaseDate, currentNotice, currentResultCount);
+        }
+    };
+
     window.updateEtfAllocationAmount = function (amount) {
         const normalized = Number(amount);
         allocationAmount = Number.isFinite(normalized) && normalized > 0
-                ? normalized
-                : 0;
+            ? normalized
+            : 0;
         if (products.length > 0 && (activeFilter === "ALL" || activeFilter === "ETF")) {
             renderExplorer(products, currentDataBaseDate, currentNotice, currentResultCount);
         }
@@ -41,8 +61,8 @@
 
     window.addEventListener("surplus:allocation-updated", function (event) {
         const allocations = event.detail && Array.isArray(event.detail.allocations)
-                ? event.detail.allocations
-                : [];
+            ? event.detail.allocations
+            : [];
         const etfAllocation = allocations.find(function (allocation) {
             return allocation.assetType === "ETF";
         });
@@ -98,8 +118,8 @@
             });
             if (!response.ok) {
                 throw new Error(body && body.message
-                        ? body.message
-                        : "ETF 상품 정보를 불러오지 못했습니다.");
+                    ? body.message
+                    : "ETF 상품 정보를 불러오지 못했습니다.");
             }
 
             if (activeFilter !== "ALL" && activeFilter !== "ETF") {
@@ -109,8 +129,8 @@
             currentDataBaseDate = body.dataBaseDate || null;
             currentNotice = body.notice || null;
             currentResultCount = Number.isFinite(Number(body.count))
-                    ? Number(body.count)
-                    : products.length;
+                ? Number(body.count)
+                : products.length;
             renderExplorer(products, currentDataBaseDate, currentNotice, currentResultCount);
         } catch (error) {
             if (error.name !== "AbortError") {
@@ -133,7 +153,7 @@
 
         const sortNotice = element("p", "etf-explorer__sort-notice");
         sortNotice.textContent = "거래대금·시가총액 등의 정렬은 공식 시세정보를 확인하기 위한 기준이며, "
-                + "추천 또는 적합성 순위가 아닙니다. 레버리지·인버스 상품도 포함될 수 있습니다.";
+            + "추천 또는 적합성 순위가 아닙니다. 레버리지·인버스 상품도 포함될 수 있습니다.";
         wrapper.append(sortNotice, createToolbar());
 
         if (productItems.length === 0) {
@@ -157,8 +177,8 @@
 
         const noticeElement = element("p", "etf-explorer__notice");
         noticeElement.textContent = notice ||
-                "표시된 정보는 공식 시세 기준의 탐색·비교 정보이며, "
-                + "특정 상품의 투자권유·자문이나 수익 보장을 의미하지 않습니다.";
+            "표시된 정보는 공식 시세 기준의 탐색·비교 정보이며, "
+            + "특정 상품의 투자권유·자문이나 수익 보장을 의미하지 않습니다.";
         wrapper.append(noticeElement);
 
         if (selectedProducts.size > 0) {
@@ -175,9 +195,9 @@
         title.textContent = "ETF 상품 탐색";
         const description = element("p", "etf-explorer__description");
         description.textContent = allocationAmount > 0
-                ? "ETF 배정금액 " + formatWon(allocationAmount)
-                    + "을 기준으로 공식 시세와 단순 환산 결과를 비교합니다."
-                : "공식 ETF 시세정보를 검색하고 직접 비교할 수 있습니다.";
+            ? "ETF 배정금액 " + formatWon(allocationAmount)
+            + "을 기준으로 공식 시세와 단순 환산 결과를 비교합니다."
+            : "공식 ETF 시세정보를 검색하고 직접 비교할 수 있습니다.";
         titleGroup.append(title, description);
 
         const meta = element("div", "etf-explorer__meta");
@@ -283,8 +303,8 @@
         title.textContent = product.productName || "상품명 정보 미제공";
         const meta = element("p", "etf-product-card__meta");
         meta.textContent = "종목코드 " + (product.productCode || "-")
-                + " · 데이터 기준일 " + (product.priceBaseDate || "-")
-                + " · 기초지수 " + (product.baseIndexName || "정보 미제공");
+            + " · 데이터 기준일 " + (product.priceBaseDate || "-")
+            + " · 기초지수 " + (product.baseIndexName || "정보 미제공");
 
         const core = element("div", "etf-product-card__core");
         const priceGroup = element("div", "etf-product-card__price-group");
@@ -303,10 +323,10 @@
         appendCompactWonMetric(metrics, "시가총액", product.marketCap);
         appendCompactWonMetric(metrics, "순자산총액", product.netAssetTotalAmount);
         appendMetric(
-                metrics,
-                "기초지수",
-                product.baseIndexName || "정보 미제공",
-                {fullWidth: true}
+            metrics,
+            "기초지수",
+            product.baseIndexName || "정보 미제공",
+            {fullWidth: true}
         );
 
         const details = createProductDetails(product);
@@ -325,7 +345,7 @@
             const quantity = Math.floor(allocationAmount / price);
             const remaining = allocationAmount - quantity * price;
             text.textContent = "약 " + formatNumber(quantity, 0)
-                    + "주 · 잔여 " + formatWon(remaining);
+                + "주 · 잔여 " + formatWon(remaining);
         } else {
             text.textContent = "배정금액 또는 종가 정보가 필요합니다.";
         }
@@ -363,14 +383,15 @@
         } else {
             if (selectedProducts.size >= MAX_COMPARE_COUNT) {
                 window.alert(
-                        "ETF는 최대 "
-                        + MAX_COMPARE_COUNT
-                        + "개까지 비교할 수 있습니다."
+                    "ETF는 최대 "
+                    + MAX_COMPARE_COUNT
+                    + "개까지 비교할 수 있습니다."
                 );
                 return;
             }
             selectedProducts.set(id, product);
         }
+        notifySelectionChanged();
         renderExplorer(products, currentDataBaseDate, currentNotice, currentResultCount);
     }
 
@@ -394,6 +415,7 @@
         clear.addEventListener("click", function () {
             selectedProducts.clear();
             comparePanelOpen = false;
+            notifySelectionChanged();
             renderExplorer(products, currentDataBaseDate, currentNotice, currentResultCount);
         });
         const compare = element("button", "etf-compare-bar__open");
@@ -442,12 +464,12 @@
         const head = document.createElement("thead");
         const headRow = document.createElement("tr");
         ["상품명", "종가", "등락률", "거래대금", "시가총액", "배정금액 기준 단순 환산 수량"]
-                .forEach(function (text) {
-                    const th = document.createElement("th");
-                    th.scope = "col";
-                    th.textContent = text;
-                    headRow.append(th);
-                });
+            .forEach(function (text) {
+                const th = document.createElement("th");
+                th.scope = "col";
+                th.textContent = text;
+                headRow.append(th);
+            });
         head.append(headRow);
 
         const body = document.createElement("tbody");
@@ -455,8 +477,8 @@
             const row = document.createElement("tr");
             const price = Number(product.closingPrice);
             const quantity = allocationAmount > 0 && Number.isFinite(price) && price > 0
-                    ? Math.floor(allocationAmount / price)
-                    : null;
+                ? Math.floor(allocationAmount / price)
+                : null;
             appendTableCell(row, product.productName || "상품명 정보 미제공");
             appendTableCell(row, formatWon(product.closingPrice));
             appendTableCell(row, formatPercent(product.fluctuationRate));
@@ -470,7 +492,7 @@
 
         const notice = element("p", "etf-compare__notice");
         notice.textContent = "표시된 정보는 공식 시세 기준의 탐색·비교 정보이며, "
-                + "특정 상품의 투자권유·자문이나 수익 보장을 의미하지 않습니다.";
+            + "특정 상품의 투자권유·자문이나 수익 보장을 의미하지 않습니다.";
         section.append(header, tableWrap, notice);
         return section;
     }
@@ -544,8 +566,8 @@
     function getSelectedFilter() {
         const selected = filterButtons.find(function (button) {
             return button.classList.contains("active")
-                    || button.classList.contains("is-active")
-                    || button.getAttribute("aria-pressed") === "true";
+                || button.classList.contains("is-active")
+                || button.getAttribute("aria-pressed") === "true";
         });
         return selected ? selected.dataset.productFilter : "ALL";
     }
@@ -577,8 +599,8 @@
     function formatWon(value) {
         const number = Number(value);
         return Number.isFinite(number)
-                ? Math.round(number).toLocaleString("ko-KR") + "원"
-                : "정보 미제공";
+            ? Math.round(number).toLocaleString("ko-KR") + "원"
+            : "정보 미제공";
     }
 
     function formatPercent(value) {
@@ -587,18 +609,18 @@
             return "정보 미제공";
         }
         return (number > 0 ? "+" : "")
-                + number.toLocaleString("ko-KR", {maximumFractionDigits: 2})
-                + "%";
+            + number.toLocaleString("ko-KR", {maximumFractionDigits: 2})
+            + "%";
     }
 
     function formatNumber(value, fractionDigits) {
         const number = Number(value);
         return Number.isFinite(number)
-                ? number.toLocaleString("ko-KR", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: fractionDigits
-                })
-                : "정보 미제공";
+            ? number.toLocaleString("ko-KR", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: fractionDigits
+            })
+            : "정보 미제공";
     }
 
     function element(tagName, className) {
@@ -607,5 +629,16 @@
             node.className = className;
         }
         return node;
+    }
+
+    function notifySelectionChanged() {
+        window.dispatchEvent(new CustomEvent("surplus:etf-selection-changed", {
+            detail: {
+                productIds: Array.from(selectedProducts.keys()),
+                products: Array.from(selectedProducts.values()).map(function (product) {
+                    return {...product};
+                })
+            }
+        }));
     }
 })();

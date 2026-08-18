@@ -61,4 +61,16 @@
         </foreach>
     </insert>
 
+    <insert id="insertReason">
+        INSERT INTO surplus_fund_plan_reason (
+            surplus_fund_plan_id,
+            reason_order,
+            reason_text
+        ) VALUES (
+            #{planId},
+            #{reasonOrder},
+            #{reasonText}
+        )
+    </insert>
+
 </mapper>
