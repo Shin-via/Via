@@ -135,7 +135,7 @@ class FutureSimulationEngineTest {
 
         assertThat(projection.crossoverReached()).isFalse();
         assertThat(projection.monthsToGoal()).isNull();
-        assertThat(projection.timeline()).hasSize(241);
+        assertThat(projection.timeline()).hasSize(1201);
     }
 
     @Test

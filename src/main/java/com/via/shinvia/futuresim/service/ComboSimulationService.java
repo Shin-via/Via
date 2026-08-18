@@ -28,7 +28,10 @@ public class ComboSimulationService {
     }
 
     public ComboResult simulate(Long userId, BigDecimal goalAmount, List<LeverIntensityCalculator.LeverSelection> selections) {
-        FutureSimulationEngine.Projection baseline = engine.calculateProjection(userId, goalAmount);
+        return simulate(userId, goalAmount, selections, null);
+    }
+    public ComboResult simulate(Long userId, BigDecimal goalAmount, List<LeverIntensityCalculator.LeverSelection> selections, BigDecimal rate) {
+        FutureSimulationEngine.Projection baseline = rate == null ? engine.calculateProjection(userId, goalAmount) : engine.calculateProjection(userId, goalAmount, rate);
 
         // 레버를 하나도 안 고른 것도 유효한 선택이라, baseline 그 자체를 "조합 결과"로 그대로 돌려준다.
         if (selections == null || selections.isEmpty()) {
@@ -36,7 +39,7 @@ public class ComboSimulationService {
         }
 
         FutureSimulationEngine.Adjustment adjustment = leverCalculator.resolveCombinedAdjustment(userId, selections);
-        FutureSimulationEngine.Projection combo = engine.calculateProjection(userId, goalAmount, adjustment);
+        FutureSimulationEngine.Projection combo = rate == null ? engine.calculateProjection(userId, goalAmount, adjustment) : engine.calculateProjection(userId, goalAmount, adjustment, rate);
 
         Integer diffMonths = (baseline.monthsToGoal() == null || combo.monthsToGoal() == null)
                 ? null

@@ -9,6 +9,7 @@ import java.util.List;
 // 각 레버의 강도(4단계와 같은 단위: %/원/개월/원)를 그대로 보낸다.
 public record ComboSimulationRequest(
         BigDecimal goalAmount,
+        BigDecimal assumedReturnRate,
         List<LeverEntry> levers
 ) {
     public record LeverEntry(LeverIntensityCalculator.LeverType type, BigDecimal intensity) {

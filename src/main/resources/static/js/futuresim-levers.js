@@ -10,6 +10,7 @@
     const leverLoanComparisonEl = document.getElementById('leverLoanComparison');
     const leverLoanComparisonBodyEl = document.getElementById('leverLoanComparisonBody');
     const combinationCardEl = document.getElementById('leverCombinationCard');
+    const combinationLoadingEl = document.getElementById('leverCombinationLoading');
     const combinationTitleEl = document.getElementById('leverCombinationTitle');
     const combinationItemsEl = document.getElementById('leverCombinationItems');
     const combinationEffectEl = document.getElementById('leverCombinationEffect');
@@ -26,6 +27,8 @@
     const rateRiskFinalPaymentEl = document.getElementById('rateRiskFinalPayment');
     const rateRiskInsightEl = document.getElementById('rateRiskInsight');
     const rateRiskPathBodyEl = document.getElementById('rateRiskPathBody');
+    const recommendedComboPreviewEl = document.getElementById('recommendedComboPreview');
+    const recommendedComboPreviewTextEl = document.getElementById('recommendedComboPreviewText');
     if (!goalAmountInputEl || !rankingListEl) {
         return;
     }
@@ -33,6 +36,9 @@
     const goalAmount = Number(goalAmountInputEl.value || 100000000);
     let assumedReturnRate = Number(localStorage.getItem('futuresimAssumedReturnRate') || 4);
     let currentLeverImpact = null;
+    // "이 조합을 추천해요" 섹션이 카드에서 선택한 강도를 그대로 반영하도록 공유하는 state — 신규대출은
+    // 이 조합에서 애초에 후보가 아니라서 넣지 않는다.
+    const selectedIntensity = {INCOME_CHANGE: null, LOAN_PREPAYMENT: null, LOAN_TERM_EXTENSION: null};
     if (assumedReturnRateEl) {
         const preset = ['2.5', '4', '6'].includes(String(assumedReturnRate)) ? String(assumedReturnRate) : 'custom';
         assumedReturnRateEl.value = preset;
@@ -66,10 +72,10 @@
     const LEVER_COPY = {
         INCOME_CHANGE: {
             icon: 'trending_up',
-            name: '소득 변화',
-            unitLabel: '%',
-            formatIntensity: (v) => `${v}%`,
-            headline: (v) => `매달 소득이 ${v}% 오르면`,
+            name: '월 추가 확보',
+            unitLabel: '원',
+            formatIntensity: (v) => formatWon(v),
+            headline: (v) => `매달 ${formatWon(v)}을 더 확보하면`,
             explanation: () =>
                 '이직이나 인상 등으로 소득이 늘어나면, 늘어난 만큼 그대로 저축으로 돌리는 게 목표를 가장 빠르게 앞당기는 방법이에요.',
             detailText: () => null
@@ -183,33 +189,77 @@
             baselineMagnitudeEl.textContent = magnitude;
             baselineUnitEl.textContent = unit;
             currentLeverImpact = leverImpact;
+            leverImpact.levers.forEach((item) => {
+                if (item.leverType in selectedIntensity) selectedIntensity[item.leverType] = item.defaultIntensity;
+            });
             renderLeverCards(leverImpact, projection.assumedReturnRatePercent);
+            loadRecommendedCombo();
         })
         .catch(() => {
             baselineMagnitudeEl.textContent = '불러오지 못했어요';
             rankingLoadingEl.textContent = '불러오지 못했어요';
         });
 
-    // ---------- 조합 추천: 레버를 동시에 썼을 때 최선인 조합(DP) ----------
-    fetch(`/api/future-simulation/lever-combination?goalAmount=${encodeURIComponent(goalAmount)}`)
-        .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
-        .then(renderCombination)
-        .catch(() => {
-            // 실패해도 조합 카드는 부가 정보라 조용히 숨긴 채로 둔다.
-        });
+    // ---------- 조합 추천: 위 카드에서 선택한 강도(월 추가확보/조기상환/만기연장)를 그대로 반영해서
+    // 다시 계산한다 — 카드 값을 바꿀 때마다 loadRecommendedCombo()를 다시 호출한다(신규대출은 이 조합에서
+    // 애초에 제외 대상이라 selectedIntensity에 넣지 않는다). comboToken은 레버 카드의 latestToken과 같은
+    // 이유(응답 뒤섞임 방지)로 둔다.
+    let comboToken = 0;
 
+    function loadRecommendedCombo() {
+        const token = ++comboToken;
+        const params = new URLSearchParams({goalAmount: String(goalAmount)});
+        if (selectedIntensity.INCOME_CHANGE != null) params.set('monthlyExtraCapacity', String(selectedIntensity.INCOME_CHANGE));
+        if (selectedIntensity.LOAN_PREPAYMENT != null) params.set('prepaymentAmount', String(selectedIntensity.LOAN_PREPAYMENT));
+        if (selectedIntensity.LOAN_TERM_EXTENSION != null) params.set('termExtensionMonths', String(selectedIntensity.LOAN_TERM_EXTENSION));
+
+        return fetch(`/api/future-simulation/recommended-combo?${params.toString()}`)
+            .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+            .then((data) => {
+                if (token !== comboToken) return;
+                renderCombination({
+                    chosenLevers: data.levers.map((item) => ({leverType: item.type, intensity: item.intensity})),
+                    baselineMonths: data.baselineMonthsToGoal,
+                    combinedMonths: data.comboMonthsToGoal,
+                    diffMonths: data.diffMonths,
+                    liquidAssetBudget: null,
+                    combinationsEvaluated: null
+                });
+                if (data.diffMonths > 0) {
+                    recommendedComboPreviewTextEl.textContent = `이 조건들을 조합하면 ${formatDuration(data.diffMonths)} 단축돼요.`;
+                } else {
+                    recommendedComboPreviewTextEl.textContent = '지금 페이스가 이미 최선이에요.';
+                }
+                recommendedComboPreviewEl.classList.remove('hidden');
+            })
+            .catch(() => {
+                if (token !== comboToken) return;
+                combinationLoadingEl.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">info</span><div><strong>추천 조합을 만들지 못했어요</strong><p>아래 방법별 효과를 참고해 직접 계획을 만들어보세요.</p></div>';
+                combinationLoadingEl.classList.remove('hidden');
+                combinationCardEl.classList.add('hidden');
+            });
+    }
+
+    // renderCombination()은 페이지 진입 시 한 번뿐 아니라 카드 값이 바뀔 때마다 다시 호출되므로,
+    // 매번 스피너/카드 표시 상태를 처음부터 다시 결정해야 한다(이전 호출의 상태가 남아있지 않게).
     function renderCombination(data) {
         if (!data.chosenLevers || data.chosenLevers.length === 0) {
+            combinationLoadingEl.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check_circle</span><div><strong>지금 페이스가 이미 최선이에요</strong><p>아래 방법별 효과를 참고해 직접 계획을 만들어보세요.</p></div>';
+            combinationLoadingEl.classList.remove('hidden');
+            combinationCardEl.classList.add('hidden');
             return;
         }
 
         const isSingle = data.chosenLevers.length === 1;
         combinationTitleEl.textContent = isSingle ? '이 방법을 추천해요' : '이 조합을 추천해요';
 
-        combinationItemsEl.innerHTML = data.chosenLevers
-            .map((item) => {
+        const priorityOrder = {INCOME_CHANGE: 1, LOAN_PREPAYMENT: 2, LOAN_TERM_EXTENSION: 3, NEW_LOAN: 9};
+        const chosen = [...data.chosenLevers].sort((a, b) => priorityOrder[a.leverType] - priorityOrder[b.leverType]);
+        combinationItemsEl.innerHTML = chosen
+            .map((item, index) => {
                 const copy = LEVER_COPY[item.leverType];
-                return `<span class="fp-lever-combination-item">${copy.name} ${copy.formatIntensity(item.intensity)}</span>`;
+                const value = copy.formatIntensity(item.intensity);
+                return `<span class="fp-lever-combination-item"><b>${index + 1}.</b> ${copy.name} ${value}</span>`;
             })
             .join('');
 
@@ -226,7 +276,7 @@
                 `따로따로 하는 것보다, 이 조합을 함께 실행하면 ${effectPhrase(data.diffMonths)}`;
         }
 
-        const reasonParts = [];
+        const reasonParts = ['우선순위는 월 추가 확보 → 조기상환 → 만기 조정 순으로 제안해요. 만기 조정은 현금흐름이 부족할 때 마지막으로 검토하세요.'];
         if (data.combinationsEvaluated) {
             reasonParts.push(`가능한 강도 조합 ${data.combinationsEvaluated}가지를 전부 비교해서 찾았어요.`);
         }
@@ -240,6 +290,7 @@
         combinationReasonEl.textContent = reasonParts.join(' ');
 
         combinationCardEl.classList.remove('hidden');
+        combinationLoadingEl.classList.add('hidden');
     }
 
     // ---------- 대출 우선순위: 대출이 2개 이상일 때만(loananalysis 재사용) ----------
@@ -366,12 +417,15 @@
         leverBestInsightEl.classList.remove('hidden');
     }
 
-    function updateLoanComparisonForIntensity(leverType, intensity, onUpdated) {
+    // isCurrent()가 false면(그 사이 다른 강도가 선택됨) 비교표(currentLeverImpact 공유 state)와
+    // "선택 결과" 박스 둘 다 이 응답을 반영하지 않고 버린다 — 두 영역이 항상 같은 타이밍에, 같은
+    // 응답으로만 같이 갱신되게 하나의 게이트로 묶는다.
+    function updateLoanComparisonForIntensity(leverType, intensity, isCurrent, onUpdated) {
         return fetch(`/api/future-simulation/lever-loan-summary?goalAmount=${encodeURIComponent(goalAmount)}` +
             `&leverType=${leverType}&intensity=${encodeURIComponent(intensity)}${returnRateQuery}`)
             .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
             .then((updated) => {
-                if (!currentLeverImpact) return;
+                if (!isCurrent() || !currentLeverImpact) return;
                 const item = currentLeverImpact.levers.find((candidate) => candidate.leverType === updated.leverType);
                 if (!item) return;
                 item.loanSummary = updated.loanSummary;
@@ -396,6 +450,13 @@
         const li = document.createElement('li');
         li.className = 'fp-lever-card';
         li.dataset.lever = item.leverType;
+
+        // 헤드라인은 클라이언트에 이미 있는 preset 값으로 즉시 갱신되는 반면, "선택 결과" 박스와
+        // 아래 비교표(currentLeverImpact 공유 state)는 /lever-loan-summary를 매번 새로 호출해서
+        // 채워진다 — 칩을 빠르게 연속으로 바꾸면 먼저 보낸 요청의 응답이 나중에 도착해 최신 선택과
+        // 다른 값으로 덮어쓸 수 있다. 요청마다 토큰을 발급해서, 그 사이 다른 선택으로 토큰이 바뀌었으면
+        // 응답을 버리고(비교표·박스 둘 다) 최신 선택의 결과만 반영한다.
+        let latestToken = 0;
 
         const headlineEl = document.createElement('p');
         headlineEl.className = 'fp-lever-card-headline';
@@ -427,19 +488,29 @@
                 chip.classList.add('active');
                 customInputEl.value = '';
                 renderCardBody(preset);
-                updateLoanComparisonForIntensity(item.leverType, preset.intensity, renderSelectedSummary);
+                const token = ++latestToken;
+                updateLoanComparisonForIntensity(item.leverType, preset.intensity, () => token === latestToken, renderSelectedSummary);
+                if (item.leverType in selectedIntensity) {
+                    selectedIntensity[item.leverType] = preset.intensity;
+                    loadRecommendedCombo();
+                }
             });
             chipsEl.appendChild(chip);
         });
 
-        // 프리셋 3개 외에 직접 값을 입력하는 칸 — presets[0]/presets[last]가 항상 이 레버의 최소/최대라
-        // 그 범위로 clamp해서 lever-intensity 단일 조회 API를 그 자리에서 호출한다.
-        const minIntensity = Number(presets[0].intensity);
-        const maxIntensity = Number(presets[presets.length - 1].intensity);
+        // 직접 입력도 레버의 실제 단위를 쓴다. 과거 슬라이더의 0~100 제한을 재사용하지 않는다.
+        const inputConstraints = {
+            INCOME_CHANGE: {min: 100000, max: 10000000, step: 100000},
+            LOAN_PREPAYMENT: {min: 10000000, max: Number(presets[presets.length - 1].intensity), step: 1000000},
+            LOAN_TERM_EXTENSION: {min: 12, max: 240, step: 12},
+            NEW_LOAN: {min: 10000000, max: 500000000, step: 10000000}
+        }[item.leverType];
+        const minIntensity = inputConstraints.min;
+        const maxIntensity = Math.max(minIntensity, inputConstraints.max);
         const customWrapEl = document.createElement('div');
         customWrapEl.className = 'fp-lever-chip-custom';
         customWrapEl.innerHTML = `
-            <input type="text" inputmode="numeric" class="fp-lever-chip-custom-input" placeholder="직접 입력">
+            <input type="number" inputmode="numeric" class="fp-lever-chip-custom-input" min="${minIntensity}" max="${maxIntensity}" step="${inputConstraints.step}" placeholder="직접 입력">
             <span class="fp-lever-chip-custom-unit">${copy.unitLabel}</span>
         `;
         const customInputEl = customWrapEl.querySelector('.fp-lever-chip-custom-input');
@@ -451,18 +522,24 @@
             }
             const requested = Math.min(maxIntensity, Math.max(minIntensity, Number(rawDigits)));
 
+            const token = ++latestToken;
             customWrapEl.classList.add('loading');
             fetch(
                 `/api/future-simulation/lever-intensity?goalAmount=${encodeURIComponent(goalAmount)}` +
-                `&leverType=${item.leverType}&intensity=${encodeURIComponent(requested)}`
+                `&leverType=${item.leverType}&intensity=${encodeURIComponent(requested)}${returnRateQuery}`
             )
                 .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
                 .then((result) => {
+                    if (token !== latestToken) return;
                     customInputEl.value = String(Math.round(Number(result.intensity)));
                     deactivateAllChips();
                     customWrapEl.classList.add('active');
                     renderCardBody(result);
-                    updateLoanComparisonForIntensity(item.leverType, result.intensity, renderSelectedSummary);
+                    updateLoanComparisonForIntensity(item.leverType, result.intensity, () => token === latestToken, renderSelectedSummary);
+                    if (item.leverType in selectedIntensity) {
+                        selectedIntensity[item.leverType] = result.intensity;
+                        loadRecommendedCombo();
+                    }
                 })
                 .catch(() => {
                     // 실패하면 조용히 무시 — 기존 표시값을 그대로 둔다.

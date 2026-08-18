@@ -72,8 +72,13 @@
         </section>
 
         <!-- ===== 조합 추천 — 위 방법들을 동시에 쓰면 최선인 조합(DP)을 보여준다 ===== -->
+        <section class="fp-lever-combination-loading" id="leverCombinationLoading" aria-live="polite">
+            <span class="material-symbols-outlined fp-combination-spinner" aria-hidden="true">progress_activity</span>
+            <div><strong>나에게 맞는 조합을 계산하고 있어요</strong><p>가능한 실행 방법을 비교하는 중이에요.</p></div>
+        </section>
         <section class="fp-lever-combination-card hidden" id="leverCombinationCard">
             <p class="fp-lever-combination-title" id="leverCombinationTitle">이 조합을 추천해요</p>
+            <p class="fp-lever-combination-note">위에서 선택하신 강도를 기준으로 계산했어요</p>
             <div class="fp-lever-combination-items" id="leverCombinationItems"></div>
             <p class="fp-lever-combination-effect" id="leverCombinationEffect"></p>
             <p class="fp-lever-combination-reason" id="leverCombinationReason"></p>
@@ -120,6 +125,11 @@
                     </div>
                 </div>
             </div>
+        </section>
+
+        <section class="fp-combo-summary hidden" id="recommendedComboPreview">
+            <strong id="recommendedComboPreviewText"></strong>
+            <span>5단계에서 확인하고 저장하기</span>
         </section>
 
         <!-- ===== 이전/다음 ===== -->

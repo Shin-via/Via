@@ -2,11 +2,15 @@ package com.via.shinvia.futuresim.service;
 
 import com.via.shinvia.stresstest.service.LivingExpenseEstimator;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.via.shinvia.futuresim.mapper.FutureSimUserProfileMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.Period;
 
 // 목표 금액까지 걸리는 개월수를 "이벤트 없는 기본 실행"으로 계산한다.
 // 매달 (소득 - 생활비 - 대출상환액)만큼 순자산이 늘어난다고 가정하는 단순 선형 모델 —
@@ -18,24 +22,36 @@ public class FutureSimulationEngine {
     private static final int LIVING_EXPENSE_LOOKBACK_MONTHS = 3;
     private static final int MAX_MONTHS = 1200; // 100년 초과분은 "도달 불가"로 취급
 
-    // 3단계(성장 곡선) 월별 시뮬레이션 전용 상수. calculateMonthsToGoal()의 100년 상한과 별개로,
-    // 그래프로 보여줄 구간은 20년(240개월)이면 충분하다고 판단해 더 짧게 잡았다.
+    // 사회 초년생처럼 목표까지 20년 이상 걸리는 사용자도 도달 시점을 보여줄 수 있도록,
+    // 3·4·5단계의 장기 예측 상한을 calculateMonthsToGoal()와 같은 100년으로 둔다.
     private static final String ASSUMED_RETURN_RATE_CONFIG_KEY = "FUTURESIM_ASSUMED_RETURN_RATE";
-    private static final int PROJECTION_MAX_MONTHS = 240;
+    private static final int PROJECTION_MAX_MONTHS = 1200;
     private static final int PROJECTION_POST_GOAL_BUFFER_MONTHS = 12;
 
     private final UserFinancialSnapshotService snapshotService;
     private final LivingExpenseEstimator livingExpenseEstimator;
     private final AppConfigService appConfigService;
+    private final FutureSimUserProfileMapper profileMapper;
 
     public FutureSimulationEngine(
             UserFinancialSnapshotService snapshotService,
             LivingExpenseEstimator livingExpenseEstimator,
             AppConfigService appConfigService
     ) {
+        this(snapshotService, livingExpenseEstimator, appConfigService, null);
+    }
+
+    @Autowired
+    public FutureSimulationEngine(
+            UserFinancialSnapshotService snapshotService,
+            LivingExpenseEstimator livingExpenseEstimator,
+            AppConfigService appConfigService,
+            FutureSimUserProfileMapper profileMapper
+    ) {
         this.snapshotService = snapshotService;
         this.livingExpenseEstimator = livingExpenseEstimator;
         this.appConfigService = appConfigService;
+        this.profileMapper = profileMapper;
     }
 
     // 이미 목표를 달성했으면 0, 저축 여력이 0 이하이거나 100년을 넘게 걸리면 도달 불가(null)를 반환한다.
@@ -55,7 +71,7 @@ public class FutureSimulationEngine {
         BigDecimal remaining = goalAmount.subtract(currentNetWorth);
         BigDecimal months = remaining.divide(monthlyNetSavings, 0, RoundingMode.CEILING);
 
-        return months.compareTo(BigDecimal.valueOf(MAX_MONTHS)) > 0 ? null : months.intValue();
+        return months.compareTo(BigDecimal.valueOf(retirementHorizonMonths(userId))) > 0 ? null : months.intValue();
     }
 
     // 목표 화면과 향후 이벤트 시뮬레이션이 함께 쓰는 현금흐름 기준값.
@@ -114,10 +130,14 @@ public class FutureSimulationEngine {
     // calculateProjection(userId, goalAmount)는 이 메서드를 Adjustment.NONE으로 호출하는 것과 동일해서
     // 기존 동작은 그대로다.
     public Projection calculateProjection(Long userId, BigDecimal goalAmount, Adjustment adjustment) {
-        return calculateProjection(userId, goalAmount, adjustment, appConfigService.getDecimal(ASSUMED_RETURN_RATE_CONFIG_KEY));
+        return calculateProjectionInternal(userId, goalAmount, adjustment, appConfigService.getDecimal(ASSUMED_RETURN_RATE_CONFIG_KEY));
     }
 
-    private Projection calculateProjection(Long userId, BigDecimal goalAmount, Adjustment adjustment, BigDecimal annualReturnRatePercent) {
+    public Projection calculateProjection(Long userId, BigDecimal goalAmount, Adjustment adjustment, BigDecimal annualReturnRatePercent) {
+        return calculateProjectionInternal(userId, goalAmount, adjustment, annualReturnRatePercent);
+    }
+
+    private Projection calculateProjectionInternal(Long userId, BigDecimal goalAmount, Adjustment adjustment, BigDecimal annualReturnRatePercent) {
         UserFinancialSnapshotService.Snapshot snapshot = snapshotService.getSnapshot(userId);
         BigDecimal totalDebt = (snapshot.totalDebt() != null ? snapshot.totalDebt() : BigDecimal.ZERO)
                 .add(adjustment.totalDebtDelta());
@@ -134,7 +154,7 @@ public class FutureSimulationEngine {
 
         Integer monthsToGoal = startNetWorth.compareTo(goalAmount) >= 0 ? 0 : null;
 
-        for (int month = 1; month <= PROJECTION_MAX_MONTHS; month++) {
+        for (int month = 1; month <= retirementHorizonMonths(userId); month++) {
             liquidAssets = compound(liquidAssets, monthlyRate, monthlyNetCashFlow);
             BigDecimal netWorth = liquidAssets.subtract(totalDebt);
             timeline.add(toTimelinePoint(month, netWorth, startNetWorth, monthlyNetCashFlow));
@@ -197,7 +217,7 @@ public class FutureSimulationEngine {
             return 0;
         }
 
-        for (int month = 1; month <= PROJECTION_MAX_MONTHS; month++) {
+        for (int month = 1; month <= retirementHorizonMonths(userId); month++) {
             liquidAssets = compound(liquidAssets, monthlyRate, monthlyNetCashFlow);
             netWorth = liquidAssets.subtract(totalDebt);
             if (netWorth.compareTo(goalAmount) >= 0) {
@@ -233,5 +253,13 @@ public class FutureSimulationEngine {
             BigDecimal assumedReturnRatePercent,
             BigDecimal totalDebt
     ) {
+    }
+
+    private int retirementHorizonMonths(Long userId) {
+        if (profileMapper == null) return PROJECTION_MAX_MONTHS;
+        var profile = profileMapper.findByUserId(userId);
+        if (profile == null || profile.getBirthDate() == null) return PROJECTION_MAX_MONTHS;
+        int years = Math.max(0, 60 - Period.between(profile.getBirthDate(), LocalDate.now()).getYears());
+        return Math.max(1, years * 12);
     }
 }
