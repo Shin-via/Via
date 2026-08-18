@@ -10,6 +10,7 @@ import com.via.shinvia.user.domain.UserStatus;
 import com.via.shinvia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -21,6 +22,7 @@ import java.util.Locale;
 public class SocialSignupService {
     private final UserMapper userMapper;
     private final SocialUserMapper socialUserMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Long signup(SocialSignupRequestDto request, PendingSocialUser pendingSocialUser) {
@@ -72,7 +74,7 @@ public class SocialSignupService {
         User user = new User();
 
         user.setLoginEmail(loginEmail);
-        user.setPasswordHash(null);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setUserName(request.getUserName().trim());
         user.setPhoneNumber(request.getPhoneNumber().trim());
         user.setBirthDate(request.getBirthDate());

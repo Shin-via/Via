@@ -37,4 +37,24 @@ public class EmailVerifyController {
         return ResponseEntity.ok(Map.of("message", "이메일 인증이 완료되었습니다."));
     }
 
+    @PostMapping("/password/send")
+    public ResponseEntity<Map<String, String>> sendPasswordResetCode(
+            @Valid @RequestBody EmailSendRequestDto request,
+            HttpSession session
+    ) {
+        verificationService.sendPasswordResetCode(request.email(), session);
+
+        return ResponseEntity.ok(Map.of("message", "인증번호를 전송했습니다."));
+    }
+
+    @PostMapping("/password/verify")
+    public ResponseEntity<Map<String, String>> verifyPasswordResetCode(
+            @Valid @RequestBody EmailVerifyRequestDto request,
+            HttpSession session
+    ) {
+        verificationService.verifyPasswordResetCode(request.email(), request.code(), session);
+
+        return ResponseEntity.ok(Map.of("message", "이메일 인증이 완료되었습니다."));
+    }
+
 }

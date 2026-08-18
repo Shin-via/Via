@@ -1,5 +1,6 @@
 package com.via.shinvia.user.service;
 
+import com.via.shinvia.user.domain.User;
 import com.via.shinvia.user.mapper.UserMapper;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class EmailVerificationService {
     public static final String VERIFIED_EMAIL_KEY="VERIFIED_EMAIL";
+    public static final String PASSWORD_RESET_VERIFIED_EMAIL_KEY = "PASSWORD_RESET_VERIFIED_EMAIL";
     private static final Duration CODE_TTL=Duration.ofMinutes(5);
 
     private final JavaMailSender mailSender;
@@ -98,5 +100,45 @@ public class EmailVerificationService {
 
     private String createCodeKey(String email) {
         return "email-verification:code:"+email;
+    }
+
+    public void sendPasswordResetCode(String email, HttpSession session) {
+        String normalizedEmail = normalizedEmail(email);
+        User user = userMapper.findByLoginEmail(normalizedEmail);
+
+        if (user == null) {
+            throw new IllegalArgumentException("가입된 이메일을 찾을 수 없습니다.");
+        }
+
+        String code = createVerificationCode();
+        session.removeAttribute(PASSWORD_RESET_VERIFIED_EMAIL_KEY);
+        sendVerificationMail(normalizedEmail, code);
+
+        String key = "password-reset:code:" + normalizedEmail;
+
+        redisTemplate.opsForValue().set(key, code, CODE_TTL);
+    }
+
+    public void verifyPasswordResetCode(String email, String inputCode, HttpSession session) {
+        String normalizedEmail = normalizedEmail(email);
+        String key = "password-reset:code:" + normalizedEmail;
+
+        String savedCode = redisTemplate.opsForValue().get(key);
+
+        if (!StringUtils.hasText(savedCode)) {
+            throw new IllegalArgumentException("인증번호가 만료되었거나 발급되지 않았습니다.");
+        }
+
+        if (!savedCode.equals(inputCode.trim())) {
+            throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
+        }
+
+        redisTemplate.delete(key);
+
+        session.setAttribute(PASSWORD_RESET_VERIFIED_EMAIL_KEY, normalizedEmail);
+    }
+
+    private String createPasswordResetCodeKey(String email) {
+        return "password-reset:code:" + email;
     }
 }

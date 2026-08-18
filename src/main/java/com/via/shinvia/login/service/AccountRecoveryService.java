@@ -7,6 +7,7 @@ import com.via.shinvia.oauth2.mapper.SocialUserMapper;
 import com.via.shinvia.user.domain.User;
 import com.via.shinvia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +19,14 @@ public class AccountRecoveryService {
 
     private final UserMapper userMapper;
     private final SocialUserMapper socialUserMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public FindLoginEmailResponseDto findLoginEmail(FindLoginEmailRequestDto request) {
         String userName = request.getUserName().trim();
         String phoneNumber = normalizePhoneNumber(request.getPhoneNumber());
 
-         User user = userMapper.findActiveUserByNameAndPhone(userName, phoneNumber);
+         User user = userMapper.findIdByNameAndPhone(userName, phoneNumber);
 
          if (user==null) {
              return null;
@@ -65,5 +67,17 @@ public class AccountRecoveryService {
         return localPart.substring(0, visibleLength)
                 + "***"
                 + domainPart;
+    }
+
+    @Transactional
+    public void resetPassword(String loginEmail, String newPassword) {
+
+        String passwordHash = passwordEncoder.encode(newPassword);
+
+        int updated = userMapper.updatePassword(loginEmail, passwordHash);
+
+        if (updated != 1) {
+            throw new IllegalArgumentException("비밀번호를 변경할 수 없는 계정입니다.");
+        }
     }
 }

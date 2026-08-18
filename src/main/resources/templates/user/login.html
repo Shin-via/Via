@@ -84,8 +84,13 @@
             </a>
         </div>
 
+        <div id="resetSuccess"
+             th:if="${param.reset}"
+             hidden>
+        </div>
+
     </section>
 </main>
-
+<script defer th:src="@{/js/login.js}"></script>
 </body>
 </html>
