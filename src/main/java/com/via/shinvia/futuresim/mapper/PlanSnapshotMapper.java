@@ -12,7 +12,7 @@ public interface PlanSnapshotMapper {
 
     // 사용자당 이름별로 1행(uk_user_plan_name) — 같은 이름으로 다시 저장하면 덮어쓰고, 새 이름이면 추가된다.
     void upsert(
-            @Param("appUserId") Long appUserId,
+            @Param("userId") Long userId,
             @Param("planName") String planName,
             @Param("goalAmount") BigDecimal goalAmount,
             @Param("goalPresetKey") String goalPresetKey,
@@ -29,8 +29,8 @@ public interface PlanSnapshotMapper {
     );
 
     // 목록 화면용 — 사용자가 저장한 계획 전부, 최근 수정순.
-    List<FuturesimPlanSnapshot> findAllByUserId(@Param("appUserId") Long appUserId);
+    List<FuturesimPlanSnapshot> findAllByUserId(@Param("userId") Long userId);
 
-    // 불러오기용 — 본인 소유인지 appUserId로 같이 확인한다.
-    FuturesimPlanSnapshot findByIdAndUserId(@Param("id") Long id, @Param("appUserId") Long appUserId);
+    // 불러오기용 — 본인 소유인지 userId로 같이 확인한다.
+    FuturesimPlanSnapshot findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }
