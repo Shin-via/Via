@@ -9,8 +9,7 @@ public class ServiceMenuProvider {
 
     private final List<ServiceMenuCategory> loanMenus = List.of(
             category("diagnosis", "금융 진단센터", "monitoring",
-                    disabled("현재 금융 현황", "자산과 부채 현황을 한눈에 확인합니다."),
-                    disabled("스트레스 DSR 분석", "금리 변동에 따른 전체 부채 부담을 분석합니다."),
+                    item("마이데이터 조회", "계좌, 카드, 대출 현황을 한눈에 확인합니다.","/mydata/result"),
                     item("개인 스트레스 DSR 분석", "내 금융정보를 기준으로 상환 여력을 점검합니다.", "/stress-test/personal")),
             category("loans", "대출", "payments",
                     item("대출상품 추천", "현재 조건에 맞는 대출상품과 예상 조건을 확인합니다.", "/loans/recommendations"),
