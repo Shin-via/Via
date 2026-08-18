@@ -239,7 +239,10 @@ public class LifecycleEventInputAssemblerService {
         VehicleSurveyResponse survey =
                 surveyService.getVehicleSurvey(lifecycleEventId);
 
-        BigDecimal estimatedPrice = calculateVehiclePrice();
+        BigDecimal estimatedPrice = survey.getVehiclePrice() != null
+                && survey.getVehiclePrice().signum() > 0
+                ? survey.getVehiclePrice()
+                : calculateVehiclePrice();
 
         BigDecimal newLoanAmount = nvl(survey.getLoanAmount());
 
@@ -253,8 +256,10 @@ public class LifecycleEventInputAssemblerService {
         BigDecimal userRequiredAmount =
                 maxZero(estimatedPrice.subtract(newLoanAmount));
 
-        BigDecimal monthlyMaintenance =
-                referenceAmount(
+        BigDecimal monthlyMaintenance = survey.getMonthlyMaintenanceCost() != null
+                && survey.getMonthlyMaintenanceCost().signum() >= 0
+                ? survey.getMonthlyMaintenanceCost()
+                : referenceAmount(
                         LifecycleEventType.VEHICLE_PURCHASE,
                         VEHICLE_MONTHLY_MAINTENANCE_COST
                 );

@@ -23,6 +23,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -200,6 +202,45 @@ class LifecycleEventInputAssemblerServiceTest {
         assertEquals(new BigDecimal("20000000.00"), input.getNewLoanAmount());
         assertEquals(new BigDecimal("30000000.00"), input.getAcquiredAssetAmount());
         assertEquals(new BigDecimal("400000.00"), input.getAdditionalMonthlyExpense());
+    }
+
+    @Test
+    void assembleVehiclePrefersSurveyValuesOverReferences() {
+        VehicleSurveyResponse survey = VehicleSurveyResponse.builder()
+                .lifecycleEventId(30L)
+                .eventOrder(1)
+                .targetDate(LocalDate.of(2029, 7, 1))
+                .vehiclePrice(new BigDecimal("11111111"))
+                .cashPaymentAmount(new BigDecimal("11111110"))
+                .loanAmount(BigDecimal.ONE)
+                .loanPeriodMonths(24)
+                .monthlyMaintenanceCost(new BigDecimal("11111"))
+                .build();
+
+        when(surveyService.getVehicleSurvey(30L)).thenReturn(survey);
+        when(productService.getRecommendedProducts(
+                10L,
+                "user@example.com",
+                LifecycleEventType.VEHICLE_PURCHASE,
+                BigDecimal.ONE,
+                24
+        )).thenReturn(List.of());
+
+        LifecycleEventInput input = assemblerService.assembleEvent(
+                10L,
+                "user@example.com",
+                LifecycleEventType.VEHICLE_PURCHASE,
+                30L
+        );
+
+        assertEquals(new BigDecimal("11111111.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("1.00"), input.getNewLoanAmount());
+        assertEquals(new BigDecimal("11111.00"), input.getAdditionalMonthlyExpense());
+        verify(referenceService, never()).getNationalAmount(
+                eq(LifecycleEventType.VEHICLE_PURCHASE),
+                anyString(),
+                isNull()
+        );
     }
 
     @Test
