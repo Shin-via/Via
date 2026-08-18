@@ -8,11 +8,11 @@
 
     <insert id="upsert">
         INSERT INTO futuresim_plan_snapshot (
-            app_user_id, plan_name, goal_amount, goal_preset_key, benchmark_type, benchmark_label, benchmark_median_net_worth,
+            user_id, plan_name, goal_amount, goal_preset_key, benchmark_type, benchmark_label, benchmark_median_net_worth,
             assumed_return_rate, selected_levers_json, baseline_months_to_goal, projected_months_to_goal,
             diff_months, loan_impact_json, final_net_worth
         ) VALUES (
-            #{appUserId}, #{planName}, #{goalAmount}, #{goalPresetKey}, #{benchmarkType}, #{benchmarkLabel}, #{benchmarkMedianNetWorth},
+            #{userId}, #{planName}, #{goalAmount}, #{goalPresetKey}, #{benchmarkType}, #{benchmarkLabel}, #{benchmarkMedianNetWorth},
             #{assumedReturnRate}, #{selectedLeversJson}, #{baselineMonthsToGoal}, #{projectedMonthsToGoal},
             #{diffMonths}, #{loanImpactJson}, #{finalNetWorth}
         )
@@ -33,13 +33,13 @@
 
     <select id="findAllByUserId" resultType="com.via.shinvia.futuresim.entity.FuturesimPlanSnapshot">
         SELECT * FROM futuresim_plan_snapshot
-        WHERE app_user_id = #{appUserId}
+        WHERE user_id = #{userId}
         ORDER BY updated_at DESC
     </select>
 
     <select id="findByIdAndUserId" resultType="com.via.shinvia.futuresim.entity.FuturesimPlanSnapshot">
         SELECT * FROM futuresim_plan_snapshot
-        WHERE id = #{id} AND app_user_id = #{appUserId}
+        WHERE id = #{id} AND user_id = #{userId}
     </select>
 
 </mapper>

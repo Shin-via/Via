@@ -15,7 +15,7 @@ public class FuturesimPlanSnapshot {
 
     private Long id;
 
-    private Long appUserId;
+    private Long userId;
 
     private String planName;
 
