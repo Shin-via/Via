@@ -21,10 +21,10 @@ public class MyDataSyncService {
             DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final AccountSyncService accountSyncService;
-    private final AccountQueryService accountQueryService;
     private final MyDataConnectionService myDataConnectionService;
     private final LoanAccountSyncService loanAccountSyncService;
     private final CardSyncService cardSyncService;
+    private final FinancialInstitutionService financialInstitutionService;
 
     public void syncAll(Long userId) {
 
@@ -36,9 +36,8 @@ public class MyDataSyncService {
             );
         }
 
-        List<String> orgCodes = accountQueryService.getOrgCodesByConnectionId(connectionId);
-
         LocalDate today = LocalDate.now();
+        List<String> orgCodes = financialInstitutionService.getBankOrgCodes();
 
         for (String orgCode : orgCodes) {
 
