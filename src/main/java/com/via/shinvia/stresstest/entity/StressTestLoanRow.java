@@ -30,4 +30,8 @@ public class StressTestLoanRow {
     private LocalDate maturityAt;
 
     private String loanStatus;
+
+    private BigDecimal prepaymentFeeRate;
+
+    private LocalDate prepaymentFeeEndDate;
 }

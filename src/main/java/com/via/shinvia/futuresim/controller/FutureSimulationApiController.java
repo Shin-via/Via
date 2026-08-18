@@ -10,7 +10,9 @@ import com.via.shinvia.futuresim.dto.response.LeverLoanSummaryResponse;
 import com.via.shinvia.futuresim.dto.response.LeverIntensityCurveResponse;
 import com.via.shinvia.futuresim.dto.response.LeverIntensityResponse;
 import com.via.shinvia.futuresim.dto.response.PlanSaveResponse;
+import com.via.shinvia.futuresim.dto.response.PlanSummaryResponse;
 import com.via.shinvia.futuresim.dto.response.RateRiskReferenceResponse;
+import com.via.shinvia.futuresim.dto.response.RecommendedComboResponse;
 import com.via.shinvia.futuresim.event.RateChangeMode;
 import com.via.shinvia.futuresim.service.ComboSimulationService;
 import com.via.shinvia.futuresim.service.CurrentStatusService;
@@ -20,8 +22,11 @@ import com.via.shinvia.futuresim.service.LeverIntensityCalculator;
 import com.via.shinvia.futuresim.service.LeverLoanComparisonService;
 import com.via.shinvia.futuresim.service.PlanSnapshotService;
 import com.via.shinvia.futuresim.service.RateRiskReferenceService;
+import com.via.shinvia.futuresim.service.RecommendedComboService;
+import com.via.shinvia.futuresim.service.AppConfigService;
 import com.via.shinvia.loananalysis.dto.DebtPriorityResponseDTO;
 import com.via.shinvia.loananalysis.service.DebtPriorityService;
+import com.via.shinvia.stresstest.mapper.StressTestLoanMapper;
 import com.via.shinvia.security.CurrentUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 // 미래 금융 시뮬레이터 3단계("성장 곡선")에서 쓰는 조회 API.
 // 1단계에서 세션에 저장한 비교 기준(FutureSimViewController.COMPARISON_BASIS_SESSION_KEY/
@@ -48,7 +54,7 @@ public class FutureSimulationApiController {
 
     // FutureSimulationEngine의 시뮬레이션 상한(20년)과 같은 값 — "도달 불가(null)"를 NOT NULL 컬럼에
     // 저장해야 할 때 쓰는 sentinel.
-    private static final int PROJECTION_UNREACHABLE_SENTINEL_MONTHS = 240;
+    private static final int PROJECTION_UNREACHABLE_SENTINEL_MONTHS = 1200;
 
     private final CurrentUser currentUser;
     private final FutureSimulationEngine futureSimulationEngine;
@@ -59,6 +65,9 @@ public class FutureSimulationApiController {
     private final LeverCombinationOptimizer leverCombinationOptimizer;
     private final ComboSimulationService comboSimulationService;
     private final PlanSnapshotService planSnapshotService;
+    private final RecommendedComboService recommendedComboService;
+    private final AppConfigService appConfigService;
+    private final StressTestLoanMapper stressTestLoanMapper;
     // loananalysis/(팀원 도메인)의 기존 대출 우선순위 로직을 읽기 전용으로 재사용한다 — 수정 없음.
     private final DebtPriorityService debtPriorityService;
 
@@ -99,6 +108,30 @@ public class FutureSimulationApiController {
                 projection.assumedReturnRatePercent(),
                 projection.totalDebt()
         ));
+    }
+
+    @GetMapping("/recommended-combo")
+    public ResponseEntity<RecommendedComboResponse> recommendedCombo(
+            @RequestParam BigDecimal goalAmount,
+            @RequestParam(required = false) BigDecimal monthlyExtraCapacity,
+            @RequestParam(required = false) BigDecimal prepaymentAmount,
+            @RequestParam(required = false) BigDecimal termExtensionMonths,
+            Authentication authentication
+    ) {
+        var result = recommendedComboService.getRecommendedCombo(
+                currentUser.getUserId(authentication), goalAmount, monthlyExtraCapacity, prepaymentAmount, termExtensionMonths);
+        return ResponseEntity.ok(new RecommendedComboResponse(result.levers().stream()
+                .map(item -> new RecommendedComboResponse.Lever(item.type(), item.intensity(), item.diffMonths(), item.assumption())).toList(),
+                result.baselineMonthsToGoal(), result.comboMonthsToGoal(), result.diffMonths(), result.assumedReturnRate()));
+    }
+
+    @GetMapping("/loan-fee-reference")
+    public ResponseEntity<java.util.Map<String, Object>> loanFeeReference(Authentication authentication) {
+        var loan = stressTestLoanMapper.findNormalLoansByUserId(currentUser.getUserId(authentication)).stream()
+                .max(java.util.Comparator.comparing(com.via.shinvia.stresstest.entity.StressTestLoanRow::getCurrentBalance)).orElse(null);
+        if (loan == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(java.util.Map.of("feeRate", loan.getPrepaymentFeeRate() == null ? "" : loan.getPrepaymentFeeRate(),
+                "feeEndDate", loan.getPrepaymentFeeEndDate() == null ? "" : loan.getPrepaymentFeeEndDate().toString()));
     }
 
     // 1단계에서 기준을 고르지 않았으면(건너뛰기) 둘 다 null — 화면에서 벤치마크선/마일스톤 줄을 생략한다.
@@ -213,13 +246,14 @@ public class FutureSimulationApiController {
             @RequestParam BigDecimal goalAmount,
             @RequestParam LeverIntensityCalculator.LeverType leverType,
             @RequestParam BigDecimal intensity,
+            @RequestParam(required = false) BigDecimal assumedReturnRate,
             Authentication authentication
     ) {
         Long userId = currentUser.getUserId(authentication);
         List<BigDecimal> range = leverIntensityCalculator.intensityPointsFor(userId, leverType);
         BigDecimal clamped = intensity.max(range.get(0)).min(range.get(range.size() - 1));
 
-        Integer diffMonths = leverIntensityCalculator.calculateDiffMonths(userId, goalAmount, leverType, clamped);
+        Integer diffMonths = leverIntensityCalculator.calculateDiffMonths(userId, goalAmount, leverType, clamped, assumedReturnRate);
         LeverIntensityCalculator.LeverDetail detail = leverIntensityCalculator.detailFor(userId, leverType, clamped);
         return ResponseEntity.ok(new LeverIntensityResponse(leverType, clamped, diffMonths, detail));
     }
@@ -290,9 +324,10 @@ public class FutureSimulationApiController {
                         .map(entry -> new LeverIntensityCalculator.LeverSelection(entry.type(), entry.intensity()))
                         .toList();
 
-        ComboSimulationService.ComboResult result = comboSimulationService.simulate(userId, request.goalAmount(), selections);
+        ComboSimulationService.ComboResult result = comboSimulationService.simulate(userId, request.goalAmount(), selections, request.assumedReturnRate());
         List<ComboSimulationResponse.TimelinePoint> timeline = result.timeline().stream()
-                .map(point -> new ComboSimulationResponse.TimelinePoint(point.monthOffset(), point.netWorth()))
+                .map(point -> new ComboSimulationResponse.TimelinePoint(
+                        point.monthOffset(), point.netWorth(), point.contributionAmount(), point.returnAmount()))
                 .toList();
 
         return ResponseEntity.ok(new ComboSimulationResponse(
@@ -300,12 +335,19 @@ public class FutureSimulationApiController {
         ));
     }
 
+    @PostMapping(value = "/loan-impact", produces = "application/json")
+    public ResponseEntity<String> loanImpact(@RequestBody ComboSimulationRequest request, Authentication authentication) {
+        List<LeverIntensityCalculator.LeverSelection> selections = request.levers() == null ? List.of() : request.levers().stream()
+                .map(item -> new LeverIntensityCalculator.LeverSelection(item.type(), item.intensity())).toList();
+        return ResponseEntity.ok(buildLoanImpactJson(currentUser.getUserId(authentication), selections));
+    }
+
     // "다음"(6단계로 이동) 클릭 시 현재 계획을 저장한다. 서버에서 다시 시뮬레이션을 돌려서 저장하므로
     // 클라이언트가 보낸 개월수/순자산을 그대로 믿지 않는다 — combo-simulation과 항상 같은 계산 경로.
     // 체크박스가 0개여도 유효한 선택이라 그대로 저장된다(ComboSimulationService가 baseline을 돌려줌).
-    @PostMapping("/plan")
+    @PostMapping({"/plan", "/save-plan"})
     public ResponseEntity<PlanSaveResponse> savePlan(
-            @RequestBody PlanSaveRequest request, Authentication authentication
+            @RequestBody PlanSaveRequest request, Authentication authentication, HttpSession session
     ) {
         Long userId = currentUser.getUserId(authentication);
         List<LeverIntensityCalculator.LeverSelection> selections = request.levers() == null
@@ -314,7 +356,7 @@ public class FutureSimulationApiController {
                         .map(entry -> new LeverIntensityCalculator.LeverSelection(entry.type(), entry.intensity()))
                         .toList();
 
-        ComboSimulationService.ComboResult result = comboSimulationService.simulate(userId, request.goalAmount(), selections);
+        ComboSimulationService.ComboResult result = comboSimulationService.simulate(userId, request.goalAmount(), selections, request.assumedReturnRate());
         BigDecimal finalNetWorth = result.timeline().get(result.timeline().size() - 1).netWorth();
 
         // baseline_months_to_goal/projected_months_to_goal은 NOT NULL 컬럼인데 엔진은 "도달 불가"를 null로
@@ -325,11 +367,51 @@ public class FutureSimulationApiController {
         int projectedToStore = result.comboMonthsToGoal() != null
                 ? result.comboMonthsToGoal() : PROJECTION_UNREACHABLE_SENTINEL_MONTHS;
 
-        planSnapshotService.save(
-                userId, request.goalAmount(), request.goalPresetKey(), selections,
-                baselineToStore, projectedToStore, finalNetWorth
+        int diffToStore = result.diffMonths() != null ? result.diffMonths() : 0;
+        String loanImpactJson = buildLoanImpactJson(userId, selections);
+        BenchmarkInfo benchmarkInfo = resolveBenchmarkInfo(userId, session);
+        String benchmarkType = (String) session.getAttribute(FutureSimViewController.COMPARISON_BASIS_SESSION_KEY);
+        String savedPlanName = planSnapshotService.save(
+                userId, request.planName(), request.goalAmount(), request.goalPresetKey(), benchmarkType,
+                benchmarkInfo.label(), benchmarkInfo.medianNetWorth(),
+                request.assumedReturnRate() == null ? appConfigService.getDecimal("FUTURESIM_ASSUMED_RETURN_RATE") : request.assumedReturnRate(), selections,
+                baselineToStore, projectedToStore, diffToStore, loanImpactJson, finalNetWorth
         );
 
-        return ResponseEntity.ok(new PlanSaveResponse(result.baselineMonthsToGoal(), result.comboMonthsToGoal(), finalNetWorth));
+        return ResponseEntity.ok(new PlanSaveResponse(savedPlanName, result.baselineMonthsToGoal(), result.comboMonthsToGoal(), finalNetWorth));
+    }
+
+    // 저장된 계획 목록(별도 페이지)에서 쓴다 — 이름/목표금액/앞당긴기간/수정시각만 내려주고,
+    // 불러오기는 FutureSimViewController가 서버에서 바로 세션에 반영하는 방식이라 여기엔 없다.
+    @GetMapping("/plans")
+    public ResponseEntity<List<PlanSummaryResponse>> plans(Authentication authentication) {
+        Long userId = currentUser.getUserId(authentication);
+        List<PlanSummaryResponse> summaries = planSnapshotService.list(userId).stream()
+                .map(plan -> new PlanSummaryResponse(
+                        plan.getId(), plan.getPlanName(), plan.getGoalAmount(),
+                        plan.getProjectedMonthsToGoal(), plan.getDiffMonths(), plan.getUpdatedAt()))
+                .toList();
+        return ResponseEntity.ok(summaries);
+    }
+
+    private String buildLoanImpactJson(Long userId, List<LeverIntensityCalculator.LeverSelection> selections) {
+        if (selections.stream().noneMatch(item -> item.leverType() == LeverIntensityCalculator.LeverType.LOAN_PREPAYMENT
+                || item.leverType() == LeverIntensityCalculator.LeverType.LOAN_TERM_EXTENSION)) return "[]";
+        var combined = leverLoanComparisonService.combinedImpact(userId, selections);
+        if (combined == null) return "[]";
+        return "[{\"loanId\":" + combined.loanId()
+                + ",\"loanType\":\"" + combined.loanType() + "\""
+                + ",\"beforeMonthlyPayment\":" + combined.beforeMonthlyPayment()
+                + ",\"afterMonthlyPayment\":" + combined.afterMonthlyPayment()
+                + ",\"totalInterestDiff\":" + combined.totalInterestDiff()
+                + ",\"beforeRemainingMonths\":" + combined.beforeRemainingMonths()
+                + ",\"afterRemainingMonths\":" + combined.afterRemainingMonths()
+                + ",\"prepaymentFeeRate\":" + nullableNumber(combined.prepaymentFeeRate())
+                + ",\"prepaymentFeeEndDate\":" + (combined.prepaymentFeeEndDate() == null ? "null" : "\"" + combined.prepaymentFeeEndDate() + "\"")
+                + "}]";
+    }
+
+    private String nullableNumber(BigDecimal value) {
+        return value == null ? "null" : value.toPlainString();
     }
 }

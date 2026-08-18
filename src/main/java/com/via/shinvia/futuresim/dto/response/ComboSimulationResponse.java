@@ -12,6 +12,6 @@ public record ComboSimulationResponse(
         Integer diffMonths,
         List<TimelinePoint> timeline
 ) {
-    public record TimelinePoint(int monthOffset, BigDecimal netWorth) {
+    public record TimelinePoint(int monthOffset, BigDecimal netWorth, BigDecimal contributionAmount, BigDecimal returnAmount) {
     }
 }

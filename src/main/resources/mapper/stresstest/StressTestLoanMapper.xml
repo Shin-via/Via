@@ -18,7 +18,9 @@
         la.rate_type,
         la.repayment_type,
         la.maturity_at,
-        la.loan_status
+        la.loan_status,
+        la.prepayment_fee_rate,
+        la.prepayment_fee_end_date
         FROM loan_account la
         JOIN mydata_connection mc ON mc.connection_id = la.connection_id
         WHERE mc.user_id = #{userId}

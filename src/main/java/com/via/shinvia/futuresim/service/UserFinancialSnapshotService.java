@@ -1,9 +1,9 @@
 package com.via.shinvia.futuresim.service;
 
+import com.via.shinvia.futuresim.mapper.FutureSimFinancialSnapshotMapper;
 import com.via.shinvia.stresstest.entity.StressTestLoanRow;
 import com.via.shinvia.stresstest.mapper.StressTestLoanMapper;
 import com.via.shinvia.stresstest.service.AnnualIncomeProvider;
-import com.via.shinvia.stresstest.service.LiquidAssetAggregator;
 import com.via.shinvia.stresstest.service.LoanBurdenAggregator;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.List;
 // stresstest/의 기존 서비스·매퍼를 그대로 재사용하고(수정 없음), stresstest 파일이 아닌
 // 이 파일에서만 조합 로직을 둔다.
 // - 소득: AnnualIncomeProvider (user_financial_profile.annual_income)
-// - 자산: LiquidAssetAggregator (user_financial_profile.liquid_asset_amount, 유동자산 기준)
+// - 자산: 재무 프로필의 유동자산과 마이데이터 account.current_balance 합계를 함께 반영한다.
 // - 부채(총 잔액): LoanBurdenAggregator는 월상환액만 주기 때문에(순자산 계산엔 원금 잔액이 필요),
 //   StressTestLoanMapper.findNormalLoansByUserId()로 직접 조회해 current_balance를 합산한다.
 // - monthlyLoanPayment: LoanBurdenAggregator(rateDeltaPercent=0)의 현재 월상환액 — 보조 참고값
@@ -24,37 +24,45 @@ import java.util.List;
 public class UserFinancialSnapshotService {
 
     private final AnnualIncomeProvider annualIncomeProvider;
-    private final LiquidAssetAggregator liquidAssetAggregator;
     private final LoanBurdenAggregator loanBurdenAggregator;
     private final StressTestLoanMapper loanMapper;
+    private final FutureSimFinancialSnapshotMapper financialSnapshotMapper;
 
     public UserFinancialSnapshotService(
             AnnualIncomeProvider annualIncomeProvider,
-            LiquidAssetAggregator liquidAssetAggregator,
             LoanBurdenAggregator loanBurdenAggregator,
-            StressTestLoanMapper loanMapper
+            StressTestLoanMapper loanMapper,
+            FutureSimFinancialSnapshotMapper financialSnapshotMapper
     ) {
         this.annualIncomeProvider = annualIncomeProvider;
-        this.liquidAssetAggregator = liquidAssetAggregator;
         this.loanBurdenAggregator = loanBurdenAggregator;
         this.loanMapper = loanMapper;
+        this.financialSnapshotMapper = financialSnapshotMapper;
     }
 
     public Snapshot getSnapshot(Long userId) {
         AnnualIncomeProvider.Result income = annualIncomeProvider.findAnnualIncome(userId);
-        LiquidAssetAggregator.Result asset = liquidAssetAggregator.aggregate(userId);
+        BigDecimal profileLiquidAsset = financialSnapshotMapper.findLiquidAssetAmountByUserId(userId);
+        BigDecimal syncedAccountBalance = financialSnapshotMapper.sumAccountBalanceByUserId(userId);
+        BigDecimal totalLiquidAsset = profileLiquidAsset != null
+                ? profileLiquidAsset
+                : BigDecimal.ZERO;
+        totalLiquidAsset = totalLiquidAsset.add(
+                syncedAccountBalance != null ? syncedAccountBalance : BigDecimal.ZERO
+        );
+        boolean liquidAssetAvailable = syncedAccountBalance != null || profileLiquidAsset != null;
         BigDecimal totalDebt = sumLoanBalances(userId);
         LoanBurdenAggregator.Result loanBurden = loanBurdenAggregator.aggregate(userId, BigDecimal.ZERO);
 
-        BigDecimal netWorth = asset.available()
-                ? asset.totalLiquidAssets().subtract(totalDebt)
+        BigDecimal netWorth = liquidAssetAvailable
+                ? totalLiquidAsset.subtract(totalDebt)
                 : null;
 
         BigDecimal monthlyLoanPayment = loanBurden.totalCurrentLoanPayment();
 
         return new Snapshot(
                 income.available() ? income.annualIncome() : null,
-                asset.available() ? asset.totalLiquidAssets() : null,
+                liquidAssetAvailable ? totalLiquidAsset : null,
                 totalDebt,
                 netWorth,
                 monthlyLoanPayment,

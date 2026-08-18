@@ -7,8 +7,10 @@ import java.util.List;
 // goalPresetKey는 2단계에서 세션에 남겨두지 않는 값이라 항상 null로 온다(프리셋 없이 직접 입력한
 // 경우와 구분이 안 돼 의미 없는 값을 넣느니 null로 두는 게 정직하다).
 public record PlanSaveRequest(
+        String planName,
         BigDecimal goalAmount,
         String goalPresetKey,
+        BigDecimal assumedReturnRate,
         List<ComboSimulationRequest.LeverEntry> levers
 ) {
 }

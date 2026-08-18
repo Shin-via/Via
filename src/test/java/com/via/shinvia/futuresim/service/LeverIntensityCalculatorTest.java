@@ -83,6 +83,12 @@ class LeverIntensityCalculatorTest {
     }
 
     @Test
+    void 월_추가_확보_빠른선택값은_서로_다른_원_단위_금액이다() {
+        assertThat(calculator().presetIntensitiesFor(USER_ID, LeverIntensityCalculator.LeverType.INCOME_CHANGE))
+                .containsExactly(new BigDecimal("100000"), new BigDecimal("500000"), new BigDecimal("1000000"));
+    }
+
+    @Test
     void 신규_대출_레버는_강도가_커질수록_지연_개월수가_단조_감소하고_결국_예측_불가로_수렴한다() {
         stubBaseSnapshot();
 
@@ -243,21 +249,20 @@ class LeverIntensityCalculatorTest {
 
     @Test
     void 소득변화와_조기상환처럼_서로_다른_대출을_건드리지_않는_레버는_단순_합산과_같다() {
-        stubBaseSnapshot();
         when(loanMapper.findNormalLoansByUserId(USER_ID)).thenReturn(List.of(loan(new BigDecimal("80000000"))));
         LeverIntensityCalculator calculator = calculator();
 
-        BigDecimal incomePercent = new BigDecimal("20");
+        BigDecimal monthlyExtraCapacity = new BigDecimal("500000");
         BigDecimal prepay = new BigDecimal("30000000");
 
         FutureSimulationEngine.Adjustment incomeOnly =
-                calculator.resolveAdjustment(USER_ID, LeverIntensityCalculator.LeverType.INCOME_CHANGE, incomePercent);
+                calculator.resolveAdjustment(USER_ID, LeverIntensityCalculator.LeverType.INCOME_CHANGE, monthlyExtraCapacity);
         FutureSimulationEngine.Adjustment prepayOnly =
                 calculator.resolveAdjustment(USER_ID, LeverIntensityCalculator.LeverType.LOAN_PREPAYMENT, prepay);
         BigDecimal naiveSum = incomeOnly.monthlyCashFlowDelta().add(prepayOnly.monthlyCashFlowDelta());
 
         FutureSimulationEngine.Adjustment combined = calculator.resolveCombinedAdjustment(USER_ID, List.of(
-                new LeverIntensityCalculator.LeverSelection(LeverIntensityCalculator.LeverType.INCOME_CHANGE, incomePercent),
+                new LeverIntensityCalculator.LeverSelection(LeverIntensityCalculator.LeverType.INCOME_CHANGE, monthlyExtraCapacity),
                 new LeverIntensityCalculator.LeverSelection(LeverIntensityCalculator.LeverType.LOAN_PREPAYMENT, prepay)
         ));
 
@@ -272,12 +277,12 @@ class LeverIntensityCalculatorTest {
         LeverIntensityCalculator.IntensityCurve curve =
                 calculator.calculateIntensityCurve(USER_ID, GOAL_AMOUNT, LeverIntensityCalculator.LeverType.INCOME_CHANGE);
         LeverIntensityCalculator.IntensityPoint gridPoint = curve.points().stream()
-                .filter(point -> point.intensity().compareTo(new BigDecimal("20")) == 0)
+                .filter(point -> point.intensity().compareTo(new BigDecimal("500000")) == 0)
                 .findFirst()
                 .orElseThrow();
 
         Integer singlePointDiff = calculator.calculateDiffMonths(
-                USER_ID, GOAL_AMOUNT, LeverIntensityCalculator.LeverType.INCOME_CHANGE, new BigDecimal("20")
+                USER_ID, GOAL_AMOUNT, LeverIntensityCalculator.LeverType.INCOME_CHANGE, new BigDecimal("500000")
         );
 
         assertThat(singlePointDiff).isEqualTo(gridPoint.diffMonths());

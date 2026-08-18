@@ -17,8 +17,7 @@ import static org.mockito.Mockito.mock;
 class LeverLoanComparisonServiceTest {
     private final StressTestLoanMapper loanMapper = mock(StressTestLoanMapper.class);
     private final LoanRepaymentCalculator calculator = new LoanRepaymentCalculator();
-    private final FutureSimulationEngine simulationEngine = mock(FutureSimulationEngine.class);
-    private final LeverLoanComparisonService service = new LeverLoanComparisonService(loanMapper, calculator, simulationEngine);
+    private final LeverLoanComparisonService service = new LeverLoanComparisonService(loanMapper, calculator);
 
     @Test
     void baseline_sums_all_existing_loan_calculator_results() {
@@ -66,10 +65,8 @@ class LeverLoanComparisonServiceTest {
     @Test
     void income_change_keeps_loan_summary_unchanged() {
         when(loanMapper.findNormalLoansByUserId(7L)).thenReturn(List.of(loan("100000000", "4.2", 120)));
-        when(simulationEngine.calculateSavingsCapacity(7L)).thenReturn(new FutureSimulationEngine.SavingsCapacity(
-                new BigDecimal("5000000"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
         var baseline = service.baseline(7L);
-        var actual = service.forLever(7L, LeverIntensityCalculator.LeverType.INCOME_CHANGE, new BigDecimal("20"));
+        var actual = service.forLever(7L, LeverIntensityCalculator.LeverType.INCOME_CHANGE, new BigDecimal("1000000"));
         assertThat(actual.monthlyBurden()).isEqualByComparingTo(baseline.monthlyBurden().subtract(new BigDecimal("1000000")));
         assertThat(actual.totalInterest()).isEqualByComparingTo(baseline.totalInterest());
         assertThat(actual.repaymentPeriodMonths()).isEqualTo(baseline.repaymentPeriodMonths());

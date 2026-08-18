@@ -33,7 +33,7 @@ public class LeverIntensityCalculator {
     private static final BigDecimal DIMINISHING_RETURN_RATIO = new BigDecimal("0.3");
 
     // 기본 강도(레버 랭킹 막대그래프 기준값)
-    public static final BigDecimal DEFAULT_INCOME_CHANGE_PERCENT = new BigDecimal("20");
+    public static final BigDecimal DEFAULT_MONTHLY_EXTRA_CAPACITY = new BigDecimal("500000");
     public static final BigDecimal DEFAULT_PREPAYMENT_AMOUNT = new BigDecimal("50000000");
     public static final BigDecimal DEFAULT_TERM_EXTENSION_MONTHS = BigDecimal.valueOf(120);
     public static final BigDecimal DEFAULT_NEW_LOAN_PRINCIPAL = new BigDecimal("100000000");
@@ -186,13 +186,9 @@ public class LeverIntensityCalculator {
         };
     }
 
-    // intensity = 소득 증가율(%). 월 소득만 그만큼 늘려서 저축 여력에 직접 더한다.
-    private FutureSimulationEngine.Adjustment incomeChangeAdjustment(Long userId, BigDecimal intensityPercent) {
-        FutureSimulationEngine.SavingsCapacity capacity = engine.calculateSavingsCapacity(userId);
-        BigDecimal extraMonthlyIncome = capacity.monthlyIncome()
-                .multiply(intensityPercent)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        return new FutureSimulationEngine.Adjustment(BigDecimal.ZERO, BigDecimal.ZERO, extraMonthlyIncome);
+    // intensity = 매달 추가로 확보할 금액(원). 소득 증가/지출 절감으로 확보한 돈을 전부 저축으로 돌린다.
+    private FutureSimulationEngine.Adjustment incomeChangeAdjustment(Long userId, BigDecimal monthlyExtraCapacity) {
+        return new FutureSimulationEngine.Adjustment(BigDecimal.ZERO, BigDecimal.ZERO, monthlyExtraCapacity);
     }
 
     // intensity = 조기상환 금액(원). 잔액이 가장 큰 대출 하나를 대표로 삼아, 그 대출을 상환한 뒤
@@ -322,11 +318,7 @@ public class LeverIntensityCalculator {
     }
 
     private List<BigDecimal> incomeChangePoints() {
-        List<BigDecimal> points = new ArrayList<>();
-        for (int percent = 5; percent <= 50; percent += 5) {
-            points.add(BigDecimal.valueOf(percent));
-        }
-        return points;
+        return List.of(new BigDecimal("100000"), new BigDecimal("500000"), new BigDecimal("1000000"));
     }
 
     private BigDecimal prepaymentMax(Long userId) {
@@ -386,7 +378,7 @@ public class LeverIntensityCalculator {
 
     public BigDecimal defaultIntensityFor(LeverType leverType) {
         return switch (leverType) {
-            case INCOME_CHANGE -> DEFAULT_INCOME_CHANGE_PERCENT;
+            case INCOME_CHANGE -> DEFAULT_MONTHLY_EXTRA_CAPACITY;
             case LOAN_PREPAYMENT -> DEFAULT_PREPAYMENT_AMOUNT;
             case LOAN_TERM_EXTENSION -> DEFAULT_TERM_EXTENSION_MONTHS;
             case NEW_LOAN -> DEFAULT_NEW_LOAN_PRINCIPAL;
