@@ -59,6 +59,10 @@
                     data-step-target="4" aria-controls="productSection" aria-disabled="true" disabled>
                 <span>4</span> 관련 상품 탐색
             </button>
+            <button id="stepTab5" class="guide-step" type="button"
+                    data-step-target="5" aria-controls="guideSaveSection" aria-disabled="false">
+                <span>5</span> 운용 기록
+            </button>
         </div>
     </nav>
 
@@ -328,10 +332,7 @@
         </div>
 
         <div id="productFilter" class="product-filter" role="group" aria-label="관련 상품 자산 필터">
-            <button class="product-filter-button active" type="button" data-product-filter="ALL" aria-pressed="true">
-                전체
-            </button>
-            <button class="product-filter-button" type="button" data-product-filter="ETF" aria-pressed="false">
+            <button class="product-filter-button" type="button" data-product-filter="ETF" aria-pressed="true">
                 ETF <span id="productFilterEtfAmount">-</span>
             </button>
             <button class="product-filter-button" type="button" data-product-filter="FUND" aria-pressed="false">
@@ -353,8 +354,121 @@
             <button id="backToResultButton" class="secondary-button action-button" type="button">
                 자산배분 결과로 돌아가기
             </button>
+            <button id="reviewGuideRecordButton" class="primary-button action-button" type="button">
+                선택 결과 확인하기
+            </button>
         </div>
     </section>
+
+    <section id="guideSaveSection" class="guide-step-panel guide-save-section step-card"
+             data-step-panel="5" aria-labelledby="stepTab5" hidden>
+        <div class="guide-save-heading">
+            <div>
+                <p id="guideRecordEyebrow" class="eyebrow">SAVE GUIDE RECORD</p>
+                <h2 id="guideRecordTitle">이번 운용 결과를 저장해주세요.</h2>
+                <p id="guideRecordDescription">
+                    아래 내용은 나중에 통합 금융 레포트의 여유자금 운용 영역을 구성하는 확정 기록입니다.
+                </p>
+            </div>
+            <span id="guideRecordBadge" class="guide-save-badge">완주 기록</span>
+        </div>
+
+        <section class="saved-guide-section saved-guide-section-top" aria-labelledby="savedGuideTitle">
+            <div class="guide-save-block-heading">
+                <h3 id="savedGuideTitle">저장된 운용 기록</h3>
+                <span>기록을 누르면 아래 화면의 값이 변경됩니다.</span>
+            </div>
+            <div id="savedGuideList" class="saved-guide-list" aria-live="polite">
+                <p class="saved-guide-empty">저장된 운용 기록을 불러오는 중입니다.</p>
+            </div>
+        </section>
+
+        <div id="guideRecordEmptyState" class="guide-record-empty" hidden>
+            저장된 운용 기록을 선택하거나 1단계부터 새로운 운용 가이드를 진행해주세요.
+        </div>
+
+        <div id="guideRecordContent">
+            <section class="guide-save-block" aria-labelledby="calculationSnapshotTitle">
+                <div class="guide-save-block-heading">
+                    <h3 id="calculationSnapshotTitle">여유자금 계산 결과</h3>
+                    <span>1단계 저장값</span>
+                </div>
+                <div class="guide-save-summary-grid">
+                    <article>
+                        <span>선택 계좌 잔액</span>
+                        <strong id="saveSelectedBalance">-</strong>
+                    </article>
+                    <article>
+                        <span>예상 생활비</span>
+                        <strong id="saveLivingExpense">-</strong>
+                    </article>
+                    <article>
+                        <span>예정 지출</span>
+                        <strong id="saveScheduledExpense">-</strong>
+                    </article>
+                    <article>
+                        <span>비상금</span>
+                        <strong id="saveEmergencyFund">-</strong>
+                    </article>
+                    <article class="is-emphasis">
+                        <span>최종 운용 가능 금액</span>
+                        <strong id="saveFinalSurplusAmount">-</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="guide-save-block" aria-labelledby="allocationSnapshotTitle">
+                <div class="guide-save-block-heading">
+                    <h3 id="allocationSnapshotTitle">자산배분 결과와 판정 이유</h3>
+                    <span>설문 응답 원문은 레포트에 포함하지 않습니다.</span>
+                </div>
+                <div id="saveAllocationList" class="guide-save-allocation-list"></div>
+                <ul id="saveReasonList" class="guide-save-reason-list"></ul>
+            </section>
+
+            <section class="guide-save-block" aria-labelledby="etfSnapshotTitle">
+                <div class="guide-save-block-heading">
+                    <h3 id="etfSnapshotTitle">관심 ETF</h3>
+                    <span id="saveEtfCount">0/4개 선택</span>
+                </div>
+                <div id="saveEtfList" class="guide-save-etf-list"></div>
+                <p class="guide-save-note">
+                    ETF는 비교 담기에 선택한 최대 4개 상품의 선택 당시 정보를 표시합니다.
+                    펀드 상품 정보는 이번 레포트 저장 대상에서 제외됩니다.
+                </p>
+            </section>
+
+            <section id="guideNameCard" class="guide-name-card" aria-labelledby="guideNameTitle">
+                <div>
+                    <h3 id="guideNameTitle">운용 기록 이름</h3>
+                    <p>나중에 기록 목록에서 알아볼 수 있는 이름을 입력해주세요. 비워두면 날짜·성향·금액으로 자동 생성됩니다.</p>
+                </div>
+                <label for="guideName">
+                    <span>기록 이름</span>
+                    <input id="guideName" type="text" maxlength="100"
+                           placeholder="예: 하반기 목돈 운용">
+                </label>
+            </section>
+
+            <div id="guideSaveMessage" class="message" role="status" hidden></div>
+
+            <div id="guideCurrentActions" class="panel-actions guide-save-actions">
+                <button id="backToProductsButton" class="secondary-button action-button" type="button">
+                    상품 선택으로 돌아가기
+                </button>
+                <button id="saveGuideVersionButton" class="primary-button action-button" type="button">
+                    이 운용 기록 저장하기
+                </button>
+            </div>
+
+            <div id="guideHistoryActions" class="panel-actions guide-history-actions" hidden>
+                <button id="backToCurrentGuideButton" class="secondary-button action-button" type="button">
+                    이번 결과로 돌아가기
+                </button>
+            </div>
+        </div>
+    </section>
+
     <input type="hidden"
            id="csrfToken"
            th:value="${_csrf.token}">

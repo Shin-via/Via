@@ -18,4 +18,10 @@ public interface SurplusFundPlanMapper {
             @Param("planId") Long planId,
             @Param("allocations") List<AssetAllocationResponse> allocations
     );
+
+    int insertReason(
+            @Param("planId") Long planId,
+            @Param("reasonOrder") int reasonOrder,
+            @Param("reasonText") String reasonText
+    );
 }
