@@ -45,4 +45,7 @@ public class JeonseSurveyRequest {
     // 사용자가 생각하고 있는 전세대출 금액
     // 아직 미정이면 null 가능
     private BigDecimal desiredLoanAmount;
+
+    // 기존 소유 주택이 있을 경우 유지 여부 (true: 유지/보유, false: 매각)
+    private Boolean keepExistingHome;
 }

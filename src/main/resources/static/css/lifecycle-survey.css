@@ -87,10 +87,17 @@
 
 .lifecycle-panel-heading {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 24px;
+}
+
+.lifecycle-panel-heading p {
+    color: #5b626c;
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
 }
 
 .lifecycle-event-grid {
@@ -1645,3 +1652,95 @@
             gap: 6px;
         }
     }
+
+    /* Recommendation Reliability & Eligibility Badges */
+    .lifecycle-recommendation-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .lifecycle-status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 750;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .lifecycle-status-badge.eligible {
+        background: #e6f7eb;
+        color: #1b873f;
+        border: 1px solid #b7ebd0;
+    }
+
+    .lifecycle-status-badge.needs-confirmation {
+        background: #fff8e6;
+        color: #b26a00;
+        border: 1px solid #ffe0a3;
+    }
+
+    .lifecycle-status-badge.not-eligible {
+        background: #f1f3f5;
+        color: #7b8694;
+        border: 1px solid #dce2e8;
+    }
+
+    .lifecycle-source-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        color: #687381;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .lifecycle-eligibility-reason {
+        font-size: 12px;
+        color: #3b506c;
+        background: #f4f7fb;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin: 6px 0;
+        line-height: 1.45;
+        border-left: 3px solid #8ba8cd;
+    }
+
+    .lifecycle-product-terms {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 12px;
+        color: #495057;
+        margin: 4px 0 8px;
+    }
+
+    .lifecycle-product-terms strong {
+        color: #1f2935;
+    }
+
+    .lifecycle-benefit-tag {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #eef4fc;
+        color: #2b548b;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .lifecycle-link-btn {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #1f6fed;
+        font-weight: 650;
+        text-decoration: underline;
+    }
+

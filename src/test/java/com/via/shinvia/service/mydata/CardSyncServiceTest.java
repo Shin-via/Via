@@ -38,7 +38,7 @@ class CardSyncServiceTest {
     private CardMapper cardMapper;
 
     @Mock
-    private MockServerProperties mockServerProperties;
+    private com.via.shinvia.mydata.config.MyDataProperties myDataProperties;
 
     @InjectMocks
     private CardSyncService cardSyncService;
@@ -139,13 +139,13 @@ class CardSyncServiceTest {
         List<CardAccount> saved = captor.getAllValues();
         assertThat(saved.get(0).getInstitutionId()).isEqualTo(1L);
         assertThat(saved.get(1).getInstitutionId()).isEqualTo(2L);
-        verify(mockServerProperties, never()).getOrgCode();
+        verify(myDataProperties, never()).getOrgCode();
     }
 
     // 응답에 institution_id가 없는(레거시) 카드만 설정된 기본 org_code로 대체한다.
     @Test
     void institution_id가_없으면_기본_설정값으로_대체한다() {
-        when(mockServerProperties.getOrgCode()).thenReturn("004");
+        when(myDataProperties.getOrgCode()).thenReturn("004");
         when(cardMapper.findInstitutionIdByOrgCode("004")).thenReturn(1L);
         when(cardMapper.findByExternalCardKey("CARD00000001")).thenReturn(null);
 

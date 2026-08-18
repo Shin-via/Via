@@ -26,11 +26,13 @@ public class LifecycleWelfareService {
     private static final String SOURCE_BOKJIRO_NATIONAL = "BOKJIRO_NATIONAL";
 
     private final WelfareSupportProductRepository welfareSupportProductRepository;
+    private final LifecycleEligibilityService lifecycleEligibilityService;
 
     public List<LifecycleSupportDto> getSupports(
             LifecycleEventType eventType,
             String regionSido,
-            String regionSigungu
+            String regionSigungu,
+            Long userId
     ) {
         List<KeywordRule> keywordRules = resolveKeywordRules(eventType);
         if (keywordRules.isEmpty()) {
@@ -43,6 +45,10 @@ public class LifecycleWelfareService {
                         regionSigungu
                 );
 
+        var userContext = lifecycleEligibilityService != null
+                ? lifecycleEligibilityService.buildUserContext(userId, null, regionSido, regionSigungu, null)
+                : null;
+
         return deduplicateCrossSource(candidates).stream()
                 .filter(product -> isRegionEligible(
                         product,
@@ -52,8 +58,16 @@ public class LifecycleWelfareService {
                 .filter(product -> isRelevantForEvent(product, eventType))
                 .sorted(recommendationOrder(keywordRules, regionSido, regionSigungu))
                 .limit(RECOMMENDATION_LIMIT)
-                .map(this::toLifecycleSupport)
+                .map(product -> toLifecycleSupport(product, userContext))
                 .toList();
+    }
+
+    public List<LifecycleSupportDto> getSupports(
+            LifecycleEventType eventType,
+            String regionSido,
+            String regionSigungu
+    ) {
+        return getSupports(eventType, regionSido, regionSigungu, null);
     }
 
     private List<WelfareSupportProduct> deduplicateCrossSource(
@@ -376,19 +390,35 @@ public class LifecycleWelfareService {
     }
 
     private LifecycleSupportDto toLifecycleSupport(
-            WelfareSupportProduct product
+            WelfareSupportProduct product,
+            com.via.shinvia.lifecycle.recommendation.dto.LifecycleUserProfileContext userContext
     ) {
+        String status = "NEEDS_CONFIRMATION";
+        String reason = "심사 필요";
+        if (lifecycleEligibilityService != null) {
+            var evalResult = lifecycleEligibilityService.evaluateWelfare(product, userContext);
+            status = evalResult.status();
+            reason = evalResult.reason();
+        }
+
+        String updatedDateStr = product.getSourceUpdatedAt() != null 
+                ? product.getSourceUpdatedAt().toLocalDate().toString()
+                : (product.getUpdatedAt() != null ? product.getUpdatedAt().toLocalDate().toString() : "2026-08-01");
+
         return LifecycleSupportDto.builder()
                 .welfareSupportProductId(product.getWelfareSupportProductId())
                 .supportName(product.getProductName())
                 .effectType(resolveEffectType(product))
                 .amount(null)
                 .durationMonths(null)
-                .recommendationStatus("NEEDS_CONFIRMATION")
+                .recommendationStatus(status)
+                .eligibilityReason(reason)
                 .sourceName(firstNotBlank(
                         product.getInstitutionName(),
-                        product.getResponsibleInstitution()
+                        product.getResponsibleInstitution(),
+                        "복지로 / 공공데이터포털"
                 ))
+                .sourceUpdatedAt(updatedDateStr)
                 .sourceUrl(product.getRelatedUrl())
                 .build();
     }
@@ -422,15 +452,14 @@ public class LifecycleWelfareService {
         return SupportEffectType.CASH_INFLOW;
     }
 
-    private String firstNotBlank(
-            String first,
-            String second
-    ) {
-        if (first != null && !first.isBlank()) {
-            return first;
+    private String firstNotBlank(String... values) {
+        if (values == null) return "";
+        for (String val : values) {
+            if (val != null && !val.isBlank()) {
+                return val;
+            }
         }
-
-        return second;
+        return "";
     }
 
     private String value(String value) {

@@ -44,4 +44,7 @@ public class MonthlyRentSurveyRequest {
 
     // 예상 월 관리비
     private BigDecimal monthlyManagementFee;
+
+    // 기존 소유 주택이 있을 경우 유지 여부 (true: 유지/보유, false: 매각)
+    private Boolean keepExistingHome;
 }

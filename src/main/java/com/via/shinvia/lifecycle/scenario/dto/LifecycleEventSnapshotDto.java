@@ -37,9 +37,20 @@ public class LifecycleEventSnapshotDto {
     private BigDecimal beforeHousingAsset;
     private BigDecimal afterHousingAsset;
 
+    private BigDecimal beforeRealEstateAsset;
+    private BigDecimal afterRealEstateAsset;
+
+    private BigDecimal beforeDepositAsset;
+    private BigDecimal afterDepositAsset;
+
+    private String beforeCurrentHousingType;
+    private String afterCurrentHousingType;
+
     private BigDecimal beforeTotalDebt;
     private BigDecimal afterTotalDebt;
     private BigDecimal totalDebtChange;
+
+    private java.util.List<com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto> loans;
 
     private BigDecimal beforeNetAsset;
     private BigDecimal afterNetAsset;

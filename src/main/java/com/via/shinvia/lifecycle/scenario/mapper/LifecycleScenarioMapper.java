@@ -35,4 +35,15 @@ public interface LifecycleScenarioMapper {
             @Param("scenarioId") Long scenarioId,
             @Param("userId") Long userId
     );
+
+    int updateSimulationResult(
+            @Param("scenarioId") Long scenarioId,
+            @Param("userId") Long userId,
+            @Param("resultJson") String resultJson
+    );
+
+    String findSimulationResult(
+            @Param("scenarioId") Long scenarioId,
+            @Param("userId") Long userId
+    );
 }

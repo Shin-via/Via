@@ -25,10 +25,21 @@ public class LifecycleFinancialStateDto {
     private BigDecimal cashAsset = BigDecimal.ZERO;          // 통장 현금/유동자산 (지출/저축의 기준)
 
     @Builder.Default
-    private BigDecimal housingAsset = BigDecimal.ZERO;       // 주택/전세보증금 자산 (해당 시)
+    private BigDecimal realEstateAsset = BigDecimal.ZERO;    // 소유 주택(부동산) 자산 가치
+
+    @Builder.Default
+    private BigDecimal depositAsset = BigDecimal.ZERO;       // 임차 보증금(전세/월세 보증금) 자산 가치
+
+    @Builder.Default
+    private BigDecimal housingAsset = BigDecimal.ZERO;       // 하위 호환용 총 주거자산 (realEstate + deposit)
+
+    private String currentHousingType;                       // 현재 거주 형태 (FAMILY, MONTHLY_RENT, JEONSE, OWN 등)
 
     @Builder.Default
     private BigDecimal totalDebt = BigDecimal.ZERO;          // 총 부채 잔액
+
+    @Builder.Default
+    private java.util.List<LifecycleLoanDto> loans = new java.util.ArrayList<>(); // 보유 개별 대출 목록
 
     // [소득 및 지원금]
     @Builder.Default
@@ -55,10 +66,23 @@ public class LifecycleFinancialStateDto {
     private BigDecimal dsr = BigDecimal.ZERO;                   // DSR 계산 모듈에서 산출된 값
 
     /**
-     * 순자산 = (현금 + 주택보증금) - 총부채
+     * 총 주거자산 (부동산 + 보증금)
+     */
+    public BigDecimal getHousingAsset() {
+        BigDecimal sum = nvl(realEstateAsset).add(nvl(depositAsset));
+        if (sum.compareTo(BigDecimal.ZERO) > 0) {
+            return sum;
+        }
+        return nvl(housingAsset);
+    }
+
+    /**
+     * 순자산 = (현금 + 부동산 + 임차보증금) - 총부채
      */
     public BigDecimal getNetAsset() {
-        return nvl(cashAsset).add(nvl(housingAsset)).subtract(nvl(totalDebt));
+        return nvl(cashAsset)
+                .add(getHousingAsset())
+                .subtract(nvl(totalDebt));
     }
 
     /**
@@ -75,11 +99,30 @@ public class LifecycleFinancialStateDto {
     }
 
     /**
-     * 새 시점으로 복제
+     * 새 시점으로 복제 (대출 목록 포함)
      */
     public LifecycleFinancialStateDto copy(LocalDate newDate) {
+        java.util.List<LifecycleLoanDto> copiedLoans = new java.util.ArrayList<>();
+        if (this.loans != null) {
+            for (LifecycleLoanDto loan : this.loans) {
+                if (loan != null) {
+                    copiedLoans.add(LifecycleLoanDto.builder()
+                            .loanAccountId(loan.getLoanAccountId())
+                            .loanType(loan.getLoanType())
+                            .currentBalance(loan.getCurrentBalance())
+                            .interestRate(loan.getInterestRate())
+                            .rateType(loan.getRateType())
+                            .repaymentType(loan.getRepaymentType())
+                            .maturityAt(loan.getMaturityAt())
+                            .prepaymentFeeRate(loan.getPrepaymentFeeRate())
+                            .prepaymentFeeEndDate(loan.getPrepaymentFeeEndDate())
+                            .build());
+                }
+            }
+        }
         return this.toBuilder()
                 .stateDate(newDate)
+                .loans(copiedLoans)
                 .build();
     }
 

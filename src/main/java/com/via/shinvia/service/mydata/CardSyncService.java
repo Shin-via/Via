@@ -59,7 +59,7 @@ public class CardSyncService {
 
         List<CardAccount> saved = new ArrayList<>();
         for (CardInfoDto dto : cardList) {
-            String institutionOrgCode = dto.getInstitutionId();
+            String institutionOrgCode = dto.getInstitutionId() != null ? dto.getInstitutionId() : (myDataProperties != null ? myDataProperties.getOrgCode() : null);
             Long institutionId = cardMapper.findInstitutionIdByOrgCode(institutionOrgCode);
 
             if (institutionId == null) {

@@ -42,4 +42,19 @@ public class LifecycleSimulationController {
 
         return ResponseEntity.ok(result);
     }
+
+    @org.springframework.web.bind.annotation.GetMapping("/{scenarioId}/result")
+    public ResponseEntity<LifecycleScenarioResultDto> getSimulationResult(
+            Authentication authentication,
+            @PathVariable Long scenarioId
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        LifecycleScenarioResultDto result =
+                lifecycleSimulationService.getSimulationResult(userId, scenarioId);
+
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
+    }
 }

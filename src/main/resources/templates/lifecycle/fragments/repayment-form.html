@@ -46,15 +46,13 @@
                     상환할 대출
                 </label>
 
-                <input type="number"
-                       id="repaymentLoanAccountId"
-                       name="loanAccountId"
-                       min="1"
-                       placeholder="대출계좌 ID"
-                       required>
+                <select id="repaymentLoanAccountId"
+                        name="loanAccountId">
+                    <option value="">보유 대출 목록 불러오는 중...</option>
+                </select>
 
                 <small>
-                    추후 보유 대출 목록을 조회하여 선택하도록 변경합니다.
+                    미선택 시 금리가 가장 높은 대출부터 우선 상환됩니다.
                 </small>
 
             </div>

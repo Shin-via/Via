@@ -56,6 +56,9 @@ public class MonthlyRentSurveyResponse {
     // 예상 월 관리비
     private BigDecimal monthlyManagementFee;
 
+    // 기존 소유 주택 유지 여부
+    private Boolean keepExistingHome;
+
     // 이벤트 최초 생성일시
     private LocalDateTime createdAt;
 
