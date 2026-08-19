@@ -16,6 +16,8 @@ import java.util.List;
 @Service
 public class PlaywrightPdfRenderer {
 
+    private static final double RENDER_TIMEOUT_MILLIS = 60_000;
+
     private final Object browserMonitor = new Object();
     private final String internalBaseUrl;
 
@@ -33,11 +35,13 @@ public class PlaywrightPdfRenderer {
         try (BrowserContext context = browser().newContext()) {
             context.addCookies(List.of(new Cookie("JSESSIONID", sessionId).setUrl(internalBaseUrl)));
             Page page = context.newPage();
+            page.setDefaultTimeout(RENDER_TIMEOUT_MILLIS);
             page.setViewportSize(794, 1123);
             page.navigate(internalBaseUrl + "/report/render?pdf=true",
-                    new Page.NavigateOptions().setWaitUntil(com.microsoft.playwright.options.WaitUntilState.DOMCONTENTLOADED).setTimeout(20_000));
+                    new Page.NavigateOptions().setWaitUntil(com.microsoft.playwright.options.WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(RENDER_TIMEOUT_MILLIS));
             page.waitForSelector("body[data-charts-ready='true']",
-                    new Page.WaitForSelectorOptions().setTimeout(20_000));
+                    new Page.WaitForSelectorOptions().setTimeout(RENDER_TIMEOUT_MILLIS));
             page.evaluate("() => document.fonts.ready");
             return page.pdf(new Page.PdfOptions()
                     .setFormat("A4")
