@@ -1,0 +1,439 @@
+@font-face {
+    font-family: 'Noto Sans KR Report';
+    src: url('/fonts/NotoSansKR-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+
+.report-pdf-mode,
+.report-pdf-mode * {
+    font-family: 'Noto Sans KR Report', sans-serif;
+}
+
+.report-score-box {
+    border: 1px solid var(--fp-hairline);
+    background: var(--fp-navy-tint);
+    padding: 16px 18px;
+    border-radius: 10px;
+}
+
+.report-score-total {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fp-navy);
+    margin-bottom: 14px;
+}
+
+.report-score-grade {
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.report-bar-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-bar-label {
+    display: block;
+    font-size: 12px;
+    color: var(--fp-ink-secondary);
+    margin-bottom: 4px;
+}
+
+.report-bar-track {
+    display: block;
+    height: 8px;
+    border-radius: 4px;
+    background: #dfe3ea;
+    overflow: hidden;
+}
+
+.report-bar-fill {
+    display: block;
+    height: 100%;
+    background: var(--fp-navy);
+    border-radius: 4px;
+}
+
+.report-cards-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.report-pdf-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.report-pdf-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fp-navy);
+    border: 1px solid var(--fp-navy);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.report-pdf-link-secondary {
+    color: var(--fp-ink-secondary);
+    border-color: var(--fp-hairline);
+}
+
+.report-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 14px;
+}
+
+@media (max-width: 640px) {
+    .report-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.report-card-slot {
+    position: relative;
+    min-height: 140px;
+    border-radius: 10px;
+    border: 1px solid var(--fp-hairline);
+    padding: 14px 16px;
+}
+
+.report-card-empty {
+    background: var(--fp-surface-sunken);
+    color: var(--fp-ink-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-card-filled {
+    background: #ffffff;
+}
+
+.report-card-remove {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--fp-ink-muted);
+    cursor: pointer;
+}
+
+.report-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fp-navy);
+    margin: 0 0 8px 0;
+}
+
+.report-card-headline span {
+    font-size: 12px;
+    color: var(--fp-ink-muted);
+}
+
+.report-card-headline b {
+    font-size: 18px;
+    color: var(--fp-ink);
+}
+
+.report-card-rows {
+    list-style: none;
+    margin: 10px 0 0 0;
+    padding: 0;
+}
+
+.report-card-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--fp-ink-secondary);
+    border-top: 1px solid var(--fp-hairline);
+    padding: 5px 0;
+}
+
+.report-card-note {
+    font-size: 11px;
+    color: var(--fp-ink-muted);
+    margin-top: 8px;
+}
+
+.report-card-change-plan {
+    display: block;
+    margin-top: 10px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fp-navy);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.report-modal-empty {
+    font-size: 12px;
+    color: var(--fp-ink-muted);
+    padding: 10px 2px;
+}
+
+.report-card-loading {
+    font-size: 12px;
+    color: var(--fp-ink-muted);
+}
+
+.report-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 27, 52, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.report-modal-backdrop.hidden {
+    display: none;
+}
+
+.report-modal {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    width: min(360px, 90vw);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.report-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.report-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--fp-navy);
+}
+
+.report-modal-close {
+    border: none;
+    background: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--fp-ink-muted);
+}
+
+.report-modal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-modal-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--fp-hairline);
+    background: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.report-modal-option:disabled {
+    color: var(--fp-ink-muted);
+    background: var(--fp-surface-sunken);
+    cursor: not-allowed;
+}
+
+.report-modal-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--fp-benchmark-tint);
+    color: var(--fp-benchmark);
+}
+
+.report-pdf-mode .report-pdf-actions,
+.report-pdf-mode .report-card-empty,
+.report-pdf-mode .report-card-remove,
+.report-pdf-mode .report-card-change-plan,
+.report-pdf-mode .report-modal-backdrop,
+.report-pdf-mode .report-interactive-only {
+    display: none !important;
+}
+
+.report-pdf-mode .report-card-grid {
+    display: block;
+    margin: 0;
+}
+
+.report-pdf-mode .report-card-slot {
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    break-inside: avoid;
+}
+
+.report-pdf-mode,
+.report-pdf-mode * {
+    box-sizing: border-box;
+}
+
+.report-pdf-mode {
+    background: #ffffff;
+}
+
+.report-pdf-mode .report-pdf-card-page {
+    break-before: page;
+    break-inside: auto;
+}
+
+.report-pdf-mode .report-pdf-card-page:first-child {
+    break-before: auto;
+}
+
+.report-pdf-mode .report-pdf-header-section > .fcs-panel-sub {
+    display: none;
+}
+
+.report-pdf-mode > .lifecycle-survey-header {
+    margin: 0 0 18px;
+    padding: 0 0 14px;
+    border-bottom: 1px solid #dcdfe3;
+}
+
+.report-pdf-mode > .lifecycle-survey-header h1 {
+    margin: 6px 0;
+    font-size: 24px;
+}
+
+.report-pdf-mode > .lifecycle-survey-header p {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.report-pdf-mode.futuresim-goal-preset-page .report-pdf-header-section {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    break-after: page;
+}
+
+.report-pdf-mode .report-score-box {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.report-pdf-mode .report-bar-track {
+    background: transparent;
+    border: 1px solid #dfe3ea;
+}
+
+.report-pdf-mode.futuresim-goal-preset-page .report-pdf-cards-section {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.report-pdf-card-detail {
+    color: #1b2430;
+}
+
+.report-pdf-card-detail h2 {
+    margin: 0;
+    color: #1b2c52;
+    font-size: 24px;
+}
+
+.report-pdf-card-eyebrow {
+    margin: 0 0 6px;
+    color: #657080;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.report-pdf-card-headline {
+    margin: 20px 0 0;
+    padding: 16px;
+    border: 1px solid #dce3ec;
+    background: transparent;
+}
+
+.report-pdf-card-headline span,
+.report-pdf-card-headline strong {
+    display: block;
+}
+
+.report-pdf-card-headline span { color: #657080; font-size: 12px; }
+.report-pdf-card-headline strong { margin-top: 5px; color: #1b2c52; font-size: 22px; }
+
+body:has(.report-pdf-mode) > .header,
+body:has(.report-pdf-mode) > .footer,
+body:has(.report-pdf-mode) .service-sidebar {
+    display: none;
+}
+
+body:has(.report-pdf-mode) .site-layout {
+    display: block;
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding-top: 0;
+}
+
+body:has(.report-pdf-mode) .site-content {
+    width: auto;
+    margin: 0;
+}
+
+@media print {
+    body:has(.report-pdf-mode) {
+        width: 190mm;
+        margin: 0;
+        background: #ffffff;
+    }
+
+    body:has(.report-pdf-mode) .site-layout,
+    body:has(.report-pdf-mode) .site-content,
+    body:has(.report-pdf-mode) .site-content > main,
+    body:has(.report-pdf-mode) .report-pdf-mode {
+        width: 190mm !important;
+        max-width: 190mm !important;
+        min-width: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
