@@ -51,6 +51,8 @@ dependencies {
 
     implementation 'org.apache.commons:commons-csv:1.11.0'
 
+    implementation 'com.microsoft.playwright:playwright:1.61.0'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -79,4 +81,14 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('playwrightInstall', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', 'chromium'
+}
+
+tasks.register('installPlaywrightChromium') {
+    dependsOn 'playwrightInstall'
 }
