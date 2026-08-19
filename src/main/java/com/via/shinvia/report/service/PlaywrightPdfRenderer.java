@@ -38,6 +38,7 @@ public class PlaywrightPdfRenderer {
                     new Page.NavigateOptions().setWaitUntil(com.microsoft.playwright.options.WaitUntilState.DOMCONTENTLOADED).setTimeout(20_000));
             page.waitForSelector("body[data-charts-ready='true']",
                     new Page.WaitForSelectorOptions().setTimeout(20_000));
+            page.evaluate("() => document.fonts.ready");
             return page.pdf(new Page.PdfOptions()
                     .setFormat("A4")
                     .setPrintBackground(true)

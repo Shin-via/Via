@@ -1,3 +1,15 @@
+@font-face {
+    font-family: 'Noto Sans KR Report';
+    src: url('/fonts/NotoSansKR-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+
+.report-pdf-mode,
+.report-pdf-mode * {
+    font-family: 'Noto Sans KR Report', sans-serif;
+}
+
 .report-score-box {
     border: 1px solid var(--fp-hairline);
     background: var(--fp-navy-tint);
