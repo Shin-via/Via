@@ -51,7 +51,7 @@ public class AssetDebtCardProvider implements ReportCardDataProvider {
                 ? null
                 : "유동자산 정보가 아직 등록되지 않았어요.";
 
-        return new CardData(CARD_KEY, "자산·부채 현황", "보유 유동자산", headlineValue, detailRows, note, null);
+        return new CardData(CARD_KEY, "자산·부채 현황", "보유 유동자산", headlineValue, detailRows, note, null,null);
     }
 
     private String formatWon(BigDecimal amount) {

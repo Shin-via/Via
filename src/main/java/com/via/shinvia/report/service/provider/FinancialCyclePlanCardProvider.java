@@ -21,6 +21,6 @@ public class FinancialCyclePlanCardProvider implements ReportCardDataProvider {
 
     @Override
     public CardData getCardData(Long userId, Long refId) {
-        return new CardData(CARD_KEY, "금융 사이클 플랜", "준비중", "-", List.of(), "아직 연동되지 않은 카드예요.", null);
+        return new CardData(CARD_KEY, "금융 사이클 플랜", "준비중", "-", List.of(), "아직 연동되지 않은 카드예요.", null, null);
     }
 }

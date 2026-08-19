@@ -85,7 +85,7 @@ public class FuturesimCardProvider implements ReportCardDataProvider {
             String note = refId != null
                     ? "요청한 계획을 찾을 수 없어요. 저장된 계획 목록에서 다시 골라주세요."
                     : "4단계에서 실행 계획을 저장하면 여기에 표시돼요.";
-            return new CardData(CARD_KEY, "미래 금융 시뮬레이터", "저장된 계획 없음", "-", List.of(), note, null);
+            return new CardData(CARD_KEY, "미래 금융 시뮬레이터", "저장된 계획 없음", "-", List.of(), note, null,null);
         }
 
         List<LeverEntry> levers = parseLevers(plan.getSelectedLeversJson());
@@ -105,7 +105,8 @@ public class FuturesimCardProvider implements ReportCardDataProvider {
                 compareBadge(plan.getDiffMonths()),
                 detailRows,
                 null,
-                toPrintData(userId, plan, levers)
+                toPrintData(userId, plan, levers),
+                null
         );
     }
 

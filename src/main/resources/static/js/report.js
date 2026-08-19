@@ -91,7 +91,10 @@
             if (cardKey === 'FUTURESIM' && card.futuresimPrintData) {
                 slot.innerHTML = window.ReportFuturesimPdfCard.render(card);
                 window.ReportFuturesimPdfCard.renderChart(slot, card);
-            } else {
+            } else if (cardKey === 'SURPLUS_FUND' && card.surplusFundPrintData) {
+                slot.innerHTML = window.ReportSurplusFundPdfCard.render(card);
+
+            }else {
                 slot.innerHTML = renderGenericPdfCard(card);
             }
             return;
@@ -99,21 +102,34 @@
         const rows = (card.detailRows || []).map((row) =>
             `<li class="report-card-row"><span>${row.label}</span><span>${row.value}</span></li>`
         ).join('');
-        const changePlanButton = !pdfMode && cardKey === 'FUTURESIM'
-            ? `<button type="button" class="report-card-change-plan" data-index="${index}">계획 변경</button>`
-            : '';
+        let changeRefButton = '';
+
+        if (!pdfMode && cardKey === 'FUTURESIM') {
+            changeRefButton =
+                `<button type="button" class="report-card-change-plan" data-index="${index}">계획 변경</button>`;
+        } else if (!pdfMode && cardKey === 'SURPLUS_FUND') {
+            changeRefButton =
+                `<button type="button" class="report-card-change-plan" data-index="${index}">운용기록 변경</button>`;
+        }
         slot.innerHTML =
             `<button type="button" class="report-card-remove" data-index="${index}" aria-label="카드 삭제">×</button>` +
             `<p class="report-card-title">${card.title}</p>` +
             `<p class="report-card-headline"><span>${card.headlineLabel}</span><br><b>${card.headlineValue}</b></p>` +
             (rows ? `<ul class="report-card-rows">${rows}</ul>` : '') +
             (card.note ? `<p class="report-card-note">${card.note}</p>` : '') +
-            changePlanButton;
+            changeRefButton;
         const removeButton = slot.querySelector('.report-card-remove');
         if (removeButton) removeButton.addEventListener('click', () => removeCard(index));
         const changeBtn = slot.querySelector('.report-card-change-plan');
+
         if (changeBtn) {
-            changeBtn.addEventListener('click', () => openPlanPickerModal(index));
+            changeBtn.addEventListener('click', () => {
+                if (cardKey === 'FUTURESIM') {
+                    openPlanPickerModal(index);
+                } else if (cardKey === 'SURPLUS_FUND') {
+                    openSurplusFundPickerModal(index);
+                }
+            });
         }
     }
 
@@ -172,6 +188,53 @@
             })
             .catch(() => {
                 modalListEl.innerHTML = '<li class="report-modal-empty">불러오지 못했어요</li>';
+            });
+    }
+
+    function openSurplusFundPickerModal(cardIndex) {
+        modalTitleEl.textContent = '보여줄 운용기록 선택';
+        modalListEl.innerHTML = '<li class="report-modal-empty">불러오는 중…</li>';
+
+        modalBackdropEl.classList.remove('hidden');
+
+        fetch('/api/surplus-funds/guide-versions')
+            .then((res) =>
+                res.ok ? res.json() : Promise.reject(res.status)
+            )
+            .then((versions) => {
+
+                if (!versions || versions.length === 0) {
+                    modalListEl.innerHTML = '<li class="report-modal-empty">저장된 운용기록이 없어요.</li>';
+                    return;
+                }
+
+                modalListEl.innerHTML = versions.map((version) => {
+                    const name = version.guideName || `운용기록 ${version.guideVersionNo}`;
+
+                    return `
+                    <li>
+                        <button
+                            type="button"
+                            class="report-modal-option"
+                            data-guide-version-id="${version.surplusFundGuideVersionId}"
+                        >
+                            <span>${escapeHtml(name)}</span>
+                        </button>
+                    </li>
+                `;
+                }).join('');
+
+                modalListEl.querySelectorAll('.report-modal-option')
+                        .forEach((btn) => {
+
+                            btn.addEventListener('click', () => {
+                                setCardRefId(cardIndex, Number(btn.dataset.guideVersionId));
+                            });
+
+                        });
+            })
+            .catch(() => {
+                modalListEl.innerHTML = '<li class="report-modal-empty">불러오지 못했어요.</li>';
             });
     }
 
