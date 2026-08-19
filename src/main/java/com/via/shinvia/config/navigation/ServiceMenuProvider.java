@@ -41,7 +41,7 @@ public class ServiceMenuProvider {
             category("surplus-fund", "여유자금 운용", "savings",
                     item("여유자금 운용", "사용 가능한 여유자금의 운용 방안을 비교합니다.", "/surplus-funds/guide")),
             category("personal-report", "개인화 리포트", "summarize",
-                    disabled("개인화 리포트", "나의 금융 현황과 계획을 한눈에 확인합니다."))
+                    item("개인화 리포트", "나의 금융 현황과 계획을 한눈에 확인합니다.", "/report"))
     );
 
     public List<ServiceMenuCategory> loanMenus() {
@@ -58,9 +58,5 @@ public class ServiceMenuProvider {
 
     private static ServiceMenuItem item(String name, String description, String path) {
         return new ServiceMenuItem(name, description, path, true);
-    }
-
-    private static ServiceMenuItem disabled(String name, String description) {
-        return new ServiceMenuItem(name, description, null, false);
     }
 }
