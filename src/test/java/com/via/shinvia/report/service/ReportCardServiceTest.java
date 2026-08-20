@@ -29,7 +29,7 @@ class ReportCardServiceTest {
     private final FakeProvider available1 = new FakeProvider("FUTURESIM", "미래 금융 시뮬레이터", true);
     private final FakeProvider available2 = new FakeProvider("ASSET_DEBT", "자산·부채 현황", true);
     private final FakeProvider stub1 = new FakeProvider("SURPLUS_FUND", "여유자금 운용", false);
-    private final FakeProvider stub2 = new FakeProvider("FINANCIAL_CYCLE_PLAN", "금융 사이클 플랜", false);
+    private final FakeProvider stub2 = new FakeProvider("FINANCIAL_CYCLE_PLAN", "금융 라이프 플랜", false);
 
     private ReportCardService service;
 
@@ -133,7 +133,7 @@ class ReportCardServiceTest {
         @Override
         public CardData getCardData(Long userId, Long refId) {
             String headlineValue = refId == null ? "value" : "refId=" + refId;
-            return new CardData(cardKey, title, "headline", headlineValue, List.of(), null, null);
+            return new CardData(cardKey, title, "headline", headlineValue, List.of(), null, null, null);
         }
     }
 }

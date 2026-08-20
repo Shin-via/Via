@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+import com.via.shinvia.lifecycle.scenario.model.LifecycleScenarioResultRecord;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class LifecycleSimulationController {
     private final LifecycleSimulationService lifecycleSimulationService;
     private final CurrentUser currentUser;
 
-    @PostMapping("/{scenarioId}/simulate")
+    @PostMapping("/{scenarioId:\\d+}/simulate")
     public ResponseEntity<LifecycleScenarioResultDto> simulate(
             Authentication authentication,
             @PathVariable Long scenarioId,
@@ -43,7 +45,7 @@ public class LifecycleSimulationController {
         return ResponseEntity.ok(result);
     }
 
-    @org.springframework.web.bind.annotation.GetMapping("/{scenarioId}/result")
+    @org.springframework.web.bind.annotation.GetMapping("/{scenarioId:\\d+}/result")
     public ResponseEntity<LifecycleScenarioResultDto> getSimulationResult(
             Authentication authentication,
             @PathVariable Long scenarioId
@@ -56,5 +58,32 @@ public class LifecycleSimulationController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{scenarioId:\\d+}/complete-result")
+    public ResponseEntity<Long> completeResult(
+            Authentication authentication,
+            @PathVariable Long scenarioId
+    ) {
+        Long userId = currentUser.getUserId(authentication);
+        return ResponseEntity.ok(lifecycleSimulationService.completeSimulationResult(userId, scenarioId));
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/results")
+    public ResponseEntity<List<LifecycleScenarioResultRecord>> savedResults(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(lifecycleSimulationService.getSavedResults(
+                currentUser.getUserId(authentication)));
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/results/{resultId:\\d+}")
+    public ResponseEntity<LifecycleScenarioResultDto> savedResult(
+            Authentication authentication,
+            @PathVariable Long resultId
+    ) {
+        LifecycleScenarioResultDto result = lifecycleSimulationService.getSavedResult(
+                currentUser.getUserId(authentication), resultId);
+        return result != null ? ResponseEntity.ok(result) : ResponseEntity.notFound().build();
     }
 }

@@ -321,7 +321,8 @@
                 <!-- 대출 상환 카드 -->
                 <div class="lifecycle-event-card"
                      draggable="true"
-                     data-event-type="repayment"
+                     data-event-type="repayment-disabled"
+                     hidden
                      role="button"
                      tabindex="0"
                      aria-grabbed="false">
@@ -392,7 +393,7 @@
 
             <!-- 대출상환 설문 -->
             <div class="lifecycle-event-form"
-                 data-event-form="repayment"
+                 data-event-form="repayment-disabled"
                  hidden>
                 <th:block th:replace="~{lifecycle/fragments/repayment-form :: repaymentForm}"></th:block>
             </div>
@@ -485,6 +486,19 @@
             <p>선택한 생활 이벤트가 자산과 부채에 미치는 영향과 맞춤 지원 정보를 확인하세요.</p>
         </div>
 
+        <section class="lifecycle-saved-results-section">
+            <div class="lifecycle-simulation-heading">
+                <div>
+                    <span class="lifecycle-result-eyebrow">SAVED RESULTS</span>
+                    <h3>저장된 시나리오 결과</h3>
+                    <p>완료한 시나리오 결과를 선택하면 저장 당시 결과 화면을 다시 불러옵니다.</p>
+                </div>
+            </div>
+            <div id="lifecycleSavedResultList" class="lifecycle-saved-result-list">
+                <p class="lifecycle-cost-empty">저장된 결과가 없습니다.</p>
+            </div>
+        </section>
+
         <section class="lifecycle-simulation-section">
 
             <div class="lifecycle-simulation-heading">
@@ -519,7 +533,7 @@
                 <div class="lifecycle-journey-heading">
                     <span class="lifecycle-result-eyebrow">EXPENSE TIMELINE</span>
                     <h4>시나리오 순서별 지출 금액</h4>
-                    <p>타임라인의 각 이벤트에 마우스를 올리면 간략한 소요 지출 요약이 나타나며, <strong>'상세 분석 보고서 보기'</strong>를 클릭하면 세부 산출 내역 및 맞춤 지원 정보를 모달로 확인할 수 있습니다.</p>
+                    <p>타임라인의 각 이벤트에 마우스를 올리면 간략한 소요 지출 요약이 나타나며, 이벤트를 클릭하면 세부 산출 내역 및 맞춤 지원 정보를 모달로 확인할 수 있습니다.</p>
                 </div>
 
                 <div id="lifecycleAssetTimeline"

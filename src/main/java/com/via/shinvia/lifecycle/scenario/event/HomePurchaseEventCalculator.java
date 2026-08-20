@@ -4,6 +4,7 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleEventInput;
 import com.via.shinvia.lifecycle.common.dto.LifecycleEventResult;
 import com.via.shinvia.lifecycle.common.dto.LifecycleFinancialStateDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
+import com.via.shinvia.lifecycle.reference.service.LifecycleReferenceService;
 import com.via.shinvia.loan.ratesimulation.common.service.LoanRepaymentCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
 
     private static final DecimalFormat MONEY_FORMAT = new DecimalFormat("#,###");
     private final LoanRepaymentCalculator loanRepaymentCalculator;
+    private final LifecycleReferenceService referenceService;
 
     @Override
     public LifecycleEventType getEventType() {
@@ -54,19 +56,18 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
                 ? input.getUserRequiredAmount() 
                 : homePrice; // 필요한 자기자금 (예: 2억 원)
         BigDecimal mortgageLoanAmount = nvl(input.getNewLoanAmount()); // 주담대 (예: 4억 원)
-        BigDecimal monthlyMaintenanceFee = nvl(input.getAdditionalMonthlyExpense()); // 아파트 관리비
+        BigDecimal monthlyMaintenanceFee = input.getAdditionalMonthlyExpense() != null
+                ? input.getAdditionalMonthlyExpense()
+                : referenceService.getNationalAmount(LifecycleEventType.HOME_PURCHASE, "HOME_MONTHLY_MAINTENANCE_COST", null);
 
-        BigDecimal afterCash;
-        BigDecimal fundingShortage = BigDecimal.ZERO;
+        BigDecimal afterCash = currentCash.subtract(requiredCash);
+        BigDecimal fundingShortage = afterCash.signum() < 0 ? afterCash.abs() : BigDecimal.ZERO;
         String summary;
 
         // 3. 자기자금 지출 처리 및 부족자금 계산
-        if (currentCash.compareTo(requiredCash) >= 0) {
-            afterCash = currentCash.subtract(requiredCash);
+        if (fundingShortage.signum() == 0) {
             summary = String.format("주택구매 자기자금 %s원 투입 및 내 집 마련이 완료되었습니다.", formatMoney(requiredCash));
         } else {
-            fundingShortage = requiredCash.subtract(currentCash);
-            afterCash = BigDecimal.ZERO;
             summary = String.format("주택구매 시 자기자금이 약 %s원 부족합니다.", formatMoney(fundingShortage));
         }
 
@@ -83,14 +84,17 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
         if (mortgageLoanAmount.compareTo(BigDecimal.ZERO) > 0) {
             newTotalDebt = newTotalDebt.add(mortgageLoanAmount);
             int periodMonths = input.getLoanPeriodMonths() != null ? input.getLoanPeriodMonths() : 360;
-            BigDecimal rate = input.getLoanInterestRate() != null ? input.getLoanInterestRate() : new BigDecimal("4.2");
+            BigDecimal rate = input.getLoanInterestRate() != null
+                    ? input.getLoanInterestRate()
+                    : referenceService.getNationalRate(LifecycleEventType.HOME_PURCHASE, "HOME_LOAN_INTEREST_RATE", null);
+            String repaymentType = repaymentTypeLabel(input.getLoanRepaymentType());
 
             try {
                 var calcResult = loanRepaymentCalculator.calculate(
                         mortgageLoanAmount,
                         rate,
                         periodMonths,
-                        "원리금균등상환"
+                        repaymentType
                 );
                 if (calcResult != null && calcResult.monthlyPayment() != null) {
                     newDebtPayment = newDebtPayment.add(calcResult.monthlyPayment());
@@ -110,7 +114,7 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
                     .currentBalance(mortgageLoanAmount)
                     .interestRate(rate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP))
                     .rateType("FIXED")
-                    .repaymentType("원리금균등상환")
+                    .repaymentType(repaymentType)
                     .maturityAt(eventDate.plusMonths(periodMonths))
                     .build());
         }
@@ -150,6 +154,12 @@ public class HomePurchaseEventCalculator implements LifecycleEventCalculator {
                 .fundingShortage(fundingShortage)
                 .summary(summary)
                 .build();
+    }
+
+    private String repaymentTypeLabel(String repaymentType) {
+        if ("EQUAL_PRINCIPAL".equals(repaymentType)) return "원금균등상환";
+        if ("BULLET".equals(repaymentType)) return "만기일시상환";
+        return "원리금균등상환";
     }
 
     private String formatMoney(BigDecimal amount) {

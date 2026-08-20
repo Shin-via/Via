@@ -75,30 +75,35 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
         currentCash = currentCash.add(previousDeposit);
 
         // 2. 신규 월세 보증금 및 월세 비용 파악
-        BigDecimal newDeposit = input.getUserRequiredAmount() != null 
-                ? input.getUserRequiredAmount() 
+        BigDecimal newDeposit = nvl(input.getAcquiredAssetAmount());
+        BigDecimal requiredCash = input.getUserRequiredAmount() != null
+                ? input.getUserRequiredAmount()
                 : nvl(input.getEstimatedCost());
+        if (newDeposit.signum() == 0) {
+            newDeposit = nvl(input.getEstimatedCost());
+        }
         BigDecimal monthlyRentAndFee = nvl(input.getAdditionalMonthlyExpense());
+        BigDecimal brokerageFee = maxZero(nvl(input.getEstimatedCost()).subtract(newDeposit));
 
         BigDecimal afterCash;
         BigDecimal fundingShortage = BigDecimal.ZERO;
         String summary;
 
         // 3. 신규 보증금 지출 처리
-        if (currentCash.compareTo(newDeposit) >= 0) {
-            afterCash = currentCash.subtract(newDeposit);
+        if (currentCash.compareTo(requiredCash) >= 0) {
+            afterCash = currentCash.subtract(requiredCash);
             if (isSellingHome) {
-                summary = String.format("기존 주택을 매각하고 월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
-                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+                summary = String.format("기존 주택을 매각하고 월세 보증금 %s원과 중개보수 %s원 지출 및 월 주거비 %s원이 설정되었습니다.",
+                        formatMoney(newDeposit), formatMoney(brokerageFee), formatMoney(monthlyRentAndFee));
             } else if (afterRealEstateAsset.compareTo(BigDecimal.ZERO) > 0) {
-                summary = String.format("기존 주택을 보유한 채 월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
-                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+                summary = String.format("기존 주택을 보유한 채 월세 보증금 %s원과 중개보수 %s원 지출 및 월 주거비 %s원이 설정되었습니다.",
+                        formatMoney(newDeposit), formatMoney(brokerageFee), formatMoney(monthlyRentAndFee));
             } else {
-                summary = String.format("월세 보증금 %s원 지출 및 월 주거비 %s원이 설정되었습니다.", 
-                        formatMoney(newDeposit), formatMoney(monthlyRentAndFee));
+                summary = String.format("월세 보증금 %s원과 중개보수 %s원 지출 및 월 주거비 %s원이 설정되었습니다.",
+                        formatMoney(newDeposit), formatMoney(brokerageFee), formatMoney(monthlyRentAndFee));
             }
         } else {
-            fundingShortage = newDeposit.subtract(currentCash);
+            fundingShortage = requiredCash.subtract(currentCash);
             afterCash = BigDecimal.ZERO;
             summary = String.format("월세 보증금 중 약 %s원이 부족합니다.", formatMoney(fundingShortage));
         }
@@ -129,7 +134,7 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
                 .eventDate(input.getTargetDate())
                 .beforeState(beforeState)
                 .afterState(afterState)
-                .eventCost(newDeposit)
+                .eventCost(nvl(input.getEstimatedCost()))
                 .supportBenefit(BigDecimal.ZERO)
                 .fundingShortage(fundingShortage)
                 .summary(summary)
@@ -144,6 +149,10 @@ public class MonthlyRentEventCalculator implements LifecycleEventCalculator {
 
     private BigDecimal nvl(BigDecimal val) {
         return val != null ? val : BigDecimal.ZERO;
+    }
+
+    private BigDecimal maxZero(BigDecimal val) {
+        return nvl(val).max(BigDecimal.ZERO);
     }
 }
 

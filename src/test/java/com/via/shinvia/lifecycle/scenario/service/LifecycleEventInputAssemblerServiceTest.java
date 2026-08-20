@@ -80,6 +80,13 @@ class LifecycleEventInputAssemblerServiceTest {
                 eq("LIFESTYLE_COST_MULTIPLIER"),
                 eq(LifestyleLevel.AVERAGE)
         )).thenReturn(BigDecimal.ONE);
+        when(referenceService.getRegionalAmount(
+                LifecycleEventType.MARRIAGE,
+                "MEAL_COST_PER_GUEST",
+                null,
+                null,
+                null
+        )).thenReturn(new BigDecimal("50000"));
         when(productService.getRecommendedProducts(
                 anyLong(),
                 anyString(),
@@ -97,8 +104,8 @@ class LifecycleEventInputAssemblerServiceTest {
 
         assertEquals(LifecycleEventType.MARRIAGE, input.getEventType());
         assertEquals(new BigDecimal("20000000.00"), input.getEstimatedCost());
-        assertEquals(new BigDecimal("6000000.00"), input.getUserRequiredAmount());
-        assertEquals(new BigDecimal("1000000.00"), input.getCashInflowAmount());
+        assertEquals(new BigDecimal("7000000.00"), input.getUserRequiredAmount());
+        assertEquals(new BigDecimal("0.00"), input.getCashInflowAmount());
         assertEquals(new BigDecimal("3000000.00"), input.getFamilySupportAmount());
         assertEquals(1, input.getSupports().size());
         assertEquals(1, input.getRecommendedProducts().size());
@@ -139,12 +146,19 @@ class LifecycleEventInputAssemblerServiceTest {
                 eq(LifecycleEventType.CHILDBIRTH),
                 eq("MONTHLY_CHILDCARE_COST"),
                 isNull()
-        )).thenReturn(new BigDecimal("800000"));
-        when(referenceService.getNationalRate(
-                eq(LifecycleEventType.CHILDBIRTH),
-                eq("LIFESTYLE_COST_MULTIPLIER"),
-                eq(LifestyleLevel.AVERAGE)
-        )).thenReturn(BigDecimal.ONE);
+        )).thenReturn(new BigDecimal("300000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("INFANT_CAR_SEAT_COST"), isNull()))
+                .thenReturn(new BigDecimal("300000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("INFANT_STROLLER_COST"), isNull()))
+                .thenReturn(new BigDecimal("500000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("INFANT_CRIB_COST"), isNull()))
+                .thenReturn(new BigDecimal("300000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("INFANT_OTHER_SETUP_COST"), isNull()))
+                .thenReturn(new BigDecimal("400000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("MONTHLY_DIAPER_COST"), isNull()))
+                .thenReturn(new BigDecimal("120000"));
+        when(referenceService.getNationalAmount(eq(LifecycleEventType.CHILDBIRTH), eq("MONTHLY_FORMULA_COST"), isNull()))
+                .thenReturn(new BigDecimal("180000"));
         when(productService.getRecommendedProducts(
                 anyLong(),
                 anyString(),
@@ -158,9 +172,9 @@ class LifecycleEventInputAssemblerServiceTest {
                 2L
         );
 
-        assertEquals(new BigDecimal("3000000.00"), input.getEstimatedCost());
-        assertEquals(new BigDecimal("3000000.00"), input.getUserRequiredAmount());
-        assertEquals(new BigDecimal("700000.00"), input.getAdditionalMonthlyExpense());
+        assertEquals(new BigDecimal("4500000.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("4500000.00"), input.getUserRequiredAmount());
+        assertEquals(new BigDecimal("600000.00"), input.getAdditionalMonthlyExpense());
     }
 
     @Test
@@ -185,6 +199,21 @@ class LifecycleEventInputAssemblerServiceTest {
                 eq("VEHICLE_MONTHLY_MAINTENANCE_COST"),
                 isNull()
         )).thenReturn(new BigDecimal("400000"));
+        when(referenceService.getNationalRate(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_ACQUISITION_TAX_RATE",
+                null
+        )).thenReturn(new BigDecimal("0.07"));
+        when(referenceService.getNationalAmount(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_REGISTRATION_FEE",
+                null
+        )).thenReturn(new BigDecimal("2000"));
+        when(referenceService.getNationalRate(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_LOAN_INTEREST_RATE",
+                null
+        )).thenReturn(new BigDecimal("0.05"));
         when(productService.getRecommendedProducts(
                 anyLong(),
                 anyString(),
@@ -200,7 +229,8 @@ class LifecycleEventInputAssemblerServiceTest {
                 3L
         );
 
-        assertEquals(new BigDecimal("30000000.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("32102000.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("12102000.00"), input.getUserRequiredAmount());
         assertEquals(new BigDecimal("20000000.00"), input.getNewLoanAmount());
         assertEquals(new BigDecimal("30000000.00"), input.getAcquiredAssetAmount());
         assertEquals(new BigDecimal("400000.00"), input.getAdditionalMonthlyExpense());
@@ -220,6 +250,21 @@ class LifecycleEventInputAssemblerServiceTest {
                 .build();
 
         when(surveyService.getVehicleSurvey(30L)).thenReturn(survey);
+        when(referenceService.getNationalRate(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_ACQUISITION_TAX_RATE",
+                null
+        )).thenReturn(new BigDecimal("0.07"));
+        when(referenceService.getNationalAmount(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_REGISTRATION_FEE",
+                null
+        )).thenReturn(new BigDecimal("2000"));
+        when(referenceService.getNationalRate(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_LOAN_INTEREST_RATE",
+                null
+        )).thenReturn(new BigDecimal("0.05"));
         when(productService.getRecommendedProducts(
                 10L,
                 "user@example.com",
@@ -235,13 +280,18 @@ class LifecycleEventInputAssemblerServiceTest {
                 30L
         );
 
-        assertEquals(new BigDecimal("11111111.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("11890888.77"), input.getEstimatedCost());
         assertEquals(new BigDecimal("1.00"), input.getNewLoanAmount());
         assertEquals(new BigDecimal("11111.00"), input.getAdditionalMonthlyExpense());
         verify(referenceService, never()).getNationalAmount(
-                eq(LifecycleEventType.VEHICLE_PURCHASE),
-                anyString(),
-                isNull()
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_BASE_PRICE",
+                null
+        );
+        verify(referenceService, never()).getNationalAmount(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_MONTHLY_MAINTENANCE_COST",
+                null
         );
     }
 

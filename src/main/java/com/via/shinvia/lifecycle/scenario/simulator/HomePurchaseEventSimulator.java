@@ -20,8 +20,8 @@ import java.util.List;
 
 /**
  * [6. 내 집 마련(주택 구매) 생애주기 시뮬레이터]
- * - 기존 임차보증금 회수, 주택매매가, 취득세(1.1%), 주택담보대출(원리금균등) 매핑
- * - 값 부재 시 0 또는 빈 문자열을 기본으로 안전하게 처리
+ * - 기존 임차보증금 회수, 주택매매가, 취득세, 주택담보대출 매핑
+ * - 관리비·금리·세율은 생애주기 DB 기준값을 사용
  */
 @Slf4j
 @Component
@@ -73,16 +73,13 @@ public class HomePurchaseEventSimulator implements LifecycleEventSimulator {
                 ? input.getUserRequiredAmount()
                 : totalCost.subtract(newLoanAmount).subtract(cashInflow).max(BigDecimal.ZERO);
 
-        BigDecimal afterCash;
-        BigDecimal fundingShortage = BigDecimal.ZERO;
+        BigDecimal afterCash = currentCash.subtract(requiredCash);
+        BigDecimal fundingShortage = afterCash.signum() < 0 ? afterCash.abs() : BigDecimal.ZERO;
         String summary;
 
-        if (currentCash.compareTo(requiredCash) >= 0) {
-            afterCash = currentCash.subtract(requiredCash);
+        if (fundingShortage.signum() == 0) {
             summary = String.format("내 집 마련 자기자본으로 약 %s원이 지출되었습니다.", formatMoney(requiredCash));
         } else {
-            fundingShortage = requiredCash.subtract(currentCash);
-            afterCash = BigDecimal.ZERO;
             summary = String.format("내 집 마련 자기자본 중 약 %s원이 부족합니다.", formatMoney(fundingShortage));
         }
 
@@ -90,14 +87,17 @@ public class HomePurchaseEventSimulator implements LifecycleEventSimulator {
         if (newLoanAmount.compareTo(BigDecimal.ZERO) > 0) {
             totalDebt = totalDebt.add(newLoanAmount);
             int periodMonths = input.getLoanPeriodMonths() != null ? input.getLoanPeriodMonths() : 360;
-            BigDecimal interestRate = input.getLoanInterestRate() != null ? input.getLoanInterestRate() : new BigDecimal("4.2");
+            BigDecimal interestRate = input.getLoanInterestRate() != null
+                    ? input.getLoanInterestRate()
+                    : referenceService.getNationalRate(LifecycleEventType.HOME_PURCHASE, "HOME_LOAN_INTEREST_RATE", null);
+            String repaymentType = repaymentTypeLabel(input.getLoanRepaymentType());
 
             try {
                 var calcResult = loanRepaymentCalculator.calculate(
                         newLoanAmount,
                         interestRate,
                         periodMonths,
-                        "원리금균등상환"
+                        repaymentType
                 );
                 if (calcResult != null && calcResult.monthlyPayment() != null) {
                     monthlyDebtPayment = monthlyDebtPayment.add(calcResult.monthlyPayment());
@@ -116,7 +116,7 @@ public class HomePurchaseEventSimulator implements LifecycleEventSimulator {
                     .currentBalance(newLoanAmount)
                     .interestRate(interestRate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP))
                     .rateType("FIXED")
-                    .repaymentType("원리금균등상환")
+                    .repaymentType(repaymentType)
                     .maturityAt(eventDate.plusMonths(periodMonths))
                     .build());
         }
@@ -124,7 +124,7 @@ public class HomePurchaseEventSimulator implements LifecycleEventSimulator {
         // 5. 월 주거비 (자가는 월세 0원, 아파트 관리비 약 20만원 가정)
         BigDecimal newHousingExpense = input.getAdditionalMonthlyExpense() != null
                 ? input.getAdditionalMonthlyExpense()
-                : new BigDecimal("200000.00");
+                : referenceService.getNationalAmount(LifecycleEventType.HOME_PURCHASE, "HOME_MONTHLY_MAINTENANCE_COST", null);
 
         // 6. 이벤트 직후 재정 상태(afterState) 생성
         LifecycleFinancialStateDto afterState = beforeState.toBuilder()
@@ -161,28 +161,26 @@ public class HomePurchaseEventSimulator implements LifecycleEventSimulator {
                 .build();
     }
 
+    private String repaymentTypeLabel(String repaymentType) {
+        if ("EQUAL_PRINCIPAL".equals(repaymentType)) return "원금균등상환";
+        if ("BULLET".equals(repaymentType)) return "만기일시상환";
+        return "원리금균등상환";
+    }
+
     private BigDecimal resolveBasePurchasePrice(LifecycleEventInput input) {
-        try {
-            return referenceService.getNationalAmount(
-                    LifecycleEventType.HOME_PURCHASE,
-                    "HOME_BASE_PURCHASE_PRICE",
-                    null
-            );
-        } catch (Exception e) {
-            return new BigDecimal("600000000.00");
-        }
+        return referenceService.getNationalAmount(
+                LifecycleEventType.HOME_PURCHASE,
+                "HOME_BASE_PURCHASE_PRICE",
+                null
+        );
     }
 
     private BigDecimal resolveAcquisitionTaxRate(LifecycleEventInput input) {
-        try {
-            return referenceService.getNationalRate(
-                    LifecycleEventType.HOME_PURCHASE,
-                    "ACQUISITION_TAX_RATE",
-                    null
-            );
-        } catch (Exception e) {
-            return new BigDecimal("0.011000");
-        }
+        return referenceService.getNationalRate(
+                LifecycleEventType.HOME_PURCHASE,
+                "ACQUISITION_TAX_RATE",
+                null
+        );
     }
 
     private String formatMoney(BigDecimal amount) {

@@ -37,6 +37,16 @@ public class LifecycleEventInput {
     // 실속형, 평균형, 여유형, 프리미엄, 직접입력
     private LifestyleLevel lifestyleLevel;
 
+    // 반복 출산 이벤트별 비용 구성을 결과 스냅샷까지 유지한다.
+    private Integer childOrder;
+    private Boolean repurchaseCarSeat;
+    private Boolean repurchaseStroller;
+    private Boolean repurchaseCrib;
+    private Boolean repurchaseOtherSetup;
+    private Boolean postpartumCare;
+    private String childbirthRegionSido;
+    private String childbirthRegionSigungu;
+
     // 이벤트 전체 예상비용
     // 예: 결혼 총 예상비용 4,500만원
     private BigDecimal estimatedCost;
@@ -58,6 +68,17 @@ public class LifecycleEventInput {
 
     // 가족 또는 부모 등 민간 지원금. 공공 복지 혜택과 구분한다.
     private BigDecimal familySupportAmount;
+
+    // 결혼 비용 차트와 상세 보고서에 사용하는 항목별 산출 금액
+    private BigDecimal marriageHallCost;
+    private BigDecimal marriageMealCost;
+    private BigDecimal marriageFurnitureCost;
+    private BigDecimal marriageHoneymoonCost;
+    private BigDecimal postpartumCareCost;
+    private BigDecimal infantCarSeatCost;
+    private BigDecimal infantStrollerCost;
+    private BigDecimal infantCribCost;
+    private BigDecimal infantOtherSetupCost;
 
     // 이벤트로 새롭게 발생하는 대출금액
     // 예: 자동차대출, 전세대출, 주택담보대출
@@ -87,5 +108,13 @@ public class LifecycleEventInput {
 
     // 신규 발생 대출의 적용 금리(%)
     private BigDecimal loanInterestRate;
+
+    // 신규 대출 상환방식 (EQUAL_PAYMENT, EQUAL_PRINCIPAL, BULLET)
+    private String loanRepaymentType;
+
+    // 결과화면에서 실제 산출값을 그대로 표시하기 위한 부대비용
+    private BigDecimal taxAmount;
+    private BigDecimal brokerageFeeAmount;
+    private BigDecimal registrationFeeAmount;
 }
 

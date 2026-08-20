@@ -15,6 +15,7 @@
     --asset-color: #9aa1aa;
 
     color: var(--ink);
+    padding-bottom: 60px;
     background: var(--background);
     font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
     line-height: 1.55;

@@ -206,6 +206,32 @@ class LifecycleProductServiceTest {
         assertEquals("신혼부부전용 구입자금", products.get(1).getProductName());
     }
 
+    @Test
+    void childbirthExcludesProductsWithSpecialEligibilityConditions() {
+        LifecycleProductDto generalChildcare = product(1L, "우리아이 육아 적금");
+        LifecycleProductDto multiChild = product(2L, "다자녀 행복 대출");
+        LifecycleProductDto singleParent = product(3L, "한부모 자녀 지원 적금");
+        LifecycleProductDto youthParent = product(4L, "청년 부모 출산 우대 적금");
+        LifecycleProductDto unrelated = product(5L, "직장인 행복 신용대출");
+
+        when(loanRecommendationAdapter.recommend(
+                anyString(), any(LifecycleEventType.class), any(), any(), anyInt()
+        )).thenReturn(List.of(generalChildcare, multiChild, unrelated));
+        when(policyRecommendationAdapter.recommend(
+                any(), any(LifecycleEventType.class), anyInt()
+        )).thenReturn(List.of(singleParent, youthParent));
+
+        List<LifecycleProductDto> products = lifecycleProductService.getRecommendedProducts(
+                1L,
+                "user@example.com",
+                LifecycleEventType.CHILDBIRTH
+        );
+
+        assertEquals(2, products.size());
+        assertEquals("우리아이 육아 적금", products.get(0).getProductName());
+        assertEquals("청년 부모 출산 우대 적금", products.get(1).getProductName());
+    }
+
     private LifecycleProductDto product(Long id, String name) {
         return LifecycleProductDto.builder()
                 .productId(id)

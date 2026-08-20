@@ -47,8 +47,20 @@ document.addEventListener("DOMContentLoaded", () => {
      * 현재 화면에서 선택한 이벤트
      */
     let selectedEventType = null;
+    let selectedEventIndex = -1;
     const selectedEventTypes = new Set();
     let lifecycleEvents = [];
+    const repeatableEventLimits = {
+        childbirth: 4
+    };
+
+    function getEventLimit(type) {
+        return repeatableEventLimits[type] ?? 1;
+    }
+
+    function getEventsOfType(type) {
+        return lifecycleEvents.filter(event => event.type === type);
+    }
 
     const lifecycleEventNames = {
         marriage: "결혼",
@@ -67,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         MONTHLY_RENT: "monthly-rent",
         JEONSE: "jeonse",
         HOME_PURCHASE: "home-purchase",
-        REPAYMENT: "repayment"
+        // REPAYMENT is provided by the separate future-finance simulator.
     };
 
     const lifecycleEventDetailPaths = {
@@ -77,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "monthly-rent": "monthly-rent",
         jeonse: "jeonse",
         "home-purchase": "home-purchase",
-        repayment: "repayment"
+        // repayment intentionally excluded from lifecycle survey
     };
 
     function toServerDate(yearMonth) {
@@ -131,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "monthly-rent": null,
         jeonse: null,
         "home-purchase": null,
-        repayment: null
+        // repayment intentionally excluded from lifecycle survey
     };
 
 
@@ -268,6 +280,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const vehicleLoanPeriodInput = document.getElementById(
         "vehicleLoanPeriodMonths"
     );
+    const vehicleLoanPeriodGroup = document.getElementById("vehicleLoanPeriodGroup");
+    const vehicleModelInput = document.getElementById("vehicleModel");
+    const vehicleConditionInput = document.getElementById("vehicleCondition");
+    const vehicleNameInput = document.getElementById("vehicleName");
+
+    const VEHICLE_REFERENCE_PRICES = {
+        RAY: { NEW: 15550000, USED: 15000000 },
+        K3: { NEW: 19500000, USED: 15000000 },
+        AVANTE: { NEW: 19940000, USED: 19000000 },
+        G70: { NEW: 43900000, USED: 31000000 },
+        G80: { NEW: 58900000, USED: 40000000 },
+        G90: { NEW: 89500000, USED: 79000000 },
+        GV60: { NEW: 64900000, USED: 45000000 },
+        GV70: { NEW: 53800000, USED: 47000000 },
+        GV80: { NEW: 69900000, USED: 55000000 }
+    };
+
+    function updateVehicleReferenceFields() {
+        if (!vehicleModelInput || !vehicleConditionInput || !vehiclePriceInput) {
+            return;
+        }
+        const model = vehicleModelInput.value;
+        const condition = vehicleConditionInput.value || "NEW";
+        const price = VEHICLE_REFERENCE_PRICES[model]?.[condition] || 0;
+        vehiclePriceInput.value = price || "";
+        formatMoneyInput(vehiclePriceInput);
+        if (vehicleNameInput) {
+            const modelLabel = vehicleModelInput.options[vehicleModelInput.selectedIndex]?.text || "";
+            const conditionLabel = condition === "USED" ? "중고차" : "신차";
+            vehicleNameInput.value = modelLabel ? `${modelLabel} (${conditionLabel})` : "";
+        }
+        updateVehicleFinancingAmounts();
+    }
 
     function updateVehicleFinancingAmounts() {
         if (
@@ -296,6 +341,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 vehicleLoanAmountInput.value
             ) > 0;
             vehicleLoanPeriodInput.disabled = !hasLoan;
+            vehicleLoanPeriodInput.required = hasLoan;
+            if (vehicleLoanPeriodGroup) {
+                vehicleLoanPeriodGroup.hidden = !hasLoan;
+            }
             if (!hasLoan) {
                 vehicleLoanPeriodInput.value = "";
             }
@@ -305,6 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
     [vehiclePriceInput, vehicleLoanAmountInput].forEach(input => {
         input?.addEventListener("input", updateVehicleFinancingAmounts);
     });
+    vehicleModelInput?.addEventListener("change", updateVehicleReferenceFields);
+    vehicleConditionInput?.addEventListener("change", updateVehicleReferenceFields);
+    updateVehicleReferenceFields();
 
     const jeonseDesiredAmountInput =
         document.getElementById("jeonseDesiredAmount");
@@ -407,6 +459,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return controls.some(control => isSurveyControlIncomplete(control, form));
     }
 
+    function isTimelineEventIncomplete(event, eventIndex) {
+        if (!event) return false;
+
+        // 서버에 저장된 이벤트는 상세 폼을 열기 전에도 완료된 데이터로 본다.
+        // 특히 반복 가능한 출산 이벤트는 여러 카드가 하나의 폼을 공유하므로,
+        // 현재 폼의 상태로 저장된 모든 출산 카드를 판정하면 안 된다.
+        if (event.eventId) return false;
+
+        if (eventIndex !== selectedEventIndex || event.type !== selectedEventType) {
+            return true;
+        }
+
+        return isEventFormIncomplete(event.type);
+    }
+
     function clearSurveyFieldError(group) {
         group.classList.remove("has-error");
         group.querySelector(
@@ -475,13 +542,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const formArea = document.querySelector(`[data-event-form="${ev.type}"]`);
             const form = formArea?.querySelector("form");
             if (form) {
-                const isInvalid = isEventFormIncomplete(ev.type);
+                const isInvalid = isTimelineEventIncomplete(ev, i);
                 if (isInvalid) {
                     openEventForm(ev.type, true);
                     renderFlowSequence(false);
                     updateEventSelectionUi();
 
-                    const cardEl = document.querySelector(`.flow-step-card[data-event-type="${ev.type}"]`);
+                    const cardEl = document.querySelector(`.flow-step-card[data-step-index="${i}"]`);
                     if (cardEl) {
                         cardEl.classList.add("has-error");
                     }
@@ -532,7 +599,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (eventType) {
-                    const cardEl = document.querySelector(`.flow-step-card[data-event-type="${eventType}"]`);
+                    const cardEl = document.querySelector(
+                        `.flow-step-card[data-step-index="${selectedEventIndex}"]`
+                    );
                     const isIncomplete = isEventFormIncomplete(eventType);
                     if (cardEl) {
                         cardEl.classList.toggle("has-error", isIncomplete);
@@ -846,6 +915,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (stepName === "result") {
+            loadSavedResultList();
             if (latestSimulationResult) {
                 renderSimulationResult(latestSimulationResult);
             } else {
@@ -1335,25 +1405,97 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${year}-01-01`;
     }
 
-    function syncStepDatesToFormsAndEvents() {
-        lifecycleEvents.forEach((ev, idx) => {
-            ev.targetDate = getSequentialDate(idx);
-            const dateInput = document.querySelector(
-                `[data-event-form="${ev.type}"] input[name="targetDate"]`
-            );
-            if (dateInput) {
-                dateInput.value = `${START_YEAR + idx}-01`;
+    function getChildbirthOrdinal(eventIndex) {
+        if (eventIndex < 0) return null;
+        const event = lifecycleEvents[eventIndex];
+        if (!event || event.type !== "childbirth") return null;
+        return lifecycleEvents
+            .slice(0, eventIndex + 1)
+            .filter(item => item.type === "childbirth")
+            .length;
+    }
+
+    function syncChildbirthOrdinals() {
+        let ordinal = 0;
+        lifecycleEvents.forEach(event => {
+            if (event.type === "childbirth") {
+                ordinal += 1;
+                event.childOrder = Math.min(ordinal, getEventLimit("childbirth"));
             }
         });
     }
 
-    function openEventForm(eventType, shouldScroll = false) {
-        selectedEventType = eventType;
-        selectedEventTypes.add(eventType);
+    function syncChildbirthOrderToForm(eventIndex = selectedEventIndex) {
+        const ordinal = getChildbirthOrdinal(eventIndex);
+        if (!ordinal) return;
+        const input = document.querySelector(
+            '[data-event-form="childbirth"] select[name="childOrder"]'
+        );
+        if (input) input.value = String(Math.min(ordinal, 4));
+        updateChildbirthRepurchaseVisibility();
+    }
 
-        if (eventType === "repayment") {
-            loadUserLoansForRepayment();
+    function updateChildbirthRepurchaseVisibility() {
+        const form = document.getElementById("childbirthSurveyForm");
+        const group = document.getElementById("childbirthRepurchaseGroup");
+        if (!form || !group) return;
+        const childOrder = Number(form.querySelector('[name="childOrder"]')?.value || 1);
+        group.hidden = childOrder <= 1;
+    }
+
+    document.getElementById("childbirthChildOrder")
+        ?.addEventListener("change", updateChildbirthRepurchaseVisibility);
+
+    const childbirthDraftForm = document.getElementById("childbirthSurveyForm");
+    childbirthDraftForm?.addEventListener("input", () => {
+        const event = lifecycleEvents[selectedEventIndex];
+        if (event?.type === "childbirth") {
+            event.formData = buildEventRequest(childbirthDraftForm);
         }
+    });
+    childbirthDraftForm?.addEventListener("change", () => {
+        const event = lifecycleEvents[selectedEventIndex];
+        if (event?.type === "childbirth") {
+            event.formData = buildEventRequest(childbirthDraftForm);
+        }
+    });
+
+    function resetNewChildbirthForm(eventIndex) {
+        const event = lifecycleEvents[eventIndex];
+        if (!event || event.type !== "childbirth" || event.eventId || event.formInitialized) {
+            return;
+        }
+        const form = document.querySelector('[data-event-form="childbirth"] form');
+        if (!form) return;
+
+        form.reset();
+        const sigungu = form.querySelector('[name="regionSigungu"]');
+        if (sigungu) {
+            sigungu.innerHTML = '<option value="">먼저 시·도를 선택해주세요</option>';
+            sigungu.disabled = true;
+        }
+        event.formInitialized = true;
+    }
+
+    function syncStepDatesToFormsAndEvents() {
+        syncChildbirthOrdinals();
+        lifecycleEvents.forEach((ev, idx) => {
+            ev.targetDate = getSequentialDate(idx);
+        });
+        const activeEvent = lifecycleEvents[selectedEventIndex];
+        const dateInput = activeEvent && document.querySelector(
+            `[data-event-form="${activeEvent.type}"] input[name="targetDate"]`
+        );
+        if (dateInput) {
+            dateInput.value = toYearMonth(activeEvent.targetDate);
+        }
+        syncChildbirthOrderToForm();
+    }
+
+    async function openEventForm(eventType, shouldScroll = false, eventIndex = null) {
+        selectedEventType = eventType;
+        selectedEventIndex = eventIndex ?? lifecycleEvents.findIndex(event => event.type === eventType);
+        selectedEventTypes.add(eventType);
 
         eventForms.forEach(form => {
             form.hidden = true;
@@ -1366,6 +1508,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (targetForm) {
             targetForm.hidden = false;
         }
+
+        const selectedEvent = lifecycleEvents[selectedEventIndex];
+        resetNewChildbirthForm(selectedEventIndex);
+        if (selectedEvent?.type === eventType && selectedEvent.eventId) {
+            const apiPath = lifecycleEventDetailPaths[eventType];
+            if (apiPath) {
+                try {
+                    const response = await fetch(`/api/lifecycle/survey/${apiPath}/${selectedEvent.eventId}`);
+                    if (response.ok) {
+                        const eventData = await response.json();
+                        selectedEvent.formData = eventData;
+                        populateEventForm(eventType, eventData);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        } else if (selectedEvent?.type === "childbirth" && selectedEvent.formData) {
+            populateEventForm(eventType, selectedEvent.formData);
+        }
+        syncChildbirthOrderToForm(selectedEventIndex);
 
         updateEventSelectionUi();
         renderFlowSequence(false);
@@ -1384,9 +1547,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const paletteCards = document.querySelectorAll("#scenarioCardPalette .lifecycle-event-card");
         paletteCards.forEach(card => {
             const type = card.dataset.eventType;
+            const placedEvents = getEventsOfType(type);
             const stepIdx = lifecycleEvents.findIndex(e => e.type === type);
-            const isPlaced = stepIdx >= 0;
-            const isIncomplete = isPlaced && isEventFormIncomplete(type);
+            const isPlaced = placedEvents.length > 0;
+            const isIncomplete = placedEvents.some(event => {
+                const eventIndex = lifecycleEvents.indexOf(event);
+                return isTimelineEventIncomplete(event, eventIndex);
+            });
             const badge = card.querySelector(`[data-placement-status="${type}"]`);
 
             card.classList.toggle("selected", isPlaced);
@@ -1396,7 +1563,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const textSpan = badge.querySelector(".status-text");
                 if (textSpan) {
                     if (isPlaced) {
-                        textSpan.textContent = `STEP ${stepIdx + 1}`;
+                        textSpan.textContent = getEventLimit(type) > 1
+                            ? `${placedEvents.length}/${getEventLimit(type)} 배치`
+                            : `STEP ${stepIdx + 1}`;
                     } else {
                         textSpan.textContent = "미배치";
                     }
@@ -1405,8 +1574,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    async function removeEvent(eventType) {
-        const eventId = savedEventIds[eventType];
+    async function removeEvent(eventType, eventIndex = null) {
+        const resolvedIndex = eventIndex ?? lifecycleEvents.findIndex(event => event.type === eventType);
+        const targetEvent = lifecycleEvents[resolvedIndex];
+        const eventId = getEventLimit(eventType) > 1
+            ? targetEvent?.eventId
+            : (targetEvent?.eventId ?? savedEventIds[eventType]);
 
         if (eventId) {
             const confirmed = window.confirm(
@@ -1428,23 +1601,28 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        selectedEventTypes.delete(eventType);
-        savedEventIds[eventType] = null;
-        lifecycleEvents = lifecycleEvents.filter(
-            event => event.type !== eventType
-        );
+        if (resolvedIndex >= 0) {
+            lifecycleEvents.splice(resolvedIndex, 1);
+        }
+        if (!lifecycleEvents.some(event => event.type === eventType)) {
+            selectedEventTypes.delete(eventType);
+            savedEventIds[eventType] = null;
+        }
 
         const formArea = document.querySelector(
             `[data-event-form="${eventType}"]`
         );
         const form = formArea?.querySelector("form");
-        form?.reset();
+        if (!lifecycleEvents.some(event => event.type === eventType)) {
+            form?.reset();
+        }
 
         if (formArea) {
             formArea.hidden = true;
         }
-        if (selectedEventType === eventType) {
+        if (selectedEventType === eventType && !lifecycleEvents.some(event => event.type === eventType)) {
             selectedEventType = null;
+            selectedEventIndex = -1;
         }
 
         updateEventSelectionUi();
@@ -1460,17 +1638,25 @@ document.addEventListener("DOMContentLoaded", () => {
         syncStepDatesToFormsAndEvents();
         renderFlowSequence(false);
         updateEventSelectionUi();
-        openEventForm(moved.type, false);
+        openEventForm(moved.type, false, safeIndex);
     }
 
     function insertEventInFlow(type, targetIndex) {
         const existingIdx = lifecycleEvents.findIndex(e => e.type === type);
+        const isRepeatable = getEventLimit(type) > 1;
+        const currentCount = getEventsOfType(type).length;
+        if (isRepeatable && currentCount >= getEventLimit(type)) {
+            alert(`${lifecycleEventNames[type]} 이벤트는 최대 ${getEventLimit(type)}회까지 배치할 수 있습니다.`);
+            return;
+        }
         let eventObj = {
             type,
             title: lifecycleEventNames[type] ?? type,
-            eventId: savedEventIds[type]
+            eventId: isRepeatable ? null : savedEventIds[type],
+            childOrder: isRepeatable ? currentCount + 1 : null,
+            formInitialized: false
         };
-        if (existingIdx >= 0) {
+        if (!isRepeatable && existingIdx >= 0) {
             eventObj = lifecycleEvents.splice(existingIdx, 1)[0];
         }
         selectedEventTypes.add(type);
@@ -1479,20 +1665,27 @@ document.addEventListener("DOMContentLoaded", () => {
         syncStepDatesToFormsAndEvents();
         renderFlowSequence(false);
         updateEventSelectionUi();
-        openEventForm(type, false);
+        openEventForm(type, false, safeIndex);
     }
 
     function addEventToEndOfFlow(type) {
         insertEventInFlow(type, lifecycleEvents.length);
     }
 
-    function addOrUpdateTimelineEvent(type, targetDate = null, eventId = null) {
-        const index = lifecycleEvents.findIndex(event => event.type === type);
+    function addOrUpdateTimelineEvent(type, targetDate = null, eventId = null, preferredIndex = null) {
+        const index = preferredIndex !== null && lifecycleEvents[preferredIndex]?.type === type
+            ? preferredIndex
+            : lifecycleEvents.findIndex(event => event.type === type);
         const timelineEvent = {
             type,
             targetDate: targetDate || getSequentialDate(index >= 0 ? index : lifecycleEvents.length),
             title: lifecycleEventNames[type] ?? type,
-            eventId
+            eventId,
+            childOrder: type === "childbirth"
+                ? lifecycleEvents[index]?.childOrder
+                : null,
+            formData: lifecycleEvents[index]?.formData,
+            formInitialized: lifecycleEvents[index]?.formInitialized
         };
 
         if (index >= 0) {
@@ -1527,8 +1720,8 @@ document.addEventListener("DOMContentLoaded", () => {
         stream.innerHTML = lifecycleEvents.map((event, index) => {
             const stepNumber = index + 1;
             const isLast = index === lifecycleEvents.length - 1;
-            const isActive = selectedEventType === event.type ? "active" : "";
-            const isIncomplete = isEventFormIncomplete(event.type);
+            const isActive = selectedEventType === event.type && selectedEventIndex === index ? "active" : "";
+            const isIncomplete = isTimelineEventIncomplete(event, index);
             const errorClass = isIncomplete ? "has-error" : "";
             const icon = getEventIcon(event.type);
 
@@ -1546,6 +1739,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <button type="button"
                                     class="flow-step-remove-btn"
                                     data-remove-event="${event.type}"
+                                    data-remove-index="${index}"
                                     title="순서에서 제거"
                                     aria-label="삭제">✕</button>
                         </div>
@@ -1599,13 +1793,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             card.addEventListener("click", e => {
                 if (e.target.closest("[data-remove-event]")) return;
-                openEventForm(type, false);
+                openEventForm(type, false, fromIndex);
             });
 
             card.addEventListener("keydown", e => {
                 if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    openEventForm(type, false);
+                    openEventForm(type, false, fromIndex);
                 }
             });
         });
@@ -1672,7 +1866,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener("click", async e => {
                 e.stopPropagation();
                 const type = btn.dataset.removeEvent;
-                await removeEvent(type);
+                await removeEvent(type, Number(btn.dataset.removeIndex));
             });
         });
     }
@@ -1698,7 +1892,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             card.addEventListener("click", () => {
-                if (selectedEventTypes.has(type)) {
+                if (selectedEventTypes.has(type) && getEventLimit(type) === 1) {
                     openEventForm(type, false);
                 } else {
                     addEventToEndOfFlow(type);
@@ -1804,11 +1998,25 @@ document.addEventListener("DOMContentLoaded", () => {
             radio.dispatchEvent(new Event("change", { bubbles: true }));
         });
         moneyInputs.filter(input => form.contains(input)).forEach(formatMoneyInput);
+        if (form.id === "homePurchaseSurveyForm") {
+            const savedPrice = Number(form.querySelector('[name="desiredPurchasePrice"]')?.value || 0);
+            const customRadio = form.querySelector('input[name="homePriceMode"][value="CUSTOM"]');
+            const referenceRadio = form.querySelector('input[name="homePriceMode"][value="REFERENCE"]');
+            if (customRadio && referenceRadio) {
+                customRadio.checked = savedPrice > 0;
+                referenceRadio.checked = savedPrice <= 0;
+            }
+            syncHomePriceMode();
+        }
         if (form.id === "vehicleSurveyForm") {
+            // 저장된 차량 가격을 차종 기준값으로 다시 덮어쓰지 않는다.
             updateVehicleFinancingAmounts();
         }
         if (form.id === "jeonseSurveyForm") {
             updateJeonseLoanAmount();
+        }
+        if (form.id === "childbirthSurveyForm") {
+            updateChildbirthRepurchaseVisibility();
         }
     }
 
@@ -1822,6 +2030,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!type || !apiPath) {
                 return;
             }
+            const isRepeatable = getEventLimit(type) > 1;
+            // 단일 이벤트만 공용 폼을 갱신한다. 반복 출산은 이벤트별 데이터를 따로 보관한다.
+            if (!isRepeatable && savedEventIds[type] && Number(savedEventIds[type]) !== Number(eventId)) {
+                return;
+            }
             const response = await fetch(
                 `/api/lifecycle/survey/${apiPath}/${eventId}`
             );
@@ -1829,7 +2042,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error(`이벤트 상세 조회 실패: ${type} ${response.status}`);
                 return;
             }
-            populateEventForm(type, await response.json());
+            const eventData = await response.json();
+            const timelineEvent = lifecycleEvents.find(item =>
+                item.type === type && Number(item.eventId) === Number(eventId)
+            );
+            if (timelineEvent) {
+                timelineEvent.formData = eventData;
+            }
+            if (!isRepeatable) {
+                populateEventForm(type, eventData);
+            }
         }));
     }
 
@@ -1875,9 +2097,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }];
         }).sort((a, b) => a.targetDate.localeCompare(b.targetDate));
 
+        await loadEventDetails(events);
         updateEventSelectionUi();
         renderFlowSequence();
-        await loadEventDetails(events);
     }
 
     const eventApiPaths = {
@@ -1887,7 +2109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "monthly-rent": "monthly-rent",
         jeonse: "jeonse",
         "home-purchase": "home-purchase",
-        repayment: "repayment"
+        // repayment is handled by the future-finance simulator
     };
     const lifestyleFieldNames = new Set([
         "childbirthLifestyleLevel",
@@ -1896,8 +2118,30 @@ document.addEventListener("DOMContentLoaded", () => {
         "homePurchaseLifestyleLevel"
     ]);
     const numericFieldNames = new Set([
-        "childOrder", "desiredArea", "loanPeriodMonths", "loanAccountId"
+        "childOrder", "desiredArea", "loanPeriodMonths", "loanAccountId", "annualMileageKm"
     ]);
+
+    const homePriceModeInputs = document.querySelectorAll(
+        '#homePurchaseSurveyForm input[name="homePriceMode"]'
+    );
+    const homeCustomPriceArea = document.getElementById("homePurchaseCustomPriceArea");
+    const homeCustomPriceInput = document.getElementById("homePurchaseDesiredPrice");
+
+    function syncHomePriceMode() {
+        if (!homeCustomPriceArea || !homeCustomPriceInput) return;
+        const custom = document.querySelector(
+            '#homePurchaseSurveyForm input[name="homePriceMode"]:checked'
+        )?.value === "CUSTOM";
+        homeCustomPriceArea.hidden = !custom;
+        homeCustomPriceInput.disabled = !custom;
+        homeCustomPriceInput.required = custom;
+        if (!custom) homeCustomPriceInput.value = "";
+    }
+
+    homePriceModeInputs.forEach(input => {
+        input.addEventListener("change", syncHomePriceMode);
+    });
+    syncHomePriceMode();
 
     function buildEventRequest(form) {
         const request = {};
@@ -1906,7 +2150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         controls.forEach(control => {
-            if (!control.name || control.disabled) {
+            if (!control.name || control.disabled || control.dataset.uiOnly === "true") {
                 return;
             }
 
@@ -1921,7 +2165,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (control.type === "checkbox") {
                 request[fieldName] = control.checked;
             } else if (moneyInputs.includes(control)) {
-                request[fieldName] = parseMoneyValue(control.value);
+                request[fieldName] = control.dataset.optional === "true" && control.value.trim() === ""
+                    ? null
+                    : parseMoneyValue(control.value);
             } else if (numericFieldNames.has(fieldName)) {
                 request[fieldName] = control.value === ""
                     ? null
@@ -1942,15 +2188,35 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!form) return false;
         if (button) button.disabled = true;
 
+        // Capture the selected event object before any await.  The flow can be
+        // re-rendered while a request is in flight, so an array index alone is
+        // not a stable identity (especially when there are several births).
+        const selectedEvent = lifecycleEvents[selectedEventIndex];
+        const targetEvent = selectedEvent?.type === eventType
+            ? selectedEvent
+            : lifecycleEvents.find(event => event.type === eventType);
         const currentScenarioId = await ensureScenario();
         const apiPath = eventApiPaths[eventType] || eventType;
-        const eventId = savedEventIds[eventType];
+        const isRepeatable = getEventLimit(eventType) > 1;
+        const eventId = targetEvent?.eventId
+            ?? (isRepeatable ? null : savedEventIds[eventType]);
         const url = eventId
             ? `/api/lifecycle/survey/${apiPath}/${eventId}`
             : `/api/lifecycle/survey/scenario/${currentScenarioId}/${apiPath}`;
 
         try {
             const requestBody = buildEventRequest(form);
+            if (eventType === "childbirth") {
+                syncChildbirthOrdinals();
+                const targetIndex = lifecycleEvents.indexOf(targetEvent);
+                const ordinal = targetEvent?.childOrder ?? getChildbirthOrdinal(targetIndex);
+                if (ordinal) {
+                    requestBody.childOrder = Math.min(ordinal, getEventLimit(eventType));
+                }
+            }
+            if (targetEvent?.type === "childbirth") {
+                targetEvent.formData = { ...requestBody };
+            }
             // 기본값 안전장치 (타겟 날짜 등이 비어있을 경우)
             if (!requestBody.targetDate) {
                 const targetIdx = lifecycleEvents.findIndex(e => e.type === eventType);
@@ -1970,17 +2236,29 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (!eventId) {
-                savedEventIds[eventType] = await response.json();
+                const createdEventId = await response.json();
+                if (targetEvent?.type === eventType) {
+                    targetEvent.eventId = createdEventId;
+                } else {
+                    savedEventIds[eventType] = createdEventId;
+                }
+            }
+
+            if (!isRepeatable && targetEvent?.eventId) {
+                savedEventIds[eventType] = targetEvent.eventId;
             }
 
             selectedEventTypes.add(eventType);
             const targetDate = form.querySelector(
                 'input[name="targetDate"]'
             )?.value;
+            const persistedEventId = targetEvent?.eventId ?? savedEventIds[eventType];
+            const persistedIndex = targetEvent ? lifecycleEvents.indexOf(targetEvent) : null;
             addOrUpdateTimelineEvent(
                 eventType,
                 targetDate,
-                savedEventIds[eventType]
+                persistedEventId,
+                isRepeatable && persistedIndex >= 0 ? persistedIndex : null
             );
 
             const cardEl = document.querySelector(`.flow-step-card[data-event-type="${eventType}"]`);
@@ -2101,6 +2379,11 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     async function saveMarriageSurvey(isSilent = false) {
 
+        const activeMarriageEvent = lifecycleEvents[selectedEventIndex]?.type === "marriage"
+            ? lifecycleEvents[selectedEventIndex]
+            : lifecycleEvents.find(event => event.type === "marriage");
+        const activeMarriageEventId = activeMarriageEvent?.eventId ?? savedEventIds.marriage;
+
         const targetDate =
             document.getElementById(
                 "marriageTargetDate"
@@ -2182,6 +2465,12 @@ document.addEventListener("DOMContentLoaded", () => {
             targetDate:
             toServerDate(targetDate) || getSequentialDate(0),
 
+            regionSido:
+                document.getElementById("marriageRegionSido")?.value || null,
+
+            regionSigungu:
+                document.getElementById("marriageRegionSigungu")?.value || null,
+
             lifestyleLevel:
             lifestyle.value,
 
@@ -2222,7 +2511,7 @@ document.addEventListener("DOMContentLoaded", () => {
             /*
              * 기존 이벤트 ID가 없으면 신규 저장
              */
-            if (!savedEventIds.marriage) {
+            if (!activeMarriageEventId) {
 
                 const response = await fetch(
                     `/api/lifecycle/survey/scenario/${currentScenarioId}/marriage`,
@@ -2248,6 +2537,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 savedEventIds.marriage = await response.json();
+                if (activeMarriageEvent) {
+                    activeMarriageEvent.eventId = savedEventIds.marriage;
+                }
                 selectedEventTypes.add("marriage");
 
                 if (!isSilent) {
@@ -2260,7 +2552,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  * 이미 저장된 이벤트라면 PUT 수정
                  */
                 const response = await fetch(
-                    `/api/lifecycle/survey/marriage/${savedEventIds.marriage}`,
+                    `/api/lifecycle/survey/marriage/${activeMarriageEventId}`,
                     {
                         method: "PUT",
 
@@ -2287,10 +2579,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            const persistedMarriageEventId = savedEventIds.marriage || activeMarriageEventId;
+            savedEventIds.marriage = persistedMarriageEventId;
+            if (activeMarriageEvent) {
+                activeMarriageEvent.eventId = persistedMarriageEventId;
+            }
+
             addOrUpdateTimelineEvent(
                 "marriage",
                 targetDate,
-                savedEventIds.marriage
+                persistedMarriageEventId,
+                activeMarriageEvent ? lifecycleEvents.indexOf(activeMarriageEvent) : null
             );
 
             const cardEl = document.querySelector('.flow-step-card[data-event-type="marriage"]');
@@ -2328,6 +2627,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const ev = lifecycleEvents[i];
             const eventType = ev.type;
             let success = false;
+
+            // 반복 출산 이벤트는 각 카드의 입력값/저장 ID를 선택한 뒤 처리합니다.
+            selectedEventIndex = i;
+            selectedEventType = eventType;
+            await openEventForm(eventType, false, i);
 
             if (eventType === "marriage") {
                 success = await saveMarriageSurvey(true);
@@ -2524,34 +2828,52 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        summaryArea.innerHTML = lifecycleEvents.map((event, index) => {
+        const rows = lifecycleEvents.map((event, index) => {
             const stepNumber = index + 1;
             const eventType = event.type;
             const eventForm = document.querySelector(
                 `[data-event-form="${eventType}"]`
             );
             const fields = eventForm
-                ? collectEventFormValues(eventForm)
+                ? eventType === "childbirth"
+                    ? collectStoredEventFormValues(eventForm, {
+                        ...(event.formData || {}),
+                        childOrder: getChildbirthOrdinal(index)
+                    })
+                    : collectEventFormValues(eventForm)
                 : [];
 
             const fieldMarkup = fields.length > 0
                 ? fields.map(field => `
-                    <div class="lifecycle-review-item">
+                    <div class="lifecycle-event-summary-field">
                         <span>${escapeHtml(field.label)}</span>
-                        <strong>${escapeHtml(field.value)}</strong>
+                        <strong title="${escapeHtml(field.value)}">${escapeHtml(field.value)}</strong>
                     </div>
                 `).join("")
-                : "<p>입력된 상세 내용이 없습니다.</p>";
+                : '<span class="lifecycle-event-summary-empty">입력된 상세 내용이 없습니다.</span>';
 
             return `
-                <section class="lifecycle-event-review-group">
-                    <h4>STEP ${stepNumber}. ${escapeHtml(
-                        lifecycleEventNames[eventType] ?? eventType
-                    )}</h4>
-                    ${fieldMarkup}
-                </section>
+                <tr>
+                    <th scope="row">
+                        <span class="lifecycle-event-summary-step">STEP ${stepNumber}</span>
+                        <strong>${escapeHtml(lifecycleEventNames[eventType] ?? eventType)}</strong>
+                    </th>
+                    <td><div class="lifecycle-event-summary-fields">${fieldMarkup}</div></td>
+                </tr>
             `;
         }).join("");
+
+        summaryArea.innerHTML = `
+            <div class="lifecycle-event-summary-table-wrap">
+                <table class="lifecycle-event-summary-table">
+                    <colgroup><col class="event-column"><col></colgroup>
+                    <thead>
+                        <tr><th scope="col">생활 이벤트</th><th scope="col">설문 요약</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        `;
     }
 
     function collectEventFormValues(eventForm) {
@@ -2566,7 +2888,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 || control.type === "hidden"
                 || control.type === "button"
                 || control.type === "submit"
+                || control.name === "targetDate"
+                || /TargetDate$/i.test(control.id || "")
             ) {
+                return false;
+            }
+
+            if (control.type === "checkbox" && !control.checked) {
                 return false;
             }
 
@@ -2583,6 +2911,66 @@ document.addEventListener("DOMContentLoaded", () => {
             label: getControlLabel(control),
             value: getControlDisplayValue(control)
         }));
+    }
+
+    function collectStoredEventFormValues(eventForm, data) {
+        const fields = [];
+        const handledNames = new Set();
+
+        eventForm.querySelectorAll("input, select, textarea").forEach(control => {
+            if (
+                !control.name
+                || handledNames.has(control.name)
+                || control.type === "hidden"
+                || control.type === "button"
+                || control.type === "submit"
+                || control.name === "targetDate"
+                || /TargetDate$/i.test(control.id || "")
+            ) {
+                return;
+            }
+
+            handledNames.add(control.name);
+            const fieldName = lifestyleFieldNames.has(control.name)
+                ? "lifestyleLevel"
+                : control.name;
+            const value = getResponseField(data, fieldName);
+            if (value === undefined || value === null || value === "") {
+                return;
+            }
+
+            if (control.type === "checkbox" && !Boolean(value)) {
+                return;
+            }
+
+            const group = control.closest(".lifecycle-form-group");
+            const groupLabel = group?.querySelector(":scope > .lifecycle-form-label")
+                ?.textContent.trim().replace(/\s+/g, " ");
+            let displayValue;
+
+            if (control.type === "radio") {
+                const selected = eventForm.querySelector(
+                    `input[type="radio"][name="${CSS.escape(control.name)}"][value="${CSS.escape(String(value))}"]`
+                );
+                displayValue = selected?.closest("label")?.textContent
+                    ?.trim().replace(/\s+/g, " ") || String(value);
+            } else if (control.type === "checkbox") {
+                displayValue = "예";
+            } else if (control.tagName === "SELECT") {
+                displayValue = Array.from(control.options)
+                    .find(option => option.value === String(value))
+                    ?.textContent.trim() || String(value);
+            } else {
+                displayValue = String(value);
+            }
+
+            fields.push({
+                label: groupLabel || getControlLabel(control),
+                value: displayValue
+            });
+        });
+
+        return fields;
     }
 
     function getControlLabel(control) {
@@ -2654,19 +3042,17 @@ document.addEventListener("DOMContentLoaded", () => {
             completeSurveyBtn.disabled = true;
             try {
                 const response = await fetch(
-                    `/api/lifecycle/scenarios/${scenarioId}`,
+                    `/api/lifecycle/scenarios/${scenarioId}/complete-result`,
                     {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: "COMPLETED" })
+                        method: "POST",
+                        headers: { "Accept": "application/json" }
                     }
                 );
                 if (!response.ok) {
                     throw new Error(`시나리오 완료 처리 실패: ${response.status}`);
                 }
-                alert("시나리오 입력이 완료되었습니다.");
-                showStep("base");
-                setScenarioListExpanded(true);
+                alert("시나리오 결과 저장이 완료되었습니다.");
+                await loadSavedResultList();
                 await loadScenarioList();
             } catch (error) {
                 console.error(error);
@@ -2687,6 +3073,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const simulationEmpty =
         document.getElementById("lifecycleSimulationEmpty");
+
+    const savedResultList =
+        document.getElementById("lifecycleSavedResultList");
 
     const simulationSummary =
         document.getElementById("lifecycleSimulationSummary");
@@ -2719,6 +3108,57 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("snapshotModalBody");
 
     let latestSimulationResult = null;
+
+    async function loadSavedResultList() {
+        if (!savedResultList) return;
+        try {
+            const response = await fetch("/api/lifecycle/scenarios/results", {
+                headers: { "Accept": "application/json" }
+            });
+            if (!response.ok) throw new Error(`저장 결과 조회 실패: ${response.status}`);
+            const results = await response.json();
+            if (!results.length) {
+                savedResultList.innerHTML = '<p class="lifecycle-cost-empty">저장된 결과가 없습니다.</p>';
+                return;
+            }
+            savedResultList.innerHTML = results.map(result => `
+                <article class="lifecycle-saved-result-card">
+                    <div>
+                        <strong>${escapeHtml(result.scenarioName || "시나리오")}</strong>
+                        <time>${escapeHtml(String(result.simulatedAt || "").replace("T", " ").substring(0, 16))}</time>
+                        <small>총비용 ${escapeHtml(formatCompactMoney(result.totalEventCost))} · 최종 순자산 ${escapeHtml(formatCompactMoney(result.finalNetAsset))}</small>
+                    </div>
+                    <button type="button" class="lifecycle-secondary-button" data-load-result="${result.lifecycleScenarioResultId}">결과 불러오기</button>
+                </article>
+            `).join("");
+            savedResultList.querySelectorAll("[data-load-result]").forEach(button => {
+                button.addEventListener("click", async () => {
+                    button.disabled = true;
+                    try {
+                        const resultResponse = await fetch(`/api/lifecycle/scenarios/results/${button.dataset.loadResult}`, {
+                            headers: { "Accept": "application/json" }
+                        });
+                        if (!resultResponse.ok) throw new Error(`저장 결과 불러오기 실패: ${resultResponse.status}`);
+                        const savedResult = await resultResponse.json();
+                        if (savedResult.scenarioId && Number(savedResult.scenarioId) !== Number(scenarioId)) {
+                            await selectScenario(savedResult.scenarioId);
+                        }
+                        latestSimulationResult = savedResult;
+                        showStep("result");
+                        renderSimulationResult(latestSimulationResult);
+                    } catch (error) {
+                        console.error(error);
+                        alert("저장된 시나리오 결과를 불러오지 못했습니다.");
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            });
+        } catch (error) {
+            console.error(error);
+            savedResultList.innerHTML = '<p class="lifecycle-cost-empty">저장된 결과를 불러오지 못했습니다.</p>';
+        }
+    }
 
     function buildSimulationBaseState() {
         const today = new Date().toISOString().substring(0, 10);
@@ -2923,8 +3363,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderSimulationResult(result) {
-        latestSimulationResult = result;
-        const snapshots = result.eventSnapshots ?? [];
+        const snapshots = (result.eventSnapshots ?? [])
+            .filter(snapshot => snapshot?.eventType !== "REPAYMENT");
+        latestSimulationResult = {
+            ...result,
+            eventSnapshots: snapshots
+        };
 
         if (simulationEmpty) {
             simulationEmpty.hidden = snapshots.length > 0;
@@ -2961,6 +3405,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function buildEventCalculationDetails(snapshot, index) {
         const eventType = snapshot.eventType;
+
+        if (eventType === "MARRIAGE_SUMMARY") {
+            const totalCost = Number(snapshot.estimatedCost || snapshot.eventCost || 0);
+            const userShare = Number(snapshot.userContributionAmount || 0);
+            const familySupport = Number(snapshot.familySupportAmount || 0);
+            const userRequired = Number(snapshot.userRequiredAmount || 0);
+            const lifestyleLabel = {
+                PRACTICAL: "실속형",
+                AVERAGE: "평균형",
+                RELAXED: "여유형",
+                PREMIUM: "프리미엄형",
+                CUSTOM: "직접입력"
+            }[snapshot.lifestyleLevel] || "저장된 설문 기준";
+            return `
+                <div class="result-calc-breakdown">
+                    <div class="result-calc-meta-row"><span class="calc-meta-item"><strong>준비 수준</strong> ${escapeHtml(lifestyleLabel)}</span></div>
+                    <div class="result-calc-list">
+                        <div class="calc-item-row is-total-row"><span class="calc-total-label">저장된 설문 기준 총 결혼비용</span><strong class="calc-total-val">${formatCompactMoney(totalCost)}</strong></div>
+                    </div>
+                    <div class="result-funding-summary">
+                        <div class="funding-pill"><span>본인 분담액</span><b>${formatCompactMoney(userShare)}</b></div>
+                        ${familySupport > 0 ? `<div class="funding-pill"><span>가족 지원금</span><b class="is-minus">-${formatCompactMoney(familySupport)}</b></div>` : ""}
+                        <div class="funding-pill is-final-target"><span>최종 본인 필요 자금</span><b class="final-val">${formatCompactMoney(userRequired)}</b></div>
+                    </div>
+                </div>`;
+        }
 
         if (eventType === "MARRIAGE") {
             const form = document.getElementById("marriageSurveyForm");
@@ -3062,12 +3532,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <b class="is-minus">-${formatCompactMoney(familySupport)}</b>
                             </div>
                         ` : ''}
-                        ${supportBenefit > 0 ? `
-                            <div class="funding-pill">
-                                <span>공공 지원금</span>
-                                <b class="is-minus">-${formatCompactMoney(supportBenefit)}</b>
-                            </div>
-                        ` : ''}
                         <div class="funding-pill is-final-target">
                             <span>최종 본인 필요 자금</span>
                             <b class="final-val">${formatCompactMoney(userRequired)}</b>
@@ -3079,13 +3543,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (eventType === "CHILDBIRTH") {
             const form = document.getElementById("childbirthSurveyForm");
-            const sido = form?.querySelector('[name="regionSido"]')?.value || "서울특별시";
-            const sigungu = form?.querySelector('[name="regionSigungu"]')?.value || "";
+            const sido = snapshot.childbirthRegionSido
+                || form?.querySelector('[name="regionSido"]')?.value || "서울특별시";
+            const sigungu = snapshot.childbirthRegionSigungu
+                || form?.querySelector('[name="regionSigungu"]')?.value || "";
             const regionText = sigungu ? `${sido} ${sigungu}` : sido;
-            const postpartumCare = form?.querySelector('[name="postpartumCare"]')?.checked ?? true;
-            const careCost = postpartumCare ? 2865000 : 1255000;
-            const careLabel = postpartumCare ? "산후조리원 이용 (평균 286.5만원)" : "재가 산후조리 (평균 125.5만원)";
-            const monthlyChildcare = 800000;
+            const postpartumCare = snapshot.postpartumCare
+                ?? form?.querySelector('[name="postpartumCare"]')?.checked
+                ?? true;
+            const childOrder = Number(
+                snapshot.childOrder
+                ?? form?.querySelector('[name="childOrder"]')?.value
+                ?? 1
+            );
+            const preparationItems = [
+                ["카시트", 300000, "repurchaseCarSeat"],
+                ["유모차", 500000, "repurchaseStroller"],
+                ["아기침대", 300000, "repurchaseCrib"],
+                ["수유·목욕·침구 등 기타 준비물", 400000, "repurchaseOtherSetup"]
+            ].filter(([, , fieldName]) => childOrder <= 1
+                || snapshot[fieldName] === true);
+            const preparationTotal = preparationItems.reduce((sum, [, amount]) => sum + amount, 0);
+            const calculatedInitialCost = Number(snapshot.estimatedCost || snapshot.eventCost || 0);
+            const defaultCareCost = postpartumCare ? 2865000 : 1255000;
+            const careCost = calculatedInitialCost > preparationTotal
+                ? calculatedInitialCost - preparationTotal
+                : defaultCareCost;
+            const careLabel = postpartumCare ? "산후조리원 이용" : "재가 산후조리";
+            const monthlyChildcare = Number(snapshot.additionalMonthlyExpense || 0);
+            const monthlyItems = monthlyChildcare > 0
+                ? [["지원 반영 후 양육비", monthlyChildcare]]
+                : [];
             const supportBenefit = snapshot.supportBenefit ? Number(snapshot.supportBenefit) : 0;
             const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : Math.max(0, careCost - supportBenefit);
 
@@ -3099,16 +3587,29 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="calc-name">산후조리 비용 (${careLabel})</span>
                             <strong class="calc-price">${formatCompactMoney(careCost)}</strong>
                         </div>
-                        <div class="calc-item-row">
-                            <span class="calc-name">월 예상 양육비 (기저귀/분유/보육 등)</span>
+                        ${preparationItems.map(([label, amount]) => `
+                            <div class="calc-item-row">
+                                <span class="calc-name">${escapeHtml(label)}</span>
+                                <strong class="calc-price">${formatCompactMoney(amount)}</strong>
+                            </div>
+                        `).join("")}
+                        <div class="calc-item-row is-featured">
+                            <span class="calc-name">초기 준비물 합계</span>
+                            <strong class="calc-price">${formatCompactMoney(preparationTotal)}</strong>
+                        </div>
+                        ${monthlyItems.map(([label, amount]) => `
+                            <div class="calc-item-row">
+                                <span class="calc-name">월 ${escapeHtml(label)}</span>
+                                <strong class="calc-price">${formatCompactMoney(amount)}</strong>
+                            </div>
+                        `).join("")}
+                        <div class="calc-item-row is-featured">
+                            <span class="calc-name-group">
+                                <span class="calc-name">아이 만 1세까지의 월 고정비</span>
+                                <small class="calc-pill-note">월 기준 참고 금액이며, 시뮬레이션에서 매월 반복 계산되지 않습니다.</small>
+                            </span>
                             <strong class="calc-price">월 ${formatCompactMoney(monthlyChildcare)} (연 ${formatCompactMoney(monthlyChildcare * 12)})</strong>
                         </div>
-                        ${supportBenefit > 0 ? `
-                            <div class="calc-item-row is-benefit">
-                                <span class="calc-name">정부·지자체 출산지원 혜택 (첫만남이용권·부모급여 등)</span>
-                                <strong class="calc-price is-minus">-${formatCompactMoney(supportBenefit)}</strong>
-                            </div>
-                        ` : ''}
                         <div class="calc-divider-line"></div>
                         <div class="calc-item-row is-total-row">
                             <span class="calc-total-label">초기 필요 순 자부담금</span>
@@ -3120,48 +3621,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (eventType === "VEHICLE_PURCHASE") {
-            const form = document.getElementById("vehicleSurveyForm");
-            const vehicleCondition = form?.querySelector('[name="vehicleCondition"]')?.value || "NEW";
-            const vehicleClass = form?.querySelector('[name="vehicleClass"]')?.value || "MIDSIZE";
-            const conditionLabel = vehicleCondition === "USED" ? "중고차" : "신차";
-            const classLabelMap = {
-                COMPACT: "경차",
-                SMALL: "소형차",
-                SEMI_MIDSIZE: "준중형차",
-                MIDSIZE: "중형차",
-                LARGE: "준대형차",
-                SUV: "SUV"
-            };
-            const classLabel = classLabelMap[vehicleClass] || "중형차";
-            const price = snapshot.estimatedCost > 0 ? Number(snapshot.estimatedCost) : 36000000;
-            const tax = Math.round(price * 0.07);
-            const inputMaintenance = form?.querySelector('[name="monthlyMaintenanceCost"]')?.value;
-            let monthlyCost = 450000;
-            if (inputMaintenance !== undefined && inputMaintenance !== null && String(inputMaintenance).trim() !== "") {
-                monthlyCost = parseMoneyValue(inputMaintenance);
-            } else if (snapshot.additionalMonthlyExpense !== undefined && snapshot.additionalMonthlyExpense !== null && Number(snapshot.additionalMonthlyExpense) >= 0) {
-                monthlyCost = Number(snapshot.additionalMonthlyExpense);
-            }
+            const totalCost = Number(snapshot.eventCost || snapshot.estimatedCost || 0);
+            const price = Number(snapshot.acquiredAssetAmount || totalCost || 0);
+            const registrationFee = Number(snapshot.registrationFeeAmount || 0);
+            const acquisitionTax = Number(snapshot.taxAmount || Math.max(0, totalCost - price - registrationFee));
+            const acquisitionTaxRate = price > 0 ? acquisitionTax / price * 100 : 0;
+            const monthlyCost = Number(snapshot.additionalMonthlyExpense || 0);
             const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : price;
+            const vehicleLoanAmount = Number(snapshot.newLoanAmount || 0);
+            const vehicleMonthlyPayment = Number(snapshot.newLoanMonthlyPayment || 0);
+            const vehicleLoanRate = Number(snapshot.loanInterestRate || 7.5);
+            const vehicleLoanPeriod = Number(snapshot.loanPeriodMonths || 60);
 
             return `
                 <div class="result-calc-breakdown">
-                    <div class="result-calc-meta-row">
-                        <span class="calc-meta-item"><strong>선택 차량</strong> ${conditionLabel} · ${classLabel}</span>
-                    </div>
                     <div class="result-calc-list">
                         <div class="calc-item-row is-featured">
                             <span class="calc-name">차량 기본 가격</span>
                             <strong class="calc-price">${formatCompactMoney(price)}</strong>
                         </div>
                         <div class="calc-item-row">
-                            <span class="calc-name">취등록세 및 부대비용 (약 7%)</span>
-                            <strong class="calc-price">${formatCompactMoney(tax)}</strong>
+                            <span class="calc-name">취득세 (${acquisitionTaxRate.toFixed(1)}%)</span>
+                            <strong class="calc-price">${formatCompactMoney(acquisitionTax)}</strong>
                         </div>
+                        ${registrationFee > 0 ? `
+                            <div class="calc-item-row">
+                                <span class="calc-name">자동차 등록 수수료</span>
+                                <strong class="calc-price">${formatCompactMoney(registrationFee)}</strong>
+                            </div>
+                        ` : ''}
                         <div class="calc-item-row">
                             <span class="calc-name">월 예상 유지비 (보험/세금/유류비)</span>
                             <strong class="calc-price">월 ${formatCompactMoney(monthlyCost)}</strong>
                         </div>
+                        ${vehicleLoanAmount > 0 ? `
+                            <div class="calc-item-row">
+                                <span class="calc-name">차량 할부 월 상환액</span>
+                                <strong class="calc-price">월 ${formatCompactMoney(vehicleMonthlyPayment)} · ${vehicleLoanPeriod}개월 · ${vehicleLoanRate.toFixed(2)}%</strong>
+                            </div>
+                        ` : ''}
                         <div class="calc-divider-line"></div>
                         <div class="calc-item-row is-total-row">
                             <span class="calc-total-label">초기 필요 자금 (차량가 + 부대비용)</span>
@@ -3172,38 +3670,112 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
+        if (eventType === "HOME_PURCHASE" && snapshot.newLoanAmount > 0) {
+            const loanAmount = Number(snapshot.newLoanAmount);
+            const monthlyPayment = Number(snapshot.newLoanMonthlyPayment || 0);
+            const repaymentLabel = loanRepaymentTypeLabel(snapshot.loanRepaymentType);
+            const loanRate = Number(snapshot.loanInterestRate || 4.2);
+            const loanPeriod = Number(snapshot.loanPeriodMonths || 360);
+            const price = Number(snapshot.acquiredAssetAmount || 0);
+            const totalCost = Number(snapshot.estimatedCost || snapshot.eventCost || 0);
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || 0);
+            const tax = Number(snapshot.taxAmount || Math.max(0, totalCost - price - brokerageFee));
+            const taxRate = price > 0 ? tax / price * 100 : 0;
+            const ownFund = Number(snapshot.userContributionAmount || Math.max(0, price - loanAmount));
+            const required = Number(snapshot.userRequiredAmount || Math.max(0, totalCost - loanAmount));
+            return `
+                <div class="result-calc-breakdown">
+                    <div class="result-calc-list">
+                        <div class="calc-item-row is-featured">
+                            <span class="calc-name">주택 매입가격</span>
+                            <strong class="calc-price">${formatCompactMoney(price)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">취득세·등기비 (${taxRate.toFixed(1)}%)</span>
+                            <strong class="calc-price">${formatCompactMoney(tax)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">공인중개사 중개보수 상한 (VAT 별도·협의 가능)</span>
+                            <strong class="calc-price">${formatCompactMoney(brokerageFee)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">입력 자기자금</span>
+                            <strong class="calc-price">${formatCompactMoney(ownFund)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">주택담보대출 실행액</span>
+                            <strong class="calc-price">${formatCompactMoney(loanAmount)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">상환방식 / 월 납입액</span>
+                            <strong class="calc-price">${escapeHtml(repaymentLabel)}${monthlyPayment > 0 ? ` · ${formatCompactMoney(monthlyPayment)}/월` : ""}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">대출기간 / 적용금리</span>
+                            <strong class="calc-price">${loanPeriod}개월 · ${loanRate.toFixed(2)}%</strong>
+                        </div>
+                        <div class="calc-divider-line"></div>
+                        <div class="calc-item-row is-total-row">
+                            <span class="calc-total-label">필요 현금 (자기자금 + 취득세·등기비 + 중개보수)</span>
+                            <strong class="calc-total-val">${formatCompactMoney(required)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         if (eventType === "HOME_PURCHASE") {
-            const form = document.getElementById("homePurchaseSurveyForm");
-            const housingType = form?.querySelector('[name="housingType"]')?.value || "APARTMENT";
-            const typeLabelMap = { APARTMENT: "아파트", VILLA: "빌라/다세대", OFFICETEL: "오피스텔" };
-            const price = snapshot.estimatedCost > 0 ? Number(snapshot.estimatedCost) : 600000000;
-            const tax = Math.round(price * 0.011);
+            const price = snapshot.acquiredAssetAmount > 0 ? Number(snapshot.acquiredAssetAmount) : 0;
+            const totalCost = snapshot.estimatedCost > 0 ? Number(snapshot.estimatedCost) : price;
             const loanAmount = snapshot.newLoanAmount ? Number(snapshot.newLoanAmount) : 0;
-            const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : Math.max(0, price + tax - loanAmount);
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || 0);
+            const tax = Number(snapshot.taxAmount || Math.max(0, totalCost - price - brokerageFee));
+            const taxRate = price > 0 ? tax / price * 100 : 0;
+            const ownFund = Number(snapshot.userContributionAmount || Math.max(0, price - loanAmount));
+            const monthlyLoanPayment = snapshot.newLoanMonthlyPayment > 0
+                ? Number(snapshot.newLoanMonthlyPayment)
+                : 0;
+            const repaymentLabel = loanRepaymentTypeLabel(snapshot.loanRepaymentType);
+            const loanRate = snapshot.loanInterestRate != null ? Number(snapshot.loanInterestRate) : 4.2;
+            const loanPeriod = snapshot.loanPeriodMonths || 360;
+            const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : Math.max(0, totalCost - loanAmount);
 
             return `
                 <div class="result-calc-breakdown">
-                    <div class="result-calc-meta-row">
-                        <span class="calc-meta-item"><strong>주택 형태</strong> ${typeLabelMap[housingType] || "아파트"} (84㎡ 기준)</span>
-                    </div>
                     <div class="result-calc-list">
                         <div class="calc-item-row is-featured">
                             <span class="calc-name">예상 주택 매매가</span>
                             <strong class="calc-price">${formatCompactMoney(price)}</strong>
                         </div>
                         <div class="calc-item-row">
-                            <span class="calc-name">취득세 및 등기비용 (약 1.1%)</span>
+                            <span class="calc-name">취득세 및 등기비용 (${taxRate.toFixed(1)}%)</span>
                             <strong class="calc-price">${formatCompactMoney(tax)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">공인중개사 중개보수 상한 (VAT 별도·협의 가능)</span>
+                            <strong class="calc-price">${formatCompactMoney(brokerageFee)}</strong>
+                        </div>
+                        <div class="calc-item-row">
+                            <span class="calc-name">입력 자기자금</span>
+                            <strong class="calc-price">${formatCompactMoney(ownFund)}</strong>
                         </div>
                         ${loanAmount > 0 ? `
                             <div class="calc-item-row">
                                 <span class="calc-name">주택담보대출 실행액</span>
                                 <strong class="calc-price">${formatCompactMoney(loanAmount)}</strong>
                             </div>
+                            <div class="calc-item-row">
+                                <span class="calc-name">대출 상환방식·월 납입액</span>
+                                <strong class="calc-price">${escapeHtml(repaymentLabel)}${monthlyLoanPayment > 0 ? ` · ${formatCompactMoney(monthlyLoanPayment)}/월` : ""}</strong>
+                            </div>
+                            <div class="calc-item-row">
+                                <span class="calc-name">대출기간·적용금리</span>
+                                <strong class="calc-price">${loanPeriod}개월 · ${loanRate.toFixed(2)}%</strong>
+                            </div>
                         ` : ''}
                         <div class="calc-divider-line"></div>
                         <div class="calc-item-row is-total-row">
-                            <span class="calc-total-label">필요 자기자본 (순 현금 준비금)</span>
+                            <span class="calc-total-label">필요 현금 (자기자금 + 취득세·등기비 + 중개보수)</span>
                             <strong class="calc-total-val">${formatCompactMoney(userRequired)}</strong>
                         </div>
                     </div>
@@ -3212,18 +3784,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (eventType === "JEONSE") {
-            const form = document.getElementById("jeonseSurveyForm");
-            const housingType = form?.querySelector('[name="housingType"]')?.value || "APARTMENT";
-            const typeLabelMap = { APARTMENT: "아파트", VILLA: "빌라/다세대", OFFICETEL: "오피스텔" };
-            const deposit = snapshot.estimatedCost > 0 ? Number(snapshot.estimatedCost) : 300000000;
+            const deposit = Number(snapshot.acquiredAssetAmount || 0);
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || 0);
             const loanAmount = snapshot.newLoanAmount ? Number(snapshot.newLoanAmount) : 0;
             const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : Math.max(0, deposit - loanAmount);
 
             return `
                 <div class="result-calc-breakdown">
-                    <div class="result-calc-meta-row">
-                        <span class="calc-meta-item"><strong>주택 형태</strong> ${typeLabelMap[housingType] || "아파트"} (59㎡ 기준)</span>
-                    </div>
                     <div class="result-calc-list">
                         <div class="calc-item-row is-featured">
                             <span class="calc-name">전세 보증금</span>
@@ -3235,6 +3802,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <strong class="calc-price">${formatCompactMoney(loanAmount)}</strong>
                             </div>
                         ` : ''}
+                        ${brokerageFee > 0 ? `<div class="calc-item-row"><span class="calc-name">중개보수 상한</span><strong class="calc-price">${formatCompactMoney(brokerageFee)}</strong></div>` : ""}
                         <div class="calc-divider-line"></div>
                         <div class="calc-item-row is-total-row">
                             <span class="calc-total-label">필요 보증금 현금 (자기자본)</span>
@@ -3246,15 +3814,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (eventType === "MONTHLY_RENT") {
-            const form = document.getElementById("monthlyRentSurveyForm");
-            const inputDeposit = form?.querySelector('[name="desiredDeposit"]')?.value;
-            const inputRent = form?.querySelector('[name="desiredMonthlyRent"]')?.value;
-            const deposit = snapshot.estimatedCost > 0 
-                ? Number(snapshot.estimatedCost) 
-                : (inputDeposit !== undefined && inputDeposit !== null && String(inputDeposit).trim() !== "" ? parseMoneyValue(inputDeposit) : 20000000);
-            const monthlyRent = (snapshot.additionalMonthlyExpense !== undefined && snapshot.additionalMonthlyExpense !== null && Number(snapshot.additionalMonthlyExpense) > 0)
-                ? Number(snapshot.additionalMonthlyExpense)
-                : (inputRent !== undefined && inputRent !== null && String(inputRent).trim() !== "" ? parseMoneyValue(inputRent) : 700000);
+            const deposit = Number(snapshot.acquiredAssetAmount || 0);
+            const monthlyRent = Number(snapshot.additionalMonthlyExpense || 0);
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || 0);
             const userRequired = snapshot.userRequiredAmount > 0 ? Number(snapshot.userRequiredAmount) : deposit;
             return `
                 <div class="result-calc-breakdown">
@@ -3267,9 +3829,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             <strong class="calc-price">${formatCompactMoney(deposit)}</strong>
                         </div>
                         <div class="calc-item-row">
-                            <span class="calc-name">월 임대료</span>
+                            <span class="calc-name">월 주거비 (임대료·관리비·지원 반영)</span>
                             <strong class="calc-price">월 ${formatCompactMoney(monthlyRent)}</strong>
                         </div>
+                        ${brokerageFee > 0 ? `<div class="calc-item-row"><span class="calc-name">중개보수 상한</span><strong class="calc-price">${formatCompactMoney(brokerageFee)}</strong></div>` : ""}
                         <div class="calc-divider-line"></div>
                         <div class="calc-item-row is-total-row">
                             <span class="calc-total-label">초기 필요 보증금</span>
@@ -3281,7 +3844,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (eventType === "REPAYMENT") {
-            const repayAmount = snapshot.eventCost ? Number(snapshot.eventCost) : 30000000;
+            const repayAmount = snapshot.eventCost ? Number(snapshot.eventCost) : 0;
             const fee = Math.round(repayAmount * 0.0065);
             return `
                 <div class="result-calc-breakdown">
@@ -3322,11 +3885,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const snapshot = point.snapshot;
         const eventCost = Number(point.eventCost ?? 0);
         const reqAmount = Number(snapshot?.userRequiredAmount ?? eventCost);
+        const userContribution = Number(snapshot?.userContributionAmount ?? 0);
         const netAssetStr = formatCompactMoney(point.netAsset);
         const changeAmount = point.netAssetChange ?? 0;
         const changeClass = changeAmount >= 0 ? "is-positive" : "is-negative";
         const changeSign = changeAmount > 0 ? "+" : "";
         const changeStr = isCurrent ? "초기 자산" : `${changeSign}${formatCompactMoney(changeAmount)}`;
+        const isHomePurchase = snapshot?.eventType === "HOME_PURCHASE";
+        const pointCostLabel = isHomePurchase
+            ? "주택 매입 총 필요자금"
+            : "일회성 총비용";
+        const pointRequiredLabel = isHomePurchase
+            ? "대출 제외 필요 현금"
+            : "최종 본인 필요자금";
 
         let supportCount = 0;
         let productCount = 0;
@@ -3341,19 +3912,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let detailHighlight = "";
         if (snapshot?.eventType === "MARRIAGE") {
-            const form = document.getElementById("marriageSurveyForm");
-            const sido = form?.querySelector('[name="regionSido"]')?.value || "서울특별시";
-            const guestCount = Number(form?.querySelector('[name="guestCount"]')?.value || 200);
-            const mealPrice = REGIONAL_MEAL_PRICES[sido] || REGIONAL_MEAL_PRICES["DEFAULT"];
-            const mealPriceMan = (mealPrice / 10000).toFixed(1).replace(".0", "");
-            const totalMealCost = guestCount * mealPrice;
-            detailHighlight = `식대 ${formatCompactMoney(totalMealCost)} (${guestCount}명 × ${mealPriceMan}만)`;
+            detailHighlight = "저장된 결혼 설문과 준비 수준 기준";
         } else if (snapshot?.eventType === "CHILDBIRTH") {
             detailHighlight = "산후조리 및 보육 지원 반영";
         } else if (snapshot?.eventType === "VEHICLE_PURCHASE") {
-            detailHighlight = "차량가 및 취등록세(7%) 반영";
+            const totalCost = Number(snapshot.eventCost || snapshot.estimatedCost || 0);
+            const vehiclePrice = Number(snapshot.acquiredAssetAmount || totalCost);
+            const tax = Number(snapshot.taxAmount || 0);
+            const rate = vehiclePrice > 0 ? tax / vehiclePrice * 100 : 0;
+            detailHighlight = `차량가·취득세(${rate.toFixed(1)}%)·등록 수수료 반영`;
         } else if (snapshot?.eventType === "HOME_PURCHASE") {
-            detailHighlight = "주택매매 및 취득세(1.1%) 반영";
+            const price = Number(snapshot.acquiredAssetAmount || 0);
+            const tax = Number(snapshot.taxAmount || 0);
+            const rate = price > 0 ? tax / price * 100 : 0;
+            detailHighlight = `주택매매 및 취득세·등기비(${rate.toFixed(1)}%) 반영`;
         }
 
         return `
@@ -3369,21 +3941,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 ${!isCurrent ? `
                     <div class="popover-cost-highlight">
-                        <span>예상 소요 지출</span>
+                        <span>${escapeHtml(pointCostLabel)}</span>
                         <strong>${escapeHtml(formatCompactMoney(eventCost))}</strong>
                     </div>
                 ` : `
                     <div class="popover-cost-highlight" style="background: #f1f5f9; border-color: #cbd5e1;">
                         <span style="color: #475569;">시뮬레이션 시작</span>
-                        <strong style="color: #1e3a5f;">초기 단계</strong>
+                        <strong style="color: #252a31;">초기 단계</strong>
                     </div>
                 `}
 
                 <div class="popover-stats-grid">
                     ${(!isCurrent && reqAmount > 0) ? `
                         <div class="popover-stat-item">
-                            <span>본인 필요 자금</span>
-                            <b style="color: #2563eb;">${escapeHtml(formatCompactMoney(reqAmount))}</b>
+                            <span>${escapeHtml(pointRequiredLabel)}</span>
+                            <b style="color: #30343b;">${escapeHtml(formatCompactMoney(reqAmount))}</b>
+                        </div>
+                    ` : ''}
+                    ${(!isCurrent && userContribution > 0) ? `
+                        <div class="popover-stat-item">
+                            <span>본인 분담금(지원 전)</span>
+                            <b>${escapeHtml(formatCompactMoney(userContribution))}</b>
                         </div>
                     ` : ''}
                     ${(!isCurrent && point.newLoanAmount > 0) ? `
@@ -3395,7 +3973,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${detailHighlight ? `
                         <div class="popover-stat-item is-highlight-stat" style="grid-column: 1 / -1;">
                             <span>산출 기준</span>
-                            <b style="font-size: 11.5px; color: #2563eb;">${escapeHtml(detailHighlight)}</b>
+                            <b style="font-size: 11.5px; color: #30343b;">${escapeHtml(detailHighlight)}</b>
                         </div>
                     ` : ''}
                 </div>
@@ -3453,6 +4031,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         assetTimeline.innerHTML = points.map((point, index) => {
             const isCurrent = index === 0;
+            const monthlyExpense = Number(point.snapshot?.additionalMonthlyExpense ?? 0);
             const stepLabel = isCurrent ? "시작" : `STEP ${index}`;
             const costDisplay = isCurrent
                 ? "시작"
@@ -3476,7 +4055,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="lifecycle-journey-dot" aria-hidden="true"></div>
                     <strong>${escapeHtml(point.label)}</strong>
                     <div class="timeline-cost-badge">
-                        <span>${escapeHtml(costLabel)}</span>
+                        <span>${escapeHtml(isCurrent ? costLabel : (point.eventCost > 0 ? "일회성 비용" : (monthlyExpense > 0 ? "월 지출" : "비용")))}</span>
                         <b class="point-cost-highlight">${escapeHtml(costDisplay)}</b>
                     </div>
                     <small>${escapeHtml(detail)}</small>
@@ -3486,6 +4065,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join("");
 
         eventCostChart.innerHTML = buildEventCostChart(snapshots);
+        bindDonutTooltips(eventCostChart);
+        bindRepaymentBarTooltips(eventCostChart);
 
         // Bind interactive click events on timeline points
         const timelinePoints = assetTimeline.querySelectorAll(".lifecycle-journey-point");
@@ -3520,10 +4101,46 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function monthlyCostBreakdown(snapshot) {
+        const housingExpense = Number(snapshot?.additionalMonthlyExpense ?? 0);
+        const loanPayment = Number(snapshot?.newLoanMonthlyPayment ?? 0);
+        const principal = Number(snapshot?.monthlyLoanPrincipal ?? 0);
+        const interest = Number(snapshot?.monthlyLoanInterest ?? 0);
+        const items = [];
+
+        if (snapshot?.eventType === "MONTHLY_RENT") {
+            items.push({ label: "월세·관리비(지원 반영)", amount: housingExpense });
+        } else if (housingExpense > 0) {
+            items.push({ label: "월 생활·관리비", amount: housingExpense });
+        }
+
+        if (snapshot?.eventType === "JEONSE") {
+            items.push({ label: "전세대출 이자(만기일시상환)", amount: interest || loanPayment });
+        } else if (snapshot?.eventType === "HOME_PURCHASE" && loanPayment <= 0) {
+            items.push({ label: "주택담보대출 월 상환", amount: 0 });
+        } else if (loanPayment > 0) {
+            if (principal > 0) items.push({ label: "첫 달 원금 상환액", amount: principal });
+            if (interest > 0) items.push({ label: "첫 달 이자 납부액", amount: interest });
+            if (principal <= 0 && interest <= 0) {
+                items.push({ label: "월 대출 상환액", amount: loanPayment });
+            }
+        }
+        return items;
+    }
+
     function buildJourneyDetail(point) {
         const details = [];
         if (point.eventCost > 0) {
             details.push(`총비용 ${formatCompactMoney(point.eventCost)}`);
+        }
+        if (point.snapshot?.additionalMonthlyExpense > 0) {
+            details.push(`월 지출 ${formatCompactMoney(point.snapshot.additionalMonthlyExpense)}`);
+        }
+        if (point.snapshot?.newLoanMonthlyPayment > 0) {
+            details.push(`월 대출 상환액 ${formatCompactMoney(point.snapshot.newLoanMonthlyPayment)}`);
+        }
+        if (point.snapshot?.userContributionAmount > 0) {
+            details.push(`본인 분담금(지원 전) ${formatCompactMoney(point.snapshot.userContributionAmount)}`);
         }
         if (point.snapshot?.userRequiredAmount > 0) {
             details.push(`본인부담 ${formatCompactMoney(point.snapshot.userRequiredAmount)}`);
@@ -3533,36 +4150,359 @@ document.addEventListener("DOMContentLoaded", () => {
         return details.join(" · ") || "지출 계획 반영";
     }
 
-    function buildEventCostChart(snapshots) {
-        const costs = snapshots.map(snapshot => Math.max(0, Number(snapshot.eventCost ?? 0)));
-        const maxCost = Math.max(...costs, 1);
+    const COST_CHART_COLORS = ["#e97955", "#f2b45f", "#5d8fd6", "#58ad8b", "#9a7bd2", "#df7f9a"];
 
-        return snapshots.map((snapshot, index) => {
-            const cost = costs[index];
-            const width = cost === 0 ? 0 : Math.max(4, cost / maxCost * 100);
-            const reqAmount = Number(snapshot.userRequiredAmount ?? 0);
-            const subLabel = reqAmount > 0
-                ? `본인 부담 ${formatCompactMoney(reqAmount)}`
-                : (snapshot.newLoanAmount > 0 ? `대출 ${formatCompactMoney(snapshot.newLoanAmount)}` : "");
+    function calculateHomePurchaseBrokerageFee(price, housingType = "APARTMENT") {
+        const amount = Math.max(0, Number(price || 0));
+        if (housingType === "OFFICETEL") return amount * 0.005;
+        if (amount < 50000000) return Math.min(amount * 0.006, 250000);
+        if (amount < 200000000) return Math.min(amount * 0.005, 800000);
+        if (amount < 900000000) return amount * 0.004;
+        if (amount < 1200000000) return amount * 0.005;
+        if (amount < 1500000000) return amount * 0.006;
+        return amount * 0.007;
+    }
 
-            return `
-                <article class="lifecycle-cost-row">
-                    <div class="lifecycle-cost-label">
-                        <strong>${escapeHtml(eventTypeLabel(snapshot.eventType))}</strong>
-                        <time>${escapeHtml(formatEventDate(snapshot.eventDate))}</time>
-                    </div>
-                    <div class="lifecycle-cost-visual">
-                        <div class="lifecycle-cost-track" aria-hidden="true">
-                            <span style="width: ${width.toFixed(1)}%"></span>
-                        </div>
-                        <div class="lifecycle-cost-values">
-                            <b>지출 ${escapeHtml(formatApproxMoney(cost))}</b>
-                            ${subLabel ? `<em class="is-highlight-stat">${escapeHtml(subLabel)}</em>` : ""}
-                        </div>
-                    </div>
-                </article>
-            `;
+    function donutGradient(items) {
+        const total = items.reduce((sum, item) => sum + Math.max(0, item.amount), 0);
+        if (total <= 0) return "conic-gradient(#e8edf2 0 100%)";
+        let cursor = 0;
+        return `conic-gradient(${items.map((item, index) => {
+            const start = cursor;
+            cursor += Math.max(0, item.amount) / total * 100;
+            return `${COST_CHART_COLORS[index % COST_CHART_COLORS.length]} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+        }).join(", ")})`;
+    }
+
+    function donutHoverOverlay(items) {
+        const total = items.reduce((sum, item) => sum + Math.max(0, item.amount), 0);
+        if (total <= 0) return "";
+        let cursor = -90;
+        const point = (angle, radius) => {
+            const radians = angle * Math.PI / 180;
+            return { x: 50 + radius * Math.cos(radians), y: 50 + radius * Math.sin(radians) };
+        };
+        const paths = items.map(item => {
+            const startAngle = cursor;
+            const sweep = Math.max(0, item.amount) / total * 360;
+            const endAngle = cursor + Math.min(sweep, 359.999);
+            cursor += sweep;
+            const outerStart = point(startAngle, 48);
+            const outerEnd = point(endAngle, 48);
+            const innerEnd = point(endAngle, 24);
+            const innerStart = point(startAngle, 24);
+            const largeArc = sweep > 180 ? 1 : 0;
+            const path = `M ${outerStart.x} ${outerStart.y} A 48 48 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y} L ${innerEnd.x} ${innerEnd.y} A 24 24 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y} Z`;
+            const value = formatApproxMoney(item.amount);
+            const share = `${(item.amount / total * 100).toFixed(1)}%`;
+            const label = `${item.label} · 월 지출 ${value} · ${share}`;
+            const details = escapeHtml(JSON.stringify(item.details || []));
+            return `<path d="${path}" tabindex="0" aria-label="${escapeHtml(label)}" data-tooltip-title="${escapeHtml(item.label)}" data-tooltip-value="${escapeHtml(value)}" data-tooltip-share="${escapeHtml(share)}" data-tooltip-details="${details}"></path>`;
         }).join("");
+        return `<svg class="lifecycle-donut-hover-overlay" viewBox="0 0 100 100" aria-label="월 지출 상세">${paths}</svg><div class="lifecycle-donut-tooltip" role="tooltip" hidden></div>`;
+    }
+
+    function bindDonutTooltips(root) {
+        root.querySelectorAll(".lifecycle-donut").forEach(donut => {
+            const tooltip = donut.querySelector(".lifecycle-donut-tooltip");
+            if (!tooltip) return;
+            const show = (path, clientX, clientY) => {
+                const rect = donut.getBoundingClientRect();
+                const x = clientX == null ? rect.width / 2 : Math.max(42, Math.min(rect.width - 42, clientX - rect.left));
+                const y = clientY == null ? rect.height / 2 : Math.max(32, clientY - rect.top);
+                let details = [];
+                try { details = JSON.parse(path.dataset.tooltipDetails || "[]"); } catch (error) { details = []; }
+                const detailRows = details.length
+                    ? `<ul>${details.map(item => `<li><span>${escapeHtml(item.label)}</span><b>${escapeHtml(formatApproxMoney(item.amount))}</b></li>`).join("")}</ul>`
+                    : "";
+                tooltip.innerHTML = `<strong>${escapeHtml(path.dataset.tooltipTitle || "월 지출")}</strong><b>${escapeHtml(path.dataset.tooltipValue || "-")}</b><small>월 지출 비중 ${escapeHtml(path.dataset.tooltipShare || "-")}</small>${detailRows}`;
+                tooltip.style.left = `${x}px`;
+                tooltip.style.top = `${y}px`;
+                tooltip.hidden = false;
+            };
+            const hide = () => { tooltip.hidden = true; };
+            donut.querySelectorAll(".lifecycle-donut-hover-overlay path").forEach(path => {
+                path.addEventListener("pointerenter", event => show(path, event.clientX, event.clientY));
+                path.addEventListener("pointermove", event => show(path, event.clientX, event.clientY));
+                path.addEventListener("pointerleave", hide);
+                path.addEventListener("focus", () => show(path));
+                path.addEventListener("blur", hide);
+            });
+        });
+    }
+
+    function bindRepaymentBarTooltips(root) {
+        root.querySelectorAll(".lifecycle-repayment-bar-card").forEach(card => {
+            const tooltip = card.querySelector(".lifecycle-repayment-tooltip");
+            if (!tooltip) return;
+            const show = (bar, clientX, clientY) => {
+                const rect = card.getBoundingClientRect();
+                const barRect = bar.getBoundingClientRect();
+                const x = clientX == null ? barRect.left - rect.left + barRect.width / 2 : Math.max(72, Math.min(rect.width - 72, clientX - rect.left));
+                const y = clientY == null ? barRect.top - rect.top : Math.max(36, clientY - rect.top);
+                tooltip.innerHTML = `<strong>${escapeHtml(bar.dataset.tooltipTitle || "월 지출")}</strong><b>${escapeHtml(bar.dataset.tooltipValue || "-")}</b><ul><li><span>원금</span><b>${escapeHtml(bar.dataset.tooltipPrincipal || "-")}</b></li><li><span>이자</span><b>${escapeHtml(bar.dataset.tooltipInterest || "-")}</b></li></ul>`;
+                tooltip.style.left = `${x}px`;
+                tooltip.style.top = `${y}px`;
+                tooltip.hidden = false;
+            };
+            const hide = () => { tooltip.hidden = true; };
+            card.querySelectorAll(".lifecycle-repayment-bar").forEach(bar => {
+                bar.addEventListener("pointerenter", event => show(bar, event.clientX, event.clientY));
+                bar.addEventListener("pointermove", event => show(bar, event.clientX, event.clientY));
+                bar.addEventListener("pointerleave", hide);
+                bar.addEventListener("focus", () => show(bar));
+                bar.addEventListener("blur", hide);
+            });
+        });
+    }
+
+    function eventCostComponents(snapshot) {
+        const total = Math.max(0, Number(snapshot.eventCost ?? snapshot.estimatedCost ?? 0));
+        let items = [];
+        if (snapshot.eventType === "MARRIAGE") {
+            const form = document.getElementById("marriageSurveyForm");
+            const sido = form?.querySelector('[name="regionSido"]')?.value || "서울특별시";
+            const guestCount = Number(form?.querySelector('[name="guestCount"]')?.value || 200);
+            const mealPrice = REGIONAL_MEAL_PRICES[sido] || REGIONAL_MEAL_PRICES.DEFAULT;
+            const lifestyle = form?.querySelector('input[name="marriageLifestyleLevel"]:checked')?.value
+                || snapshot.lifestyleLevel || "AVERAGE";
+            const hallCost = ({
+                PRACTICAL: 9680000,
+                AVERAGE: 11390000,
+                RELAXED: 13100000,
+                PREMIUM: 14800000,
+                CUSTOM: 11390000
+            })[lifestyle] || 11390000;
+            const furnitureIncluded = form?.querySelector('[name="furnitureIncluded"]')?.checked ?? false;
+            const honeymoonIncluded = form?.querySelector('[name="honeymoonIncluded"]')?.checked ?? false;
+            items = lifestyle === "CUSTOM"
+                ? [{label: "직접 입력 결혼비용", amount: total}]
+                : [
+                    {label: "예식장·스드메", amount: hallCost},
+                    {label: `식대 (${guestCount}명)`, amount: guestCount * mealPrice},
+                    ...(furnitureIncluded ? [{label: "혼수 준비비", amount: 12000000}] : []),
+                    ...(honeymoonIncluded ? [{label: "신혼여행 경비", amount: 6000000}] : [])
+                ];
+        } else if (snapshot.eventType === "CHILDBIRTH") {
+            const childOrder = Number(snapshot.childOrder || 1);
+            const setupItems = [
+                { label: "카시트", amount: 300000, fieldName: "repurchaseCarSeat" },
+                { label: "유모차", amount: 500000, fieldName: "repurchaseStroller" },
+                { label: "아기침대", amount: 300000, fieldName: "repurchaseCrib" },
+                { label: "기타 준비물", amount: 400000, fieldName: "repurchaseOtherSetup" }
+            ].filter(item => childOrder <= 1
+                || snapshot[item.fieldName] === true);
+            const setupTotal = setupItems.reduce((sum, item) => sum + item.amount, 0);
+            items = [
+                { label: "산후조리", amount: Math.max(0, total - setupTotal) },
+                ...setupItems
+            ];
+        } else if (snapshot.eventType === "HOME_PURCHASE") {
+            const price = Number(snapshot.acquiredAssetAmount || 0);
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || 0);
+            const tax = Number(snapshot.taxAmount || Math.max(0, total - price - brokerageFee));
+            items = [
+                { label: "주택 매입가", amount: price },
+                { label: "취득세·등기비", amount: tax },
+                { label: "중개보수 상한", amount: brokerageFee }
+            ];
+        } else if (snapshot.eventType === "VEHICLE_PURCHASE") {
+            const price = Math.max(0, Number(snapshot.acquiredAssetAmount || total));
+            const registrationFee = Number(snapshot.registrationFeeAmount || 0);
+            const tax = Number(snapshot.taxAmount || Math.max(0, total - price - registrationFee));
+            items = [
+                { label: "차량 구입가", amount: price },
+                { label: "취득세", amount: tax },
+                { label: "등록 수수료", amount: registrationFee }
+            ];
+        } else if (snapshot.eventType === "MONTHLY_RENT") {
+            const deposit = Math.max(0, Number(snapshot.acquiredAssetAmount || 0));
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || Math.max(0, total - deposit));
+            items = [
+                { label: "임차보증금", amount: deposit },
+                { label: "중개보수 상한", amount: brokerageFee }
+            ];
+        } else if (snapshot.eventType === "JEONSE") {
+            const deposit = Math.max(0, Number(snapshot.acquiredAssetAmount || 0));
+            const brokerageFee = Number(snapshot.brokerageFeeAmount || Math.max(0, total - deposit));
+            items = [
+                { label: "전세보증금", amount: deposit },
+                { label: "중개보수 상한", amount: brokerageFee }
+            ];
+        } else {
+            items = [{ label: "이벤트 비용", amount: total }];
+        }
+        return items.filter(item => item.amount > 0);
+    }
+
+    function donutLegend(items, total, showAnnual = false) {
+        return items.map((item, index) => `
+            <li title="${escapeHtml(`${item.label} 월 지출 ${formatApproxMoney(item.amount)}`)}">
+                <i style="background:${COST_CHART_COLORS[index % COST_CHART_COLORS.length]}"></i>
+                <span><strong>${escapeHtml(item.label)}</strong>${showAnnual ? `<small>연 ${escapeHtml(formatApproxMoney(item.amount * 12))}</small>` : ""}</span>
+                <b>${escapeHtml(formatApproxMoney(item.amount))}</b>
+                <em>${total > 0 ? `${(item.amount / total * 100).toFixed(1)}%` : "0%"}</em>
+            </li>
+        `).join("");
+    }
+
+    function repaymentPaymentAtMonth(snapshot, month) {
+        const principal = Math.max(0, Number(snapshot?.newLoanAmount || 0));
+        const months = Math.max(1, Number(snapshot?.loanPeriodMonths || 360));
+        const monthlyRate = Math.max(0, Number(snapshot?.loanInterestRate || 0)) / 1200;
+        const targetMonth = Math.min(months, Math.max(1, month));
+        const type = snapshot?.loanRepaymentType || "원리금균등상환";
+
+        if (type.includes("원금균등")) {
+            const monthlyPrincipal = principal / months;
+            const balance = Math.max(0, principal - monthlyPrincipal * (targetMonth - 1));
+            const interest = balance * monthlyRate;
+            return { principal: monthlyPrincipal, interest, total: monthlyPrincipal + interest };
+        }
+        if (type.includes("만기일시")) {
+            const interest = principal * monthlyRate;
+            return { principal: 0, interest, total: interest };
+        }
+
+        const total = Math.max(0, Number(snapshot?.newLoanMonthlyPayment || 0));
+        const interest = Math.min(total, principal * monthlyRate);
+        return { principal: Math.max(0, total - interest), interest, total };
+    }
+
+    function loanRepaymentTypeLabel(value) {
+        const type = String(value || "").trim();
+        if (type === "EQUAL_PRINCIPAL" || type === "원금균등" || type === "원금균등상환") {
+            return "원금균등상환";
+        }
+        if (type === "BULLET" || type === "BULLET_PAYMENT" || type === "만기일시" || type === "만기일시상환") {
+            return "만기일시상환";
+        }
+        return "원리금균등상환";
+    }
+
+    function isEqualPrincipalRepayment(snapshot) {
+        return loanRepaymentTypeLabel(snapshot?.loanRepaymentType) === "원금균등상환";
+    }
+
+    function equalPrincipalYearBarChart(snapshot) {
+        const termYears = Math.max(1, Math.ceil(Number(snapshot?.loanPeriodMonths || 360) / 12));
+        let sampleYears;
+        if (termYears <= 5) {
+            sampleYears = Array.from({ length: termYears }, (_, index) => index + 1);
+        } else if (termYears <= 20) {
+            sampleYears = [1, 5, 10, 15, 20].filter(year => year <= termYears);
+            if (!sampleYears.includes(termYears)) sampleYears.push(termYears);
+        } else {
+            sampleYears = [1, 5, 10, 20, termYears];
+        }
+        sampleYears = [...new Set(sampleYears)].slice(-5);
+
+        const yearlyPayments = sampleYears.map(year => ({
+            year,
+            payment: repaymentPaymentAtMonth(snapshot, year * 12)
+        }));
+        const maxPayment = Math.max(1, ...yearlyPayments.map(item => item.payment.total));
+        const bars = yearlyPayments.map(({ year, payment }) => {
+            const item = payment;
+            const principalHeight = item.principal / maxPayment * 100;
+            const interestHeight = item.interest / maxPayment * 100;
+            const title = `${year}년 차 월 지출 ${formatApproxMoney(item.total)} · 원금 ${formatApproxMoney(item.principal)} · 이자 ${formatApproxMoney(item.interest)}`;
+            return `<div class="lifecycle-repayment-bar-column">
+                <div class="lifecycle-repayment-bar" tabindex="0" aria-label="${escapeHtml(title)}" data-tooltip-title="${year}년 차 월 지출" data-tooltip-value="${escapeHtml(formatApproxMoney(item.total))}" data-tooltip-principal="${escapeHtml(formatApproxMoney(item.principal))}" data-tooltip-interest="${escapeHtml(formatApproxMoney(item.interest))}">
+                    <i class="is-interest" style="height:${interestHeight.toFixed(2)}%"></i>
+                    <i class="is-principal" style="height:${principalHeight.toFixed(2)}%"></i>
+                    <b>${escapeHtml(formatApproxMoney(item.total))}</b>
+                </div>
+                <small>${year}년 차</small>
+            </div>`;
+        }).join("");
+        return `<div class="lifecycle-repayment-bar-card">
+            <header><strong>원금균등상환 월 지출 변화</strong><span>${termYears}년 만기</span></header>
+            <div class="lifecycle-repayment-bars" style="grid-template-columns:repeat(${sampleYears.length}, minmax(32px, 1fr))">${bars}</div>
+            <div class="lifecycle-repayment-bar-legend"><span><i class="is-principal"></i>원금</span><span><i class="is-interest"></i>이자</span></div>
+            <p>상환기간에 따라 월 납입액이 줄어드는 흐름입니다.</p>
+            <div class="lifecycle-repayment-tooltip" role="tooltip" hidden></div>
+        </div>`;
+    }
+
+    function stackedBarSegments(items, total) {
+        if (total <= 0) return '<span class="is-empty" style="width:100%"></span>';
+        return items.map((item, index) => {
+            const width = Math.max(0, item.amount) / total * 100;
+            const label = `${item.label} ${formatApproxMoney(item.amount)} (${width.toFixed(1)}%)`;
+            return `<span style="width:${width.toFixed(3)}%;background:${COST_CHART_COLORS[index % COST_CHART_COLORS.length]}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
+        }).join("");
+    }
+
+    function buildEventCostChart(snapshots) {
+        const oneTimeCards = snapshots.filter(snapshot => Number(snapshot.eventCost ?? 0) > 0).map(snapshot => {
+            const total = Number(snapshot.eventCost ?? 0);
+            const items = eventCostComponents(snapshot);
+            return `
+                <article class="lifecycle-stacked-card">
+                    <header>
+                        <span><strong>${escapeHtml(eventTypeLabel(snapshot.eventType))}</strong><time>${escapeHtml(formatEventDate(snapshot.eventDate))}</time></span>
+                        <b>${escapeHtml(formatApproxMoney(total))}</b>
+                    </header>
+                    <div class="lifecycle-stacked-track" role="img" aria-label="${escapeHtml(eventTypeLabel(snapshot.eventType))} 비용 항목 비중">
+                        ${stackedBarSegments(items, total)}
+                    </div>
+                    <ul class="lifecycle-donut-legend lifecycle-stacked-legend">${donutLegend(items, total)}</ul>
+                </article>`;
+        }).join("");
+
+        const recurringHousingTypes = new Set(["MONTHLY_RENT", "JEONSE", "HOME_PURCHASE"]);
+        const monthlySnapshots = snapshots.filter(snapshot =>
+            recurringHousingTypes.has(snapshot.eventType) || Number(snapshot.additionalMonthlyExpense ?? 0) > 0 || Number(snapshot.newLoanMonthlyPayment ?? 0) > 0
+        );
+        const equalPrincipalSnapshot = monthlySnapshots.find(snapshot =>
+            snapshot.eventType === "HOME_PURCHASE" && isEqualPrincipalRepayment(snapshot)
+        );
+        const monthlyItems = monthlySnapshots.map(snapshot => {
+            const isEqualPrincipal = snapshot === equalPrincipalSnapshot;
+            const payment = isEqualPrincipal
+                ? repaymentPaymentAtMonth(snapshot, 12)
+                : {
+                    total: Number(snapshot.newLoanMonthlyPayment ?? 0),
+                    principal: Number(snapshot.monthlyLoanPrincipal ?? 0),
+                    interest: Number(snapshot.monthlyLoanInterest ?? 0)
+                };
+            const expense = Number(snapshot.additionalMonthlyExpense ?? 0);
+            const expenseLabel = {
+                MONTHLY_RENT: "월세·관리비",
+                HOME_PURCHASE: "주택 관리비",
+                VEHICLE_PURCHASE: "차량 유지비",
+                CHILDBIRTH: "만 1세까지 월 고정비"
+            }[snapshot.eventType] || "월 생활비";
+            const details = [];
+            if (expense > 0) details.push({ label: expenseLabel, amount: expense });
+            if (payment.principal > 0) details.push({ label: "대출 원금", amount: payment.principal });
+            if (payment.interest > 0) details.push({ label: "대출 이자", amount: payment.interest });
+            if (payment.total > 0 && payment.principal <= 0 && payment.interest <= 0) {
+                details.push({ label: "대출 상환액", amount: payment.total });
+            }
+            return {
+                label: isEqualPrincipal
+                    ? `${eventTypeLabel(snapshot.eventType)} (1년 차)`
+                    : eventTypeLabel(snapshot.eventType),
+                amount: expense + payment.total,
+                details
+            };
+        });
+        const monthlyTotal = monthlyItems.reduce((sum, item) => sum + item.amount, 0);
+        const monthlyChart = monthlyItems.length ? `
+            <div class="lifecycle-monthly-chart-layout${equalPrincipalSnapshot ? " has-repayment-bars" : ""}">
+                ${equalPrincipalSnapshot ? equalPrincipalYearBarChart(equalPrincipalSnapshot) : ""}
+                <div class="lifecycle-monthly-donut-wrap">
+                <div class="lifecycle-monthly-chart-title"><strong>${equalPrincipalSnapshot ? "1년 차 월 지출 구성" : "현재 월 지출 구성"}</strong><small>생활비·원금·이자 세부 구성</small></div>
+                <div class="lifecycle-donut lifecycle-monthly-donut" style="background:${donutGradient(monthlyItems)}">${donutHoverOverlay(monthlyItems)}<span><small>${equalPrincipalSnapshot ? "1년 차 월 지출" : "한 달 총지출"}</small><b>${escapeHtml(formatApproxMoney(monthlyTotal))}</b></span></div>
+                <ul class="lifecycle-donut-legend">${donutLegend(monthlyItems, monthlyTotal, true)}</ul>
+                </div>
+            </div>` : '<p class="lifecycle-cost-empty">표시할 월 지출이 없습니다.</p>';
+
+        return `
+            <section class="lifecycle-cost-section"><h5>이벤트별 일회성 비용 구성</h5><p class="lifecycle-cost-section-caption">각 막대는 이벤트 총비용이며, 색상 구간은 세부 항목의 비중을 나타냅니다.</p><div class="lifecycle-stacked-list">${oneTimeCards || '<p class="lifecycle-cost-empty">표시할 일회성 비용이 없습니다.</p>'}</div></section>
+            <section class="lifecycle-cost-section lifecycle-recurring-cost-section"><h5>월 지출 구성</h5><p class="lifecycle-cost-section-caption">${equalPrincipalSnapshot ? "왼쪽은 상환기간별 월 납입액 변화, 오른쪽은 1년 차 월 지출의 세부 구성입니다." : "도넛은 현재 월 지출의 항목별 구성입니다."} 각 차트에 마우스를 올리면 원금·이자·생활비를 확인할 수 있습니다.</p>${monthlyChart}</section>`;
     }
 
     function buildAssetChart(points) {
@@ -3633,10 +4573,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const contributionMetrics = snapshot.eventType === "MARRIAGE"
             ? `
-                ${modalMetric("본인 비용 분담액", snapshot.userContributionAmount)}
+                ${modalMetric("본인 분담금(지원 전)", snapshot.userContributionAmount)}
                 ${modalMetric("가족 지원금", snapshot.familySupportAmount)}
             `
-            : "";
+            : (snapshot.eventType === "HOME_PURCHASE"
+                ? modalMetric("입력 자기자금", snapshot.userContributionAmount)
+                : "");
+        const monthlyBreakdownMetrics = monthlyCostBreakdown(snapshot)
+            .map(item => modalMetric(item.label, item.amount))
+            .join("");
+        const isHomePurchase = snapshot.eventType === "HOME_PURCHASE";
+        const eventCostLabel = isHomePurchase
+            ? "주택 매입 총 필요자금(매입가+취득세)"
+            : "일회성 총비용";
+        const requiredAmountLabel = isHomePurchase
+            ? "대출 제외 필요 현금"
+            : "최종 본인 필요 자금";
+        const loanAmountLabel = isHomePurchase
+            ? "주택담보대출 실행액(전체 원금)"
+            : "필요 대출금액";
 
         snapshotModalBody.innerHTML = `
             <div class="lifecycle-modal-result-wrapper">
@@ -3650,7 +4605,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h3>${escapeHtml(title)}</h3>
                     </div>
                     <div class="modal-hero-cost">
-                        <span>예상 소요 비용</span>
+                        <span>${escapeHtml(eventCostLabel)}</span>
                         <strong>${formatCompactMoney(snapshot.eventCost || snapshot.estimatedCost)}</strong>
                     </div>
                 </div>
@@ -3667,12 +4622,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <section class="lifecycle-modal-block">
                     <h4>💰 비용 및 자금 조달 요약</h4>
                     <div class="lifecycle-modal-grid">
-                        ${modalMetric("총 예상비용", snapshot.estimatedCost || snapshot.eventCost)}
+                        ${modalMetric(eventCostLabel, snapshot.estimatedCost || snapshot.eventCost)}
                         ${contributionMetrics}
-                        ${modalMetric("확정 공공지원금", snapshot.supportBenefit)}
-                        ${modalMetric("최종 본인 필요 자금", snapshot.userRequiredAmount)}
-                        ${snapshot.newLoanAmount > 0 ? modalMetric("필요 대출금액", snapshot.newLoanAmount) : ""}
-                        ${snapshot.additionalMonthlyExpense > 0 ? modalMetric("월 추가지출", snapshot.additionalMonthlyExpense) : ""}
+                        ${modalMetric(requiredAmountLabel, snapshot.userRequiredAmount)}
+                        ${snapshot.newLoanAmount > 0 ? modalMetric(loanAmountLabel, snapshot.newLoanAmount) : ""}
+                        ${snapshot.additionalMonthlyExpense > 0 ? modalMetric(
+                            snapshot.eventType === "CHILDBIRTH" ? "만 1세까지의 월 고정비(반복 계산 안 함)" : "월 지출",
+                            snapshot.additionalMonthlyExpense
+                        ) : ""}
+                        ${snapshot.newLoanMonthlyPayment > 0 ? modalMetric("월 대출 상환액(원금+이자)", snapshot.newLoanMonthlyPayment) : ""}
+                        ${monthlyBreakdownMetrics}
                     </div>
                 </section>
 
@@ -3790,6 +4749,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     const dateText = support.sourceUpdatedAt ? `기준일: ${escapeHtml(support.sourceUpdatedAt)}` : "";
                     const reasonText = support.eligibilityReason ? `<div class="lifecycle-eligibility-reason">${escapeHtml(support.eligibilityReason)}</div>` : "";
 
+                    const effectTypeLabel = {
+                        CASH_INFLOW: "일시 현금 지원",
+                        MONTHLY_CASH_INFLOW: "월 현금 지원",
+                        VOUCHER: "바우처 지원",
+                        INTEREST_REDUCTION: "대출이자 감면",
+                        MATCHING_CONTRIBUTION: "매칭 지원금",
+                        TAX_BENEFIT: "세금 감면",
+                        LOAN: "정책대출 지원"
+                    }[support.effectType] ?? support.effectType ?? "-";
+
                     return `
                         <article class="lifecycle-recommendation-item">
                             <div class="lifecycle-recommendation-header">
@@ -3801,7 +4770,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ${dateText ? `<span>· ${dateText}</span>` : ""}
                             </p>
                             ${reasonText}
-                            <span class="lifecycle-benefit-tag">${escapeHtml(support.effectType ?? "-")}${support.amount ? ` · ${formatMoney(support.amount)}원` : ""}</span>
+                            <span class="lifecycle-benefit-tag">${escapeHtml(effectTypeLabel)}${support.amount ? ` · ${formatMoney(support.amount)}원` : ""}</span>
                             ${support.sourceUrl
                                 ? `<a href="${escapeHtml(support.sourceUrl)}" target="_blank" rel="noopener" class="lifecycle-link-btn">출처 보기</a>`
                                 : ""}

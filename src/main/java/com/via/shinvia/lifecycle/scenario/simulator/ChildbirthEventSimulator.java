@@ -5,7 +5,6 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleEventResult;
 import com.via.shinvia.lifecycle.common.dto.LifecycleFinancialStateDto;
 import com.via.shinvia.lifecycle.common.dto.LifecycleSupportDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
-import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
 import com.via.shinvia.lifecycle.common.model.SupportEffectType;
 import com.via.shinvia.lifecycle.reference.service.LifecycleReferenceService;
 import lombok.RequiredArgsConstructor;
@@ -123,12 +122,15 @@ public class ChildbirthEventSimulator implements LifecycleEventSimulator {
                     "POSTPARTUM_CARE_CENTER_COST",
                     null
             );
-            BigDecimal multiplier = referenceService.getNationalRate(
-                    LifecycleEventType.CHILDBIRTH,
-                    "LIFESTYLE_COST_MULTIPLIER",
-                    input.getLifestyleLevel() != null ? input.getLifestyleLevel() : LifestyleLevel.AVERAGE
-            );
-            return nvl(baseCost).multiply(nvlRate(multiplier));
+            BigDecimal initialItems = nvl(referenceService.getNationalAmount(
+                    LifecycleEventType.CHILDBIRTH, "INFANT_CAR_SEAT_COST", null))
+                    .add(nvl(referenceService.getNationalAmount(
+                            LifecycleEventType.CHILDBIRTH, "INFANT_STROLLER_COST", null)))
+                    .add(nvl(referenceService.getNationalAmount(
+                            LifecycleEventType.CHILDBIRTH, "INFANT_CRIB_COST", null)))
+                    .add(nvl(referenceService.getNationalAmount(
+                            LifecycleEventType.CHILDBIRTH, "INFANT_OTHER_SETUP_COST", null)));
+            return nvl(baseCost).add(initialItems);
         } catch (Exception e) {
             return new BigDecimal("2865000.00");
         }
@@ -141,12 +143,11 @@ public class ChildbirthEventSimulator implements LifecycleEventSimulator {
                     "MONTHLY_CHILDCARE_COST",
                     null
             );
-            BigDecimal multiplier = referenceService.getNationalRate(
-                    LifecycleEventType.CHILDBIRTH,
-                    "LIFESTYLE_COST_MULTIPLIER",
-                    input.getLifestyleLevel() != null ? input.getLifestyleLevel() : LifestyleLevel.AVERAGE
-            );
-            return nvl(baseCost).multiply(nvlRate(multiplier));
+            BigDecimal diaperCost = referenceService.getNationalAmount(
+                    LifecycleEventType.CHILDBIRTH, "MONTHLY_DIAPER_COST", null);
+            BigDecimal formulaCost = referenceService.getNationalAmount(
+                    LifecycleEventType.CHILDBIRTH, "MONTHLY_FORMULA_COST", null);
+            return nvl(baseCost).add(nvl(diaperCost)).add(nvl(formulaCost));
         } catch (Exception e) {
             return new BigDecimal("800000.00");
         }
@@ -162,7 +163,4 @@ public class ChildbirthEventSimulator implements LifecycleEventSimulator {
         return val != null ? val : BigDecimal.ZERO;
     }
 
-    private BigDecimal nvlRate(BigDecimal val) {
-        return val != null ? val : BigDecimal.ONE;
-    }
 }

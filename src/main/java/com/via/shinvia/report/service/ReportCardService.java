@@ -42,7 +42,7 @@ public class ReportCardService {
 
     public List<ReportCardSelection> getLayout(Long userId) {
         return layoutMapper.findAllByUserIdOrderByDisplayOrder(userId).stream()
-                .map(row -> new ReportCardSelection(row.getCardKey(), row.getRefId()))
+                .map(row -> new ReportCardSelection(normalizeCardKey(row.getCardKey()), row.getRefId()))
                 .toList();
     }
 
@@ -56,15 +56,19 @@ public class ReportCardService {
         layoutMapper.deleteByUserId(userId);
         int order = 0;
         for (ReportCardSelection selection : selections) {
-            layoutMapper.insert(userId, selection.cardKey(), selection.refId(), order++);
+            layoutMapper.insert(userId, normalizeCardKey(selection.cardKey()), selection.refId(), order++);
         }
     }
 
     private ReportCardDataProvider requireProvider(String cardKey) {
-        ReportCardDataProvider provider = providers.get(cardKey);
+        ReportCardDataProvider provider = providers.get(normalizeCardKey(cardKey));
         if (provider == null) {
             throw new IllegalArgumentException("존재하지 않는 카드 종류예요: " + cardKey);
         }
         return provider;
+    }
+
+    private String normalizeCardKey(String cardKey) {
+        return "lifecycle_scenario".equals(cardKey) ? "FINANCIAL_CYCLE_PLAN" : cardKey;
     }
 }

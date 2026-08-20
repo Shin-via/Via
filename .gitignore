@@ -31,6 +31,7 @@ out/
 
 # Gradle
 .gradle/
+.gradle-task-cache/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 
@@ -57,5 +58,6 @@ application.properties
 application-db.yml
 application-mail.yml
 claude.md
+docs/lifecycle-reference-full-insert.md
 application-oauth2.yml
 .gradle-user-home/
