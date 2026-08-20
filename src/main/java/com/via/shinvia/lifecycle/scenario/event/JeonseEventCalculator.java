@@ -85,10 +85,16 @@ public class JeonseEventCalculator implements LifecycleEventCalculator {
         currentCash = currentCash.add(previousDeposit);
 
         // 2. 신규 전세보증금 및 자기자금/대출금 파악
-        BigDecimal totalJeonseDeposit = nvl(input.getEstimatedCost());
+        BigDecimal totalJeonseDeposit = nvl(input.getAcquiredAssetAmount());
+        if (totalJeonseDeposit.signum() == 0) {
+            totalJeonseDeposit = nvl(input.getEstimatedCost());
+        }
         BigDecimal requiredCash = input.getUserRequiredAmount() != null 
                 ? input.getUserRequiredAmount() 
                 : totalJeonseDeposit;
+        BigDecimal brokerageFee = maxZero(
+                nvl(input.getEstimatedCost()).subtract(totalJeonseDeposit)
+        );
         BigDecimal newLoanAmount = nvl(input.getNewLoanAmount());
         BigDecimal monthlyMaintenanceFee = nvl(input.getAdditionalMonthlyExpense()); // 전세 관리비
 
@@ -100,11 +106,11 @@ public class JeonseEventCalculator implements LifecycleEventCalculator {
         if (currentCash.compareTo(requiredCash) >= 0) {
             afterCash = currentCash.subtract(requiredCash);
             if (isSellingHome) {
-                summary = String.format("기존 주택을 매각하고 전세보증금 자기자금 %s원 투입 및 입주가 완료되었습니다.", formatMoney(requiredCash));
+                summary = String.format("기존 주택을 매각하고 전세보증금 자기자금과 중개보수 합계 %s원(중개보수 %s원)을 지출했습니다.", formatMoney(requiredCash), formatMoney(brokerageFee));
             } else if (afterRealEstateAsset.compareTo(BigDecimal.ZERO) > 0) {
-                summary = String.format("기존 주택을 보유한 채 전세보증금 자기자금 %s원 투입 및 입주가 완료되었습니다.", formatMoney(requiredCash));
+                summary = String.format("기존 주택을 보유한 채 전세보증금 자기자금과 중개보수 합계 %s원(중개보수 %s원)을 지출했습니다.", formatMoney(requiredCash), formatMoney(brokerageFee));
             } else {
-                summary = String.format("전세보증금 자기자금 %s원 투입 및 입주가 완료되었습니다.", formatMoney(requiredCash));
+                summary = String.format("전세보증금 자기자금과 중개보수 합계 %s원(중개보수 %s원)을 지출했습니다.", formatMoney(requiredCash), formatMoney(brokerageFee));
             }
         } else {
             fundingShortage = requiredCash.subtract(currentCash);
@@ -177,7 +183,7 @@ public class JeonseEventCalculator implements LifecycleEventCalculator {
                 .eventDate(input.getTargetDate())
                 .beforeState(beforeState)
                 .afterState(afterState)
-                .eventCost(totalJeonseDeposit)
+                .eventCost(nvl(input.getEstimatedCost()))
                 .supportBenefit(BigDecimal.ZERO)
                 .fundingShortage(fundingShortage)
                 .summary(summary)
@@ -208,6 +214,10 @@ public class JeonseEventCalculator implements LifecycleEventCalculator {
 
     private BigDecimal nvl(BigDecimal val) {
         return val != null ? val : BigDecimal.ZERO;
+    }
+
+    private BigDecimal maxZero(BigDecimal val) {
+        return nvl(val).max(BigDecimal.ZERO);
     }
 }
 

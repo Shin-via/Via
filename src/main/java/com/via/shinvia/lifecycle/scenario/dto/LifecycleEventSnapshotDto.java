@@ -66,14 +66,41 @@ public class LifecycleEventSnapshotDto {
 
     private LifestyleLevel lifestyleLevel;
 
+    private Integer childOrder;
+    private Boolean repurchaseCarSeat;
+    private Boolean repurchaseStroller;
+    private Boolean repurchaseCrib;
+    private Boolean repurchaseOtherSetup;
+    private Boolean postpartumCare;
+    private String childbirthRegionSido;
+    private String childbirthRegionSigungu;
+
     private BigDecimal estimatedCost;
     private BigDecimal userRequiredAmount;
     private BigDecimal userContributionAmount;
     private BigDecimal additionalMonthlyExpense;
     private BigDecimal cashInflowAmount;
     private BigDecimal familySupportAmount;
+    private BigDecimal marriageHallCost;
+    private BigDecimal marriageMealCost;
+    private BigDecimal marriageFurnitureCost;
+    private BigDecimal marriageHoneymoonCost;
+    private BigDecimal postpartumCareCost;
+    private BigDecimal infantCarSeatCost;
+    private BigDecimal infantStrollerCost;
+    private BigDecimal infantCribCost;
+    private BigDecimal infantOtherSetupCost;
     private BigDecimal newLoanAmount;
+    private BigDecimal newLoanMonthlyPayment;
+    private BigDecimal monthlyLoanPrincipal;
+    private BigDecimal monthlyLoanInterest;
+    private BigDecimal loanInterestRate;
+    private Integer loanPeriodMonths;
+    private String loanRepaymentType;
     private BigDecimal acquiredAssetAmount;
+    private BigDecimal taxAmount;
+    private BigDecimal brokerageFeeAmount;
+    private BigDecimal registrationFeeAmount;
 
     private List<LifecycleSupportDto> supports;
     private List<LifecycleProductDto> recommendedProducts;

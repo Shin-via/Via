@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static com.via.shinvia.lifecycle.reference.model.LifecycleReferenceTypes.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -37,11 +39,20 @@ public class LifecycleEventInputAssemblerService {
             "POSTPARTUM_HOME_COST";
     private static final String MONTHLY_CHILDCARE_COST =
             "MONTHLY_CHILDCARE_COST";
+    private static final String INITIAL_BABY_ITEM_COST = "INITIAL_BABY_ITEM_COST";
+    private static final String INFANT_CAR_SEAT_COST = "INFANT_CAR_SEAT_COST";
+    private static final String INFANT_STROLLER_COST = "INFANT_STROLLER_COST";
+    private static final String INFANT_CRIB_COST = "INFANT_CRIB_COST";
+    private static final String INFANT_OTHER_SETUP_COST = "INFANT_OTHER_SETUP_COST";
+    private static final String MONTHLY_DIAPER_COST = "MONTHLY_DIAPER_COST";
+    private static final String MONTHLY_FORMULA_COST = "MONTHLY_FORMULA_COST";
 
     private static final String VEHICLE_BASE_PRICE =
             "VEHICLE_BASE_PRICE";
     private static final String VEHICLE_MONTHLY_MAINTENANCE_COST =
             "VEHICLE_MONTHLY_MAINTENANCE_COST";
+    private static final String VEHICLE_LOAN_INTEREST_RATE =
+            "VEHICLE_LOAN_INTEREST_RATE";
 
     private static final String RENT_BASE_DEPOSIT =
             "RENT_BASE_DEPOSIT";
@@ -55,7 +66,6 @@ public class LifecycleEventInputAssemblerService {
             "HOME_BASE_PURCHASE_PRICE";
     private static final String ACQUISITION_TAX_RATE =
             "ACQUISITION_TAX_RATE";
-
     private static final String BASE_AREA_SQM = "BASE_AREA_SQM";
 
     private final LifecycleSurveyService surveyService;
@@ -70,6 +80,7 @@ public class LifecycleEventInputAssemblerService {
     ) {
         return surveyService.getTimelineEvents(scenarioId)
                 .stream()
+                .filter(event -> event.getEventType() != LifecycleEventType.REPAYMENT)
                 .map(event -> assembleEvent(
                         userId,
                         loginEmail,
@@ -119,13 +130,26 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal estimatedCost = survey.getCustomEstimatedCost() != null && survey.getCustomEstimatedCost().signum() > 0
+        boolean customMarriageCost = survey.getCustomEstimatedCost() != null
+                && survey.getCustomEstimatedCost().signum() > 0;
+        BigDecimal marriageMultiplier = lifestyleMultiplier(LifecycleEventType.MARRIAGE, survey.getLifestyleLevel());
+        BigDecimal weddingServiceTotal = customMarriageCost ? ZERO
+                : referenceAmount(LifecycleEventType.MARRIAGE, TOTAL_COST).multiply(marriageMultiplier);
+        BigDecimal mealCost = customMarriageCost ? ZERO
+                : referenceService.getRegionalAmount(
+                    LifecycleEventType.MARRIAGE, "MEAL_COST_PER_GUEST",
+                    survey.getRegionSido(), survey.getRegionSigungu(), null)
+                    .multiply(BigDecimal.valueOf(survey.getGuestCount() != null ? survey.getGuestCount() : 200))
+                    .multiply(marriageMultiplier);
+        // 공식 결혼 서비스 총액에서 식대를 제외한 금액을 예식장·스드메 항목으로 표시한다.
+        BigDecimal hallCost = customMarriageCost ? ZERO : maxZero(weddingServiceTotal.subtract(mealCost));
+        BigDecimal furnitureCost = !customMarriageCost && Boolean.TRUE.equals(survey.getFurnitureIncluded())
+                ? referenceAmount(LifecycleEventType.MARRIAGE, "FURNITURE_COST") : ZERO;
+        BigDecimal honeymoonCost = !customMarriageCost && Boolean.TRUE.equals(survey.getHoneymoonIncluded())
+                ? referenceAmount(LifecycleEventType.MARRIAGE, "HONEYMOON_COST") : ZERO;
+        BigDecimal estimatedCost = customMarriageCost
                 ? survey.getCustomEstimatedCost()
-                : referenceAmount(LifecycleEventType.MARRIAGE, TOTAL_COST)
-                        .multiply(lifestyleMultiplier(
-                                LifecycleEventType.MARRIAGE,
-                                survey.getLifestyleLevel()
-                        ));
+                : weddingServiceTotal.add(furnitureCost).add(honeymoonCost);
 
         BigDecimal userShare = estimatedCost.multiply(
                 defaultIfNull(survey.getUserContributionRate(), ONE)
@@ -161,6 +185,10 @@ public class LifecycleEventInputAssemblerService {
                 .additionalMonthlyExpense(ZERO)
                 .cashInflowAmount(money(cashInflow))
                 .familySupportAmount(money(familySupport))
+                .marriageHallCost(money(hallCost))
+                .marriageMealCost(money(mealCost))
+                .marriageFurnitureCost(money(furnitureCost))
+                .marriageHoneymoonCost(money(honeymoonCost))
                 .newLoanAmount(ZERO)
                 .acquiredAssetAmount(ZERO)
                 .supports(supports)
@@ -184,21 +212,26 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal initialCost = Boolean.TRUE.equals(survey.getPostpartumCare())
+        BigDecimal postpartumCareCost = Boolean.TRUE.equals(survey.getPostpartumCare())
                 ? referenceAmount(LifecycleEventType.CHILDBIRTH, POSTPARTUM_CARE_CENTER_COST)
                 : referenceAmount(LifecycleEventType.CHILDBIRTH, POSTPARTUM_HOME_COST);
 
-        initialCost = initialCost.multiply(lifestyleMultiplier(
-                LifecycleEventType.CHILDBIRTH,
-                survey.getLifestyleLevel()
-        ));
+        // 양육 수준 배율 대신 출산 직후 실제 준비물(카시트·유모차·침대 등) 기준값을 합산한다.
+        boolean firstChild = survey.getChildOrder() == null || survey.getChildOrder() <= 1;
+        BigDecimal carSeatCost = firstChild || Boolean.TRUE.equals(survey.getRepurchaseCarSeat())
+                ? referenceAmount(LifecycleEventType.CHILDBIRTH, INFANT_CAR_SEAT_COST) : ZERO;
+        BigDecimal strollerCost = firstChild || Boolean.TRUE.equals(survey.getRepurchaseStroller())
+                ? referenceAmount(LifecycleEventType.CHILDBIRTH, INFANT_STROLLER_COST) : ZERO;
+        BigDecimal cribCost = firstChild || Boolean.TRUE.equals(survey.getRepurchaseCrib())
+                ? referenceAmount(LifecycleEventType.CHILDBIRTH, INFANT_CRIB_COST) : ZERO;
+        BigDecimal otherSetupCost = firstChild || Boolean.TRUE.equals(survey.getRepurchaseOtherSetup())
+                ? referenceAmount(LifecycleEventType.CHILDBIRTH, INFANT_OTHER_SETUP_COST) : ZERO;
+        BigDecimal initialCost = postpartumCareCost.add(carSeatCost).add(strollerCost).add(cribCost).add(otherSetupCost);
 
         BigDecimal monthlyChildcareCost =
                 referenceAmount(LifecycleEventType.CHILDBIRTH, MONTHLY_CHILDCARE_COST)
-                        .multiply(lifestyleMultiplier(
-                                LifecycleEventType.CHILDBIRTH,
-                                survey.getLifestyleLevel()
-                        ));
+                        .add(referenceAmount(LifecycleEventType.CHILDBIRTH, MONTHLY_DIAPER_COST))
+                        .add(referenceAmount(LifecycleEventType.CHILDBIRTH, MONTHLY_FORMULA_COST));
 
         BigDecimal cashInflow =
                 sumSupportAmount(supports, SupportEffectType.CASH_INFLOW);
@@ -221,6 +254,19 @@ public class LifecycleEventInputAssemblerService {
                 survey.getEventOrder(),
                 survey.getTargetDate(),
                 survey.getLifestyleLevel())
+                .childOrder(survey.getChildOrder())
+                .repurchaseCarSeat(survey.getRepurchaseCarSeat())
+                .repurchaseStroller(survey.getRepurchaseStroller())
+                .repurchaseCrib(survey.getRepurchaseCrib())
+                .repurchaseOtherSetup(survey.getRepurchaseOtherSetup())
+                .postpartumCare(survey.getPostpartumCare())
+                .childbirthRegionSido(survey.getRegionSido())
+                .childbirthRegionSigungu(survey.getRegionSigungu())
+                .postpartumCareCost(money(postpartumCareCost))
+                .infantCarSeatCost(money(carSeatCost))
+                .infantStrollerCost(money(strollerCost))
+                .infantCribCost(money(cribCost))
+                .infantOtherSetupCost(money(otherSetupCost))
                 .estimatedCost(money(initialCost))
                 .userRequiredAmount(money(maxZero(initialCost.subtract(cashInflow))))
                 .additionalMonthlyExpense(money(additionalMonthlyExpense))
@@ -243,7 +289,7 @@ public class LifecycleEventInputAssemblerService {
         BigDecimal estimatedPrice = survey.getVehiclePrice() != null
                 && survey.getVehiclePrice().signum() > 0
                 ? survey.getVehiclePrice()
-                : calculateVehiclePrice();
+                : calculateVehiclePrice(survey.getVehicleModel(), survey.getVehicleCondition());
 
         BigDecimal newLoanAmount = nvl(survey.getLoanAmount());
 
@@ -257,13 +303,25 @@ public class LifecycleEventInputAssemblerService {
         BigDecimal userRequiredAmount =
                 maxZero(estimatedPrice.subtract(newLoanAmount));
 
+        BigDecimal acquisitionTaxRate = referenceRate(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "RAY".equalsIgnoreCase(survey.getVehicleModel())
+                        ? VEHICLE_LIGHT_ACQUISITION_TAX_RATE
+                        : VEHICLE_ACQUISITION_TAX_RATE
+        );
+        BigDecimal acquisitionTax = estimatedPrice.multiply(nvl(acquisitionTaxRate));
+        BigDecimal registrationFee = nvl(referenceAmount(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                VEHICLE_REGISTRATION_FEE
+        ));
+        BigDecimal transactionCost = acquisitionTax.add(registrationFee);
+        BigDecimal totalCost = estimatedPrice.add(transactionCost);
+        userRequiredAmount = userRequiredAmount.add(transactionCost);
+
         BigDecimal monthlyMaintenance = survey.getMonthlyMaintenanceCost() != null
-                && survey.getMonthlyMaintenanceCost().signum() >= 0
+                && survey.getMonthlyMaintenanceCost().signum() > 0
                 ? survey.getMonthlyMaintenanceCost()
-                : referenceAmount(
-                        LifecycleEventType.VEHICLE_PURCHASE,
-                        VEHICLE_MONTHLY_MAINTENANCE_COST
-                );
+                : calculateVehicleMonthlyCost(survey.getVehicleModel(), survey.getAnnualMileageKm());
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -279,12 +337,17 @@ public class LifecycleEventInputAssemblerService {
                 survey.getEventOrder(),
                 survey.getTargetDate(),
                 null)
-                .estimatedCost(money(estimatedPrice))
+                .estimatedCost(money(totalCost))
                 .userRequiredAmount(money(userRequiredAmount))
                 .additionalMonthlyExpense(money(monthlyMaintenance))
                 .cashInflowAmount(ZERO)
                 .newLoanAmount(money(newLoanAmount))
                 .acquiredAssetAmount(money(estimatedPrice))
+                .taxAmount(money(acquisitionTax))
+                .registrationFeeAmount(money(registrationFee))
+                .loanInterestRate(newLoanAmount.signum() > 0
+                        ? referenceRate(LifecycleEventType.VEHICLE_PURCHASE, VEHICLE_LOAN_INTEREST_RATE)
+                        : null)
                 .supports(List.of())
                 .recommendedProducts(products)
                 .build();
@@ -338,6 +401,13 @@ public class LifecycleEventInputAssemblerService {
 
         BigDecimal userRequiredAmount =
                 maxZero(deposit.subtract(cashInflow));
+        BigDecimal brokerageFee = calculateRentalBrokerageFee(
+                deposit,
+                monthlyRent,
+                survey.getHousingType(),
+                LifecycleEventType.MONTHLY_RENT
+        );
+        userRequiredAmount = userRequiredAmount.add(brokerageFee);
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -353,12 +423,13 @@ public class LifecycleEventInputAssemblerService {
                 survey.getEventOrder(),
                 survey.getTargetDate(),
                 survey.getLifestyleLevel())
-                .estimatedCost(money(deposit))
+                .estimatedCost(money(deposit.add(brokerageFee)))
                 .userRequiredAmount(money(userRequiredAmount))
                 .additionalMonthlyExpense(money(maxZero(monthlyExpense)))
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(ZERO)
                 .acquiredAssetAmount(money(deposit))
+                .brokerageFeeAmount(money(brokerageFee))
                 .keepExistingHome(survey.getKeepExistingHome())
                 .supports(supports)
                 .recommendedProducts(products)
@@ -405,6 +476,13 @@ public class LifecycleEventInputAssemblerService {
 
         BigDecimal userRequiredAmount =
                 maxZero(deposit.subtract(newLoanAmount).subtract(cashInflow));
+        BigDecimal brokerageFee = calculateRentalBrokerageFee(
+                deposit,
+                ZERO,
+                survey.getHousingType(),
+                LifecycleEventType.JEONSE
+        );
+        userRequiredAmount = userRequiredAmount.add(brokerageFee);
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -420,14 +498,16 @@ public class LifecycleEventInputAssemblerService {
                 survey.getEventOrder(),
                 survey.getTargetDate(),
                 survey.getLifestyleLevel())
-                .estimatedCost(money(deposit))
+                .estimatedCost(money(deposit.add(brokerageFee)))
                 .userRequiredAmount(money(userRequiredAmount))
                 .additionalMonthlyExpense(ZERO)
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(money(newLoanAmount))
                 .acquiredAssetAmount(money(deposit))
+                .brokerageFeeAmount(money(brokerageFee))
                 .keepExistingHome(survey.getKeepExistingHome())
                 .loanPeriodMonths(24)
+                .loanInterestRate(new BigDecimal("3.8"))
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();
@@ -466,7 +546,12 @@ public class LifecycleEventInputAssemblerService {
                 )
         );
 
-        BigDecimal totalCost = purchasePrice.add(acquisitionTax);
+        BigDecimal brokerageFee = calculateHomePurchaseBrokerageFee(
+                purchasePrice,
+                survey.getHousingType()
+        );
+
+        BigDecimal totalCost = purchasePrice.add(acquisitionTax).add(brokerageFee);
 
         BigDecimal newLoanAmount = survey.getOwnFundAmount() == null
                 ? ZERO
@@ -481,6 +566,14 @@ public class LifecycleEventInputAssemblerService {
         BigDecimal recommendationAmount = newLoanAmount.signum() > 0
                 ? newLoanAmount
                 : purchasePrice;
+        BigDecimal monthlyMaintenanceCost = referenceAmount(
+                LifecycleEventType.HOME_PURCHASE,
+                HOME_MONTHLY_MAINTENANCE_COST
+        );
+        BigDecimal mortgageInterestRate = referenceRate(
+                LifecycleEventType.HOME_PURCHASE,
+                HOME_LOAN_INTEREST_RATE
+        );
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -498,14 +591,84 @@ public class LifecycleEventInputAssemblerService {
                 survey.getLifestyleLevel())
                 .estimatedCost(money(totalCost))
                 .userRequiredAmount(money(userRequiredAmount))
-                .additionalMonthlyExpense(ZERO)
+                .userContributionAmount(money(nvl(survey.getOwnFundAmount())))
+                .additionalMonthlyExpense(money(monthlyMaintenanceCost))
                 .cashInflowAmount(money(cashInflow))
                 .newLoanAmount(money(newLoanAmount))
                 .acquiredAssetAmount(money(purchasePrice))
+                .taxAmount(money(acquisitionTax))
+                .brokerageFeeAmount(money(brokerageFee))
                 .loanPeriodMonths(survey.getLoanPeriodMonths())
+                .loanInterestRate(mortgageInterestRate)
+                .loanRepaymentType(survey.getRepaymentType())
                 .supports(supports)
                 .recommendedProducts(products)
                 .build();
+    }
+
+    private BigDecimal calculateHomePurchaseBrokerageFee(
+            BigDecimal purchasePrice,
+            String housingType
+    ) {
+        BigDecimal price = nvl(purchasePrice);
+        if (price.signum() <= 0) return ZERO;
+
+        // 주거용 오피스텔 매매 상한요율 0.5%. 그 외 주택은 거래금액 구간별 상한요율을 적용한다.
+        if ("OFFICETEL".equalsIgnoreCase(housingType)) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_OFFICETEL"));
+        }
+        if (price.compareTo(new BigDecimal("50000000")) < 0) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_LT_50M"))
+                    .min(referenceAmount(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_CAP_LT_50M"));
+        }
+        if (price.compareTo(new BigDecimal("200000000")) < 0) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_50M_TO_200M"))
+                    .min(referenceAmount(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_CAP_50M_TO_200M"));
+        }
+        if (price.compareTo(new BigDecimal("900000000")) < 0) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_200M_TO_900M"));
+        }
+        if (price.compareTo(new BigDecimal("1200000000")) < 0) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_900M_TO_1200M"));
+        }
+        if (price.compareTo(new BigDecimal("1500000000")) < 0) {
+            return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_1200M_TO_1500M"));
+        }
+        return price.multiply(referenceRate(LifecycleEventType.HOME_PURCHASE, "BROKERAGE_RATE_GTE_1500M"));
+    }
+
+    private BigDecimal calculateRentalBrokerageFee(
+            BigDecimal deposit,
+            BigDecimal monthlyRent,
+            String housingType,
+            LifecycleEventType eventType
+    ) {
+        BigDecimal transactionAmount = nvl(deposit).add(nvl(monthlyRent).multiply(BigDecimal.valueOf(100)));
+        if (nvl(monthlyRent).signum() > 0
+                && transactionAmount.compareTo(new BigDecimal("50000000")) < 0) {
+            transactionAmount = nvl(deposit).add(nvl(monthlyRent).multiply(BigDecimal.valueOf(70)));
+        }
+        if ("OFFICETEL".equalsIgnoreCase(housingType)) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_OFFICETEL)));
+        }
+        if (transactionAmount.compareTo(new BigDecimal("50000000")) < 0) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_LT_50M)))
+                    .min(nvl(referenceAmount(eventType, RENT_BROKERAGE_CAP_LT_50M)));
+        }
+        if (transactionAmount.compareTo(new BigDecimal("100000000")) < 0) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_50M_TO_100M)))
+                    .min(nvl(referenceAmount(eventType, RENT_BROKERAGE_CAP_50M_TO_100M)));
+        }
+        if (transactionAmount.compareTo(new BigDecimal("600000000")) < 0) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_100M_TO_600M)));
+        }
+        if (transactionAmount.compareTo(new BigDecimal("1200000000")) < 0) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_600M_TO_1200M)));
+        }
+        if (transactionAmount.compareTo(new BigDecimal("1500000000")) < 0) {
+            return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_1200M_TO_1500M)));
+        }
+        return transactionAmount.multiply(nvl(referenceRate(eventType, RENT_BROKERAGE_RATE_GTE_1500M)));
     }
 
     private LifecycleEventInput assembleRepayment(
@@ -560,11 +723,27 @@ public class LifecycleEventInputAssemblerService {
                 .build();
     }
 
-    private BigDecimal calculateVehiclePrice() {
+    private BigDecimal calculateVehiclePrice(String vehicleModel, String vehicleCondition) {
+        if (vehicleModel == null || vehicleModel.isBlank()) {
+            return referenceAmount(LifecycleEventType.VEHICLE_PURCHASE, VEHICLE_BASE_PRICE);
+        }
+        String condition = "USED".equalsIgnoreCase(vehicleCondition) ? "USED" : "NEW";
         return referenceAmount(
                 LifecycleEventType.VEHICLE_PURCHASE,
-                VEHICLE_BASE_PRICE
+                "VEHICLE_MODEL_PRICE_" + vehicleModel.toUpperCase() + "_" + condition
         );
+    }
+
+    private BigDecimal calculateVehicleMonthlyCost(String vehicleModel, Integer annualMileageKm) {
+        BigDecimal base = referenceAmount(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                "VEHICLE_MONTHLY_MAINTENANCE_COST"
+        );
+        BigDecimal mileage = annualMileageKm == null || annualMileageKm <= 0
+                ? BigDecimal.valueOf(12000)
+                : BigDecimal.valueOf(annualMileageKm);
+        return base.multiply(mileage)
+                .divide(BigDecimal.valueOf(12000), 0, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateHousingAmount(
@@ -682,6 +861,7 @@ public class LifecycleEventInputAssemblerService {
                         support.getRecommendationStatus()
                 ))
                 .filter(support -> support.getEffectType() == effectType)
+                .filter(support -> "CONFIRMED".equalsIgnoreCase(support.getRecommendationStatus()))
                 .map(LifecycleSupportDto::getAmount)
                 .filter(amount -> amount != null)
                 .reduce(ZERO, BigDecimal::add);
