@@ -155,7 +155,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
-        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "CHILDBIRTH");
+        return request.getLifecycleEventId();
     }
 
 
@@ -210,7 +210,7 @@ public class LifecycleSurveyService {
                 request,
                 surveyData
         );
-        return lifecycleSurveyMapper.findLatestEventId(scenarioId, "VEHICLE_PURCHASE");
+        return request.getLifecycleEventId();
     }
 
 

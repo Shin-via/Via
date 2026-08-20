@@ -1,5 +1,6 @@
 package com.via.shinvia.lifecycle.survey.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,11 +17,20 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class VehicleSurveyRequest {
 
+    @JsonIgnore
+    private Long lifecycleEventId;
+
     // 차량 구매 예정일
     private LocalDate targetDate;
 
     // 사용자가 계획을 구분하기 위한 차량명
     private String vehicleName;
+
+    private String vehicleModel;
+
+    private String vehicleCondition;
+
+    private Integer annualMileageKm;
 
     // 차량 구매 가격
     private BigDecimal vehiclePrice;

@@ -21,16 +21,6 @@
               class="lifecycle-form">
 
             <div class="lifecycle-form-group">
-                <label for="vehicleName">차량명</label>
-                <input type="text"
-                       id="vehicleName"
-                       name="vehicleName"
-                       maxlength="100"
-                       placeholder="예: 현대 아반떼"
-                       required>
-            </div>
-
-            <div class="lifecycle-form-group">
                 <label for="vehicleTargetDate">차량 구매 예정 시기</label>
                 <input type="month"
                        id="vehicleTargetDate"
@@ -39,14 +29,42 @@
             </div>
 
             <div class="lifecycle-form-group">
+                <label for="vehicleModel">대표 차종</label>
+                <select id="vehicleModel" name="vehicleModel" required>
+                    <option value="">차종을 선택해 주세요</option>
+                    <option value="RAY">기아 레이</option>
+                    <option value="K3">기아 K3</option>
+                    <option value="AVANTE">현대 아반떼</option>
+                    <option value="G70">제네시스 G70</option>
+                    <option value="G80">제네시스 G80</option>
+                    <option value="G90">제네시스 G90</option>
+                    <option value="GV60">제네시스 GV60</option>
+                    <option value="GV70">제네시스 GV70</option>
+                    <option value="GV80">제네시스 GV80</option>
+                </select>
+                <input type="hidden" id="vehicleName" name="vehicleName">
+
+                <label for="vehicleCondition">차량 상태</label>
+                <select id="vehicleCondition" name="vehicleCondition" required>
+                    <option value="NEW">신차</option>
+                    <option value="USED">중고차</option>
+                </select>
+
+                <label for="vehicleAnnualMileageKm">연간 예상 주행거리</label>
+                <input type="number" id="vehicleAnnualMileageKm" name="annualMileageKm"
+                       min="1000" max="100000" step="1000" value="12000" required>
+            </div>
+
+            <div class="lifecycle-form-group">
                 <label for="vehiclePrice">차량 가격</label>
                 <div class="lifecycle-input-unit">
                     <input type="number"
                            id="vehiclePrice"
                            name="vehiclePrice"
-                           min="1"
-                           placeholder="예: 30000000"
-                           required>
+                           min="0"
+                           placeholder="차종 선택 시 자동 입력"
+                           readonly
+                       >
                     <span>원</span>
                 </div>
             </div>
@@ -80,7 +98,7 @@
                 <small>차량 가격에서 할부·대출 예정 금액을 뺀 금액으로 자동 계산됩니다.</small>
             </div>
 
-            <div class="lifecycle-form-group">
+            <div class="lifecycle-form-group" id="vehicleLoanPeriodGroup" hidden>
                 <label for="vehicleLoanPeriodMonths">대출 기간</label>
                 <select id="vehicleLoanPeriodMonths"
                         name="loanPeriodMonths">
@@ -90,8 +108,8 @@
                     <option value="36">36개월</option>
                     <option value="48">48개월</option>
                     <option value="60">60개월</option>
-                    <option value="72">72개월</option>
                 </select>
+                <small>차량 금융상품의 일반적인 원리금균등상환 기간입니다.</small>
             </div>
 
             <div class="lifecycle-form-group">
@@ -105,7 +123,7 @@
                            placeholder="예: 300000">
                     <span>원</span>
                 </div>
-                <small>보험료, 유류비, 정비비 등을 합산한 예상 금액입니다. 모르면 비워둘 수 있습니다.</small>
+                <small>선택한 차종·신차/중고 기준으로 기본 유지비가 계산됩니다. 직접 입력하지 않아도 됩니다.</small>
             </div>
 
             <div class="lifecycle-form-actions">

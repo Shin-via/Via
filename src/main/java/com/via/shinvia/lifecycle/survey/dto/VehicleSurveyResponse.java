@@ -32,6 +32,12 @@ public class VehicleSurveyResponse {
     // 사용자가 입력한 차량명
     private String vehicleName;
 
+    private String vehicleModel;
+
+    private String vehicleCondition;
+
+    private Integer annualMileageKm;
+
     // 차량 구매 가격
     private BigDecimal vehiclePrice;
 

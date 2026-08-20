@@ -127,22 +127,30 @@
 
 
             <div class="lifecycle-form-group">
+                <span class="lifecycle-form-label">주택가격 산정 방식</span>
+                <div class="lifecycle-radio-group">
+                    <label>
+                        <input type="radio" name="homePriceMode" value="REFERENCE" data-ui-only="true" checked>
+                        평균 기준값 사용
+                    </label>
+                    <label>
+                        <input type="radio" name="homePriceMode" value="CUSTOM" data-ui-only="true">
+                        직접 입력
+                    </label>
+                </div>
+                <small>평균 기준값은 선택한 주택 유형·면적·가격 수준에 따라 레퍼런스 테이블에서 자동 계산됩니다.</small>
+            </div>
 
-                <label for="homePurchaseDesiredPrice">
-                    희망 주택가격
-                </label>
-
+            <div class="lifecycle-form-group" id="homePurchaseCustomPriceArea" hidden>
+                <label for="homePurchaseDesiredPrice">희망 주택가격</label>
                 <div class="lifecycle-input-unit">
-
                     <input type="number"
                            id="homePurchaseDesiredPrice"
                            name="desiredPurchasePrice"
-                           min="0">
-
+                           min="0"
+                           disabled>
                     <span>원</span>
-
                 </div>
-
             </div>
 
 

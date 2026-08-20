@@ -49,7 +49,7 @@ public class LifecycleScenarioController {
         );
     }
 
-    @GetMapping("/{scenarioId}")
+    @GetMapping("/{scenarioId:\\d+}")
     public ResponseEntity<LifecycleScenarioResponse> getScenario(
             Authentication authentication,
             @PathVariable Long scenarioId
@@ -60,7 +60,7 @@ public class LifecycleScenarioController {
         );
     }
 
-    @PatchMapping("/{scenarioId}")
+    @PatchMapping("/{scenarioId:\\d+}")
     public ResponseEntity<LifecycleScenarioResponse> updateScenario(
             Authentication authentication,
             @PathVariable Long scenarioId,
@@ -76,7 +76,7 @@ public class LifecycleScenarioController {
         );
     }
 
-    @DeleteMapping("/{scenarioId}")
+    @DeleteMapping("/{scenarioId:\\d+}")
     public ResponseEntity<Void> archiveScenario(
             Authentication authentication,
             @PathVariable Long scenarioId

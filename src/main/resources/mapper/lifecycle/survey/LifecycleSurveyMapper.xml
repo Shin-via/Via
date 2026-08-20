@@ -185,7 +185,10 @@
     <!-- 3. 출산                                               -->
     <!-- ===================================================== -->
 
-    <insert id="insertChildbirthEvent">
+    <insert id="insertChildbirthEvent"
+            useGeneratedKeys="true"
+            keyColumn="lifecycle_event_id"
+            keyProperty="request.lifecycleEventId">
 
         INSERT INTO lifecycle_event (
         lifecycle_scenario_id,
@@ -222,6 +225,18 @@
         JSON_EXTRACT(survey_data, '$.childOrder')
         ) AS UNSIGNED
         ) AS child_order,
+
+        CASE WHEN JSON_EXTRACT(survey_data, '$.repurchaseCarSeat') = TRUE
+        THEN TRUE ELSE FALSE END AS repurchase_car_seat,
+
+        CASE WHEN JSON_EXTRACT(survey_data, '$.repurchaseStroller') = TRUE
+        THEN TRUE ELSE FALSE END AS repurchase_stroller,
+
+        CASE WHEN JSON_EXTRACT(survey_data, '$.repurchaseCrib') = TRUE
+        THEN TRUE ELSE FALSE END AS repurchase_crib,
+
+        CASE WHEN JSON_EXTRACT(survey_data, '$.repurchaseOtherSetup') = TRUE
+        THEN TRUE ELSE FALSE END AS repurchase_other_setup,
 
         CASE
         WHEN JSON_EXTRACT(survey_data, '$.postpartumCare') = TRUE
@@ -268,7 +283,10 @@
     <!-- 4. 차량 구매                                          -->
     <!-- ===================================================== -->
 
-    <insert id="insertVehicleEvent">
+    <insert id="insertVehicleEvent"
+            useGeneratedKeys="true"
+            keyColumn="lifecycle_event_id"
+            keyProperty="request.lifecycleEventId">
 
         INSERT INTO lifecycle_event (
         lifecycle_scenario_id,
@@ -299,6 +317,20 @@
         JSON_UNQUOTE(
         JSON_EXTRACT(survey_data, '$.vehicleName')
         ) AS vehicle_name,
+
+        JSON_UNQUOTE(
+        JSON_EXTRACT(survey_data, '$.vehicleModel')
+        ) AS vehicle_model,
+
+        JSON_UNQUOTE(
+        JSON_EXTRACT(survey_data, '$.vehicleCondition')
+        ) AS vehicle_condition,
+
+        CAST(
+        JSON_UNQUOTE(
+        JSON_EXTRACT(survey_data, '$.annualMileageKm')
+        ) AS UNSIGNED
+        ) AS annual_mileage_km,
 
         CAST(
         JSON_UNQUOTE(

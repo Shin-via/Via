@@ -33,6 +33,12 @@ public class ChildbirthSurveyResponse {
     // 1 = 첫째, 2 = 둘째, 3 = 셋째
     private Integer childOrder;
 
+    // 둘째 이상 출산 시 기존 일회성 육아용품의 재구매·추가 구매 여부
+    private Boolean repurchaseCarSeat;
+    private Boolean repurchaseStroller;
+    private Boolean repurchaseCrib;
+    private Boolean repurchaseOtherSetup;
+
     // 출산 및 양육 비용 수준
     private LifestyleLevel lifestyleLevel;
 
