@@ -50,17 +50,34 @@ body {
 }
 
 .site-layout {
-    width: min(100% - 48px, 980px);
+    width: min(100% - 48px, 1280px);
     min-height: calc(100vh - 104px);
     margin: 104px auto 0;
     padding-top: 30px;
-    grid-template-columns: 220px minmax(0, 700px);
-    gap: 60px;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 40px;
 }
 
 .site-content,
 .site-content > main {
     min-width: 0;
+}
+
+/* 공통 레이아웃을 사용하는 대출 화면은 내부 max-width 제한도 해제 */
+.site-content > .bank-policy-page,
+.site-content > .loan-recommendation-page,
+.site-content > .loan-scenario-page,
+.site-content > .debt-priority-page {
+    width: 100%;
+    max-width: none;
+}
+
+/* 금리 시뮬레이션 대출 화면도 동일한 본문 폭을 사용 */
+.site-content > .page-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
 }
 
 .service-sidebar {
