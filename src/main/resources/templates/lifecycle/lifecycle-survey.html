@@ -33,239 +33,81 @@
 
 
     <!-- =====================================================
-         설문 진행 단계
+         설문 진행 단계 (기본정보 제거, 3단계 구성)
          ===================================================== -->
     <nav class="lifecycle-step-navigation"
          aria-label="설문 진행 단계">
 
         <button type="button"
                 class="lifecycle-step active"
-                data-step="base">
-            1. 기본정보
-        </button>
-
-        <button type="button"
-                class="lifecycle-step"
                 data-step="events">
-            2. 생활 이벤트
+            1. 생활 이벤트 계획
         </button>
 
         <button type="button"
                 class="lifecycle-step"
                 data-step="review">
-            3. 입력 확인
+            2. 입력 확인
         </button>
 
         <button type="button"
                 class="lifecycle-step"
                 data-step="result">
-            4. 결과 보기
+            3. 결과 보기
         </button>
 
     </nav>
 
 
     <!-- =====================================================
-         STEP 1. 기본 생활정보
+         STEP 1. 생활 이벤트 계획 (타임라인 + 시나리오 카드 드래그앤드롭)
          ===================================================== -->
     <section class="lifecycle-panel"
-             data-step-panel="base">
+             data-step-panel="events">
 
         <div class="lifecycle-panel-heading">
-
             <div>
                 <span>STEP 1</span>
-                <h2>기본 생활정보</h2>
+                <h2>생활 이벤트 타임라인 계획</h2>
             </div>
-
             <p>
-                현재 생활비와 주거형태, 향후 소득 전망에 필요한 정보를 입력해주세요.
+                아래 <strong>시나리오 카드</strong>를 마우스로 끌어서 <strong>타임라인의 원하는 연도/월</strong> 위에 놓으세요.
+                배치된 카드는 타임라인 위에서 드래그하여 시점을 변경하거나, 클릭하여 세부 금액 및 조건을 설정할 수 있습니다.
             </p>
-
         </div>
 
-
-        <!-- 기본 생활정보 Form -->
-        <form id="baseSurveyForm"
-              class="lifecycle-form">
-
-            <!-- 현재 월평균 생활비 -->
-            <div class="lifecycle-form-group">
-
-                <label for="monthlyLivingExpense">
-                    현재 월평균 생활비
-                </label>
-
-                <div class="lifecycle-input-unit">
-
-                    <input type="number"
-                           id="monthlyLivingExpense"
-                           name="monthlyLivingExpense"
-                           min="0"
-                           placeholder="예: 1500000"
-                           required>
-
-                    <span>원</span>
-
-                </div>
-
-                <small>
-                    식비, 교통비, 통신비 등 일반적인 월 생활비를 입력해주세요.
-                </small>
-
+        <!-- 시나리오 선택 바 -->
+        <div id="activeLifecycleScenario"
+             class="lifecycle-active-scenario">
+            <div class="active-scenario-info">
+                <span class="scenario-badge">진행 시나리오</span>
+                <strong id="activeLifecycleScenarioName">기본 계획</strong>
             </div>
-
-
-            <!-- 현재 주거형태 -->
-            <div class="lifecycle-form-group">
-
-                <label for="currentHousingType">
-                    현재 주거형태
-                </label>
-
-                <select id="currentHousingType"
-                        name="currentHousingType"
-                        required>
-
-                    <option value="">
-                        선택해주세요
-                    </option>
-
-                    <option th:each="type : ${currentHousingTypes}"
-                            th:value="${type.name()}"
-                            th:text="${type.label}"></option>
-
-                </select>
-
-            </div>
-
-
-            <!-- 현재 월 주거비 -->
-            <div class="lifecycle-form-group">
-
-                <label for="monthlyHousingExpense">
-                    현재 월 주거비
-                </label>
-
-                <div class="lifecycle-input-unit">
-
-                    <input type="number"
-                           id="monthlyHousingExpense"
-                           name="monthlyHousingExpense"
-                           min="0"
-                           placeholder="예: 650000"
-                           required>
-
-                    <span>원</span>
-
-                </div>
-
-                <small>
-                    월세, 관리비 등 매월 발생하는 주거비를 입력해주세요.
-                </small>
-
-            </div>
-
-
-            <!-- 산업군 -->
-            <div class="lifecycle-form-group">
-
-                <label for="industryCode">
-                    현재 종사 산업군
-                </label>
-
-                <select id="industryCode"
-                        name="industryCode"
-                        required>
-
-                    <option value="">
-                        선택해주세요
-                    </option>
-
-                    <option th:each="industry : ${industryCodes}"
-                            th:value="${industry.name()}"
-                            th:text="${industry.label}"></option>
-
-                </select>
-
-                <small>
-                    미래 소득 증가율 시나리오 산정에 활용됩니다.
-                </small>
-
-            </div>
-
-
-            <!-- 급여 상승 시나리오 -->
-            <div class="lifecycle-form-group">
-
-                <span class="lifecycle-form-label">
-                    미래 소득 상승 가정
-                </span>
-
-                <div class="lifecycle-radio-group">
-
-                    <label th:each="scenario : ${salaryGrowthScenarios}">
-                        <input type="radio"
-                               name="salaryGrowthScenario"
-                               th:value="${scenario.name()}"
-                               th:checked="${scenario.name() == 'BASE'}">
-                        <span th:text="${scenario.label}">시나리오</span>
-                    </label>
-
-                </div>
-
-            </div>
-
-
-            <!-- CUSTOM 선택 시 표시 -->
-            <div class="lifecycle-form-group"
-                 id="customSalaryGrowthArea"
-                 hidden>
-
-                <label for="customSalaryGrowthRate">
-                    예상 연평균 소득 상승률
-                </label>
-
-                <div class="lifecycle-input-unit">
-
-                    <input type="number"
-                           id="customSalaryGrowthRate"
-                           step="0.1"
-                           min="0"
-                           placeholder="예: 3.0">
-
-                    <span>%</span>
-
-                </div>
-
-            </div>
-
-
-            <!-- STEP 1 버튼 -->
-            <div class="lifecycle-form-actions">
-
+            <div class="active-scenario-actions">
                 <button type="button"
-                        id="saveBaseSurveyBtn"
-                        class="lifecycle-primary-button"
-                        hidden>
-
-                    기본정보 저장
-
+                        id="changeLifecycleScenarioBtn"
+                        class="lifecycle-secondary-button">
+                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                    시나리오 변경 / 새로 만들기
                 </button>
-
             </div>
+        </div>
 
-        </form>
-
+        <!-- 시나리오 생성 및 목록 게이트 -->
         <section id="lifecycleScenarioGate"
                  class="lifecycle-scenario-gate"
                  hidden>
             <div class="lifecycle-scenario-gate-heading">
                 <div>
-                    <span>NEXT STEP</span>
-                    <h3>진행할 시나리오를 선택해주세요.</h3>
+                    <span>SCENARIO MANAGEMENT</span>
+                    <h3>진행할 시나리오를 선택하거나 새로 만드세요</h3>
                 </div>
-                <p>새 계획을 만들거나 이전에 작성한 계획을 이어서 진행할 수 있습니다.</p>
+                <button type="button"
+                        id="closeScenarioGateBtn"
+                        class="lifecycle-gate-close-btn"
+                        title="닫기">
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                </button>
             </div>
 
             <div class="lifecycle-scenario-create">
@@ -274,7 +116,7 @@
                     <input type="text"
                            id="newScenarioName"
                            maxlength="100"
-                           placeholder="예: 결혼 후 전세·주택 구매 계획">
+                           placeholder="예: 30대 신혼·내집마련 플랜">
                     <button type="button"
                             id="createLifecycleScenarioBtn"
                             class="lifecycle-primary-button">
@@ -287,182 +129,221 @@
                 <button type="button"
                         id="toggleLifecycleScenarioListBtn"
                         class="lifecycle-scenario-toggle"
-                        aria-expanded="false"
+                        aria-expanded="true"
                         aria-controls="lifecycleScenarioList">
-                    <span>이전 진행 시나리오</span>
+                    <span>이전 진행 시나리오 목록</span>
                     <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
                 </button>
             </div>
 
             <div id="lifecycleScenarioList"
-                 class="lifecycle-scenario-list"
-                 hidden></div>
+                 class="lifecycle-scenario-list"></div>
         </section>
 
-    </section>
 
+        <!-- =====================================================
+             시나리오 순서 흐름 보드 (Scenario Sequence Flow Board)
+             ===================================================== -->
+        <section class="lifecycle-flow-section"
+                 aria-labelledby="lifecycleFlowTitle">
 
-    <!-- =====================================================
-         STEP 2. 생활 이벤트 선택
-         ===================================================== -->
-    <section class="lifecycle-panel"
-             data-step-panel="events"
-             hidden>
-
-        <div class="lifecycle-panel-heading">
-
-            <div>
-                <span>STEP 2</span>
-                <h2>생활 이벤트 선택</h2>
-            </div>
-
-            <p>
-                앞으로 계획하고 있는 생활 이벤트를 선택해주세요.
-                여러 개를 선택할 수 있습니다.
-                선택된 카드를 다시 누르면 이벤트를 제거할 수 있습니다.
-            </p>
-
-        </div>
-
-        <aside class="lifecycle-planning-guide">
-            <strong>결혼 여부와 관계없이 계획할 수 있어요.</strong>
-            <p>독립을 위한 월세·전세, 결혼 후 이사, 기존 주거 유지 등 실제로 바꾸고 싶은 이벤트만 선택하세요.</p>
-        </aside>
-
-
-        <!-- 이벤트 선택 카드 -->
-        <div class="lifecycle-event-grid">
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="marriage">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">favorite</span>
-                <span class="lifecycle-event-copy">
-                    <strong>결혼</strong>
-                    <small>예식 · 혼수 · 신혼여행</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="childbirth">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">child_care</span>
-                <span class="lifecycle-event-copy">
-                    <strong>출산</strong>
-                    <small>출산 · 양육 · 지원제도</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="vehicle">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">directions_car</span>
-                <span class="lifecycle-event-copy">
-                    <strong>차량 구매</strong>
-                    <small>차량가격 · 대출 · 유지비</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="monthly-rent">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">apartment</span>
-                <span class="lifecycle-event-copy">
-                    <strong>월세</strong>
-                    <small>보증금 · 월세 · 관리비</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="jeonse">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">key</span>
-                <span class="lifecycle-event-copy">
-                    <strong>전세</strong>
-                    <small>전세금 · 자기자금 · 대출</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="home-purchase">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">home</span>
-                <span class="lifecycle-event-copy">
-                    <strong>주택 구매</strong>
-                    <small>주택가격 · 자기자금 · 주담대</small>
-                </span>
-
-            </button>
-
-
-            <button type="button"
-                    class="lifecycle-event-card"
-                    data-event-type="repayment">
-
-                <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">payments</span>
-                <span class="lifecycle-event-copy">
-                    <strong>대출 상환</strong>
-                    <small>부분상환 · 추가상환 · 전액상환</small>
-                </span>
-
-            </button>
-
-        </div>
-
-        <div id="activeLifecycleScenario"
-             class="lifecycle-active-scenario">
-            <div>
-                <span>현재 시나리오</span>
-                <strong id="activeLifecycleScenarioName">선택된 시나리오 없음</strong>
-            </div>
-            <button type="button"
-                    id="changeLifecycleScenarioBtn"
-                    class="lifecycle-secondary-button">
-                다른 시나리오 선택
-            </button>
-        </div>
-
-
-        <!-- 저장된 이벤트 미래 타임라인 -->
-        <section class="lifecycle-timeline-section"
-                 aria-labelledby="lifecycleTimelineTitle">
-            <div class="lifecycle-timeline-heading">
+            <div class="lifecycle-flow-heading">
                 <div>
-                    <span>FUTURE TIMELINE</span>
-                    <h3 id="lifecycleTimelineTitle">나의 미래 일정</h3>
+                    <span class="flow-eyebrow">LIFE SCENARIO FLOW</span>
+                    <h3 id="lifecycleFlowTitle">생애 이벤트 진행 순서</h3>
                 </div>
-                <p>저장한 이벤트가 예정 시기순으로 표시됩니다.</p>
+                <div class="flow-guide-badge">
+                    <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span>카드를 드래그하여 원하는 순서대로 배치하거나 순서를 변경하세요</span>
+                </div>
             </div>
 
-            <p id="lifecycleTimelineEmpty"
-               class="lifecycle-timeline-empty">
-                이벤트의 상세 내용을 저장하면 타임라인에 추가됩니다.
-            </p>
+            <!-- 시나리오 흐름 보드 및 드롭 트랙 -->
+            <div class="lifecycle-flow-board" id="lifecycleFlowBoard">
 
-            <div id="lifecycleTimeline"
-                 class="lifecycle-timeline"
-                 hidden></div>
+                <div class="lifecycle-flow-track"
+                     id="timelineDropTrack"
+                     role="region"
+                     aria-label="시나리오 순서 드롭 영역">
+
+                    <!-- 빈 상태 안내 문구 (이벤트 없을 시 표시) -->
+                    <div id="lifecycleTimelineEmpty"
+                         class="flow-track-placeholder">
+                        <span class="material-symbols-outlined" aria-hidden="true">alt_route</span>
+                        <strong>아래 시나리오 카드를 이곳으로 끌어다 놓으세요.</strong>
+                        <small>카드를 드래그하여 첫 번째, 두 번째 발생할 생애 이벤트 순서를 자유롭게 구성하고 변경할 수 있습니다.</small>
+                    </div>
+
+                    <!-- 순서대로 배치된 이벤트 스텝들이 렌더링되는 스트림 레이어 -->
+                    <div id="lifecycleTimeline"
+                         class="flow-steps-stream"
+                         hidden>
+                        <!-- JS에서 배치된 이벤트 카드 및 화살표 연결선 렌더링 -->
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             시나리오 카드 보관함 (드래그 소스 카드 목록)
+             ===================================================== -->
+        <section class="lifecycle-card-palette-section"
+                 aria-labelledby="cardPaletteTitle">
+
+            <div class="card-palette-header">
+                <div>
+                    <h4 id="cardPaletteTitle">시나리오 카드 보관함</h4>
+                    <p>등록할 이벤트를 마우스로 잡고 위의 순서 흐름 영역으로 끌어다 놓으세요.</p>
+                </div>
+                <span class="card-palette-counter" id="cardPaletteCounter">총 7개 이벤트</span>
+            </div>
+
+            <div class="lifecycle-event-grid" id="scenarioCardPalette">
+
+                <!-- 결혼 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="marriage"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">favorite</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>결혼</strong>
+                        <small>예식 · 혼수 · 신혼여행</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="marriage">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 출산 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="childbirth"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">child_care</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>출산</strong>
+                        <small>출산 · 양육 · 지원제도</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="childbirth">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 차량 구매 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="vehicle"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">directions_car</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>차량 구매</strong>
+                        <small>차량가격 · 대출 · 유지비</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="vehicle">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 월세 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="monthly-rent"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">apartment</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>월세</strong>
+                        <small>보증금 · 월세 · 관리비</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="monthly-rent">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 전세 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="jeonse"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">key</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>전세</strong>
+                        <small>전세금 · 자기자금 · 대출</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="jeonse">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 주택 구매 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="home-purchase"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">home</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>주택 구매</strong>
+                        <small>주택가격 · 자기자금 · 주담대</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="home-purchase">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+                <!-- 대출 상환 카드 -->
+                <div class="lifecycle-event-card"
+                     draggable="true"
+                     data-event-type="repayment"
+                     role="button"
+                     tabindex="0"
+                     aria-grabbed="false">
+                    <span class="card-drag-handle material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                    <span class="lifecycle-event-icon material-symbols-outlined" aria-hidden="true">payments</span>
+                    <div class="lifecycle-event-copy">
+                        <strong>대출 상환</strong>
+                        <small>부분상환 · 추가상환 · 전액상환</small>
+                    </div>
+                    <span class="card-placement-badge" data-placement-status="repayment">
+                        <span class="status-dot"></span>
+                        <span class="status-text">미배치</span>
+                    </span>
+                </div>
+
+            </div>
+
         </section>
 
 
         <!-- =================================================
-             선택한 이벤트 상세 폼이 들어갈 영역
+             선택한 이벤트 상세 설정 폼 영역
              ================================================= -->
         <div id="lifecycleEventFormArea"
              class="lifecycle-event-form-area">
@@ -523,19 +404,9 @@
         <div class="lifecycle-form-actions">
 
             <button type="button"
-                    class="lifecycle-secondary-button"
-                    data-go-step="base">
-
-                이전
-
-            </button>
-
-            <button type="button"
                     class="lifecycle-primary-button"
                     data-go-step="review">
-
                 입력 내용 확인
-
             </button>
 
         </div>
@@ -544,7 +415,7 @@
 
 
     <!-- =====================================================
-         STEP 3. 입력 확인
+         STEP 2. 입력 내용 확인
          ===================================================== -->
     <section class="lifecycle-panel"
              data-step-panel="review"
@@ -553,49 +424,33 @@
         <div class="lifecycle-panel-heading">
 
             <div>
-                <span>STEP 3</span>
+                <span>STEP 2</span>
                 <h2>입력 내용 확인</h2>
             </div>
 
             <p>
-                입력한 기본정보와 생활 이벤트를 확인해주세요.
+                타임라인에 배치한 미래 생활 이벤트와 세부 설정 내용을 확인해주세요.
             </p>
 
         </div>
 
 
-        <!-- 기본정보 요약 -->
-        <section class="lifecycle-review-section">
-
-            <h3>현재 생활정보</h3>
-
-            <div id="baseSurveySummary"
-                 class="lifecycle-summary-box">
-
-                <p>
-                    저장된 기본 생활정보가 여기에 표시됩니다.
-                </p>
-
-            </div>
-
-        </section>
-
-
         <!-- 이벤트 요약 -->
         <section class="lifecycle-review-section">
 
-            <h3>미래 생활 이벤트</h3>
+            <h3>미래 생활 이벤트 일정 요약</h3>
 
             <div id="eventSurveySummary"
                  class="lifecycle-summary-box">
 
                 <p>
-                    선택한 생활 이벤트가 여기에 표시됩니다.
+                    타임라인에 배치된 생활 이벤트가 여기에 표시됩니다.
                 </p>
 
             </div>
 
         </section>
+
         <div class="lifecycle-form-actions">
 
             <button type="button"
@@ -607,7 +462,7 @@
             <button type="button"
                     class="lifecycle-primary-button"
                     data-go-step="result">
-                결과 보기
+                시뮬레이션 결과 보기
             </button>
 
         </div>
@@ -616,7 +471,7 @@
 
 
     <!-- =====================================================
-         STEP 4. 결과 보기
+         STEP 3. 결과 보기
          ===================================================== -->
     <section class="lifecycle-panel lifecycle-result-panel"
              data-step-panel="result"
@@ -624,7 +479,7 @@
 
         <div class="lifecycle-panel-heading lifecycle-result-heading">
             <div>
-                <span>STEP 4</span>
+                <span>STEP 3</span>
                 <h2>시나리오 결과 보기</h2>
             </div>
             <p>선택한 생활 이벤트가 자산과 부채에 미치는 영향과 맞춤 지원 정보를 확인하세요.</p>
@@ -634,10 +489,10 @@
 
             <div class="lifecycle-simulation-heading">
                 <div>
-                    <span class="lifecycle-result-eyebrow">FINANCIAL OUTLOOK</span>
-                    <h3>미래 재무 전망</h3>
+                    <span class="lifecycle-result-eyebrow">SIMULATION</span>
+                    <h3>시뮬레이션 진행</h3>
                     <p>
-                        저장된 생활 이벤트를 기준으로 미래 자산, 부채, 지원금, 추천상품을 확인합니다.
+                        구성된 생애 이벤트 순서를 바탕으로 자산 변화 및 재무 시뮬레이션을 실행합니다.
                     </p>
                 </div>
 
@@ -648,98 +503,37 @@
                 </button>
             </div>
 
-            <div class="lifecycle-simulation-inputs">
-
-                <div class="lifecycle-form-group">
-                    <label for="simulationAnnualIncome">연소득</label>
-                    <div class="lifecycle-input-unit">
-                        <input type="text"
-                               id="simulationAnnualIncome"
-                               value="40,000,000">
-                        <span>원</span>
-                    </div>
-                </div>
-
-                <div class="lifecycle-form-group">
-                    <label for="simulationLiquidAssetAmount">현금성 자산</label>
-                    <div class="lifecycle-input-unit">
-                        <input type="text"
-                               id="simulationLiquidAssetAmount"
-                               th:value="${financialProfile != null and financialProfile.liquidAssetAmount != null
-                                   ? #numbers.formatDecimal(financialProfile.liquidAssetAmount, 1, 0, 'COMMA')
-                                   : '15,000,000'}"
-                               inputmode="numeric">
-                        <span>원</span>
-                    </div>
-                    <small class="lifecycle-profile-value-guide"
-                           th:if="${financialProfile != null and financialProfile.liquidAssetAmount != null}">
-                        금융프로필에서 불러온 값입니다. 시뮬레이션 전에 바로 수정할 수 있습니다.
-                    </small>
-                    <small class="lifecycle-profile-value-guide is-empty"
-                           th:unless="${financialProfile != null and financialProfile.liquidAssetAmount != null}">
-                        금융프로필 값이 없어 기본값이 표시되었습니다. 현재 금액으로 수정해 주세요.
-                    </small>
-                </div>
-
-                <div class="lifecycle-form-group">
-                    <label for="simulationSalaryGrowthRate">연평균 소득 상승률</label>
-                    <div class="lifecycle-input-unit">
-                        <input type="number"
-                               id="simulationSalaryGrowthRate"
-                               step="0.1"
-                               value="3.0">
-                        <span>%</span>
-                    </div>
-                </div>
-
-            </div>
-
             <p id="lifecycleSimulationEmpty"
                class="lifecycle-timeline-empty">
                 시뮬레이션을 실행하면 결과가 여기에 표시됩니다.
             </p>
 
-            <div id="lifecycleSimulationSummary"
-                 class="lifecycle-simulation-summary"
+            <div id="lifecycleSimulationSnapshots"
+                 class="lifecycle-simulation-snapshots"
                  hidden></div>
 
             <section id="lifecycleAssetJourney"
                      class="lifecycle-asset-journey"
-                     aria-label="생애주기 자산 변화"
+                     aria-label="생애주기 이벤트 지출 및 순자산 흐름"
                      hidden>
                 <div class="lifecycle-journey-heading">
-                    <div>
-                        <span class="lifecycle-result-eyebrow">ASSET JOURNEY</span>
-                        <h4>내 자산의 변화</h4>
-                    </div>
-                    <p>생활 이벤트 전후의 순자산 흐름을 한눈에 확인하세요.</p>
+                    <span class="lifecycle-result-eyebrow">EXPENSE TIMELINE</span>
+                    <h4>시나리오 순서별 지출 금액</h4>
+                    <p>타임라인의 각 이벤트에 마우스를 올리면 간략한 소요 지출 요약이 나타나며, <strong>'상세 분석 보고서 보기'</strong>를 클릭하면 세부 산출 내역 및 맞춤 지원 정보를 모달로 확인할 수 있습니다.</p>
                 </div>
 
                 <div id="lifecycleAssetTimeline"
                      class="lifecycle-asset-timeline"></div>
 
-                <div class="lifecycle-asset-chart-card">
-                    <div class="lifecycle-chart-heading">
-                        <strong>순자산 변화</strong>
-                        <span>이벤트 실행 후 기준</span>
-                    </div>
-                    <div id="lifecycleAssetChart"
-                         class="lifecycle-asset-chart"></div>
-                </div>
-
                 <div class="lifecycle-asset-chart-card lifecycle-event-cost-card">
                     <div class="lifecycle-chart-heading">
-                        <strong>이벤트 비용 충격</strong>
-                        <span>이벤트 당일의 지출과 순자산 변화를 비교합니다.</span>
+                        <strong>시나리오 순서별 소요 비용</strong>
+                        <span>각 이벤트 단계별 총 지출 및 본인 부담/대출 필요액을 비교합니다.</span>
                     </div>
                     <div id="lifecycleEventCostChart"
                          class="lifecycle-event-cost-chart"></div>
                 </div>
             </section>
-
-            <div id="lifecycleSimulationSnapshots"
-                 class="lifecycle-simulation-snapshots"
-                 hidden></div>
 
         </section>
 

@@ -116,18 +116,16 @@ public class LifecycleProductService {
 
         String normalizedName = name.replaceAll("\\s+", "");
         List<String> purposeKeywords = switch (eventType) {
-            case MARRIAGE -> List.of("결혼", "혼례", "웨딩");
-            case MONTHLY_RENT -> List.of("월세", "임차료", "전월세");
-            case JEONSE -> List.of("전세", "임차보증금", "전월세보증금");
-            case HOME_PURCHASE -> List.of(
-                    "주택", "내집", "구입자금", "디딤돌",
-                    "모기지", "보금자리"
-            );
-            default -> List.of();
+            case MARRIAGE -> List.of("결혼", "혼례", "웨딩", "신혼", "부부", "드림", "청년");
+            case CHILDBIRTH -> List.of("출산", "육아", "아이", "자녀", "신생아", "다자녀", "부모", "행복");
+            case VEHICLE_PURCHASE -> List.of("자동차", "오토", "차량", "마이카", "카", "친환경", "드라이브");
+            case MONTHLY_RENT -> List.of("월세", "임차료", "전월세", "청년", "주거", "보증금");
+            case JEONSE -> List.of("전세", "임차보증금", "전월세보증금", "버팀목", "안심전세", "청년");
+            case HOME_PURCHASE -> List.of("주택", "내집", "구입자금", "디딤돌", "모기지", "보금자리", "담보대출", "주담대");
+            case REPAYMENT -> List.of("대환", "전환", "갈아타기", "상환", "저금리", "안심전환");
         };
 
-        return purposeKeywords.isEmpty()
-                || purposeKeywords.stream()
-                .anyMatch(normalizedName::contains);
+        return purposeKeywords.stream()
+                .anyMatch(keyword -> normalizedName.contains(keyword) || (product.getProductType() != null && product.getProductType().contains(keyword)));
     }
 }

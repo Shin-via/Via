@@ -48,8 +48,4 @@ public class LifecycleBaseStateDto {
     private BigDecimal annualSalaryGrowthRate;
     // 사용자가 현재 보유한 대출 목록
     private List<LifecycleLoanDto> loans;
-
-
-
-
 }

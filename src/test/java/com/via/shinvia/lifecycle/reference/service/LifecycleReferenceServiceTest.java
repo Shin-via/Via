@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import org.springframework.test.context.jdbc.Sql;
+
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(properties = {
         "finance.api.service-key=test-key"
 })
+@Sql(scripts = "/db/lifecycle_reference_init.sql")
 class LifecycleReferenceServiceTest {
 
     @Autowired

@@ -149,8 +149,20 @@ public class LifecycleScenarioService {
     private void requireCompleteBaseSurvey(Long userId) {
         LifecycleBaseSurveyResponse baseSurvey =
                 lifecycleSurveyService.getBaseSurvey(userId);
-        boolean complete = baseSurvey != null
-                && baseSurvey.getMonthlyLivingExpense() != null
+        if (baseSurvey == null) {
+            com.via.shinvia.lifecycle.survey.dto.LifecycleBaseSurveyRequest defaultSurvey =
+                    com.via.shinvia.lifecycle.survey.dto.LifecycleBaseSurveyRequest.builder()
+                            .monthlyLivingExpense(new java.math.BigDecimal("1500000"))
+                            .currentHousingType(com.via.shinvia.lifecycle.common.model.CurrentHousingType.MONTHLY_RENT)
+                            .monthlyHousingExpense(new java.math.BigDecimal("500000"))
+                            .industryCode(com.via.shinvia.lifecycle.common.model.IndustryCode.SERVICE)
+                            .salaryGrowthScenario(com.via.shinvia.lifecycle.common.model.SalaryGrowthScenario.BASE)
+                            .build();
+            lifecycleSurveyService.saveBaseSurvey(userId, defaultSurvey);
+            return;
+        }
+
+        boolean complete = baseSurvey.getMonthlyLivingExpense() != null
                 && baseSurvey.getCurrentHousingType() != null
                 && baseSurvey.getMonthlyHousingExpense() != null
                 && baseSurvey.getIndustryCode() != null
@@ -159,10 +171,40 @@ public class LifecycleScenarioService {
                     || baseSurvey.getCustomSalaryGrowthRate() != null);
 
         if (!complete) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "기본 생활정보를 먼저 완료해주세요."
-            );
+            com.via.shinvia.lifecycle.common.model.CurrentHousingType housingType =
+                    com.via.shinvia.lifecycle.common.model.CurrentHousingType.MONTHLY_RENT;
+            if (baseSurvey.getCurrentHousingType() != null) {
+                try {
+                    housingType = com.via.shinvia.lifecycle.common.model.CurrentHousingType.valueOf(baseSurvey.getCurrentHousingType());
+                } catch (Exception ignored) {}
+            }
+
+            com.via.shinvia.lifecycle.common.model.IndustryCode industry =
+                    com.via.shinvia.lifecycle.common.model.IndustryCode.SERVICE;
+            if (baseSurvey.getIndustryCode() != null) {
+                try {
+                    industry = com.via.shinvia.lifecycle.common.model.IndustryCode.valueOf(baseSurvey.getIndustryCode());
+                } catch (Exception ignored) {}
+            }
+
+            com.via.shinvia.lifecycle.common.model.SalaryGrowthScenario scenario =
+                    com.via.shinvia.lifecycle.common.model.SalaryGrowthScenario.BASE;
+            if (baseSurvey.getSalaryGrowthScenario() != null) {
+                try {
+                    scenario = com.via.shinvia.lifecycle.common.model.SalaryGrowthScenario.valueOf(baseSurvey.getSalaryGrowthScenario());
+                } catch (Exception ignored) {}
+            }
+
+            com.via.shinvia.lifecycle.survey.dto.LifecycleBaseSurveyRequest fallbackSurvey =
+                    com.via.shinvia.lifecycle.survey.dto.LifecycleBaseSurveyRequest.builder()
+                            .monthlyLivingExpense(baseSurvey.getMonthlyLivingExpense() != null ? baseSurvey.getMonthlyLivingExpense() : new java.math.BigDecimal("1500000"))
+                            .currentHousingType(housingType)
+                            .monthlyHousingExpense(baseSurvey.getMonthlyHousingExpense() != null ? baseSurvey.getMonthlyHousingExpense() : new java.math.BigDecimal("500000"))
+                            .industryCode(industry)
+                            .salaryGrowthScenario(scenario)
+                            .customSalaryGrowthRate(baseSurvey.getCustomSalaryGrowthRate())
+                            .build();
+            lifecycleSurveyService.saveBaseSurvey(userId, fallbackSurvey);
         }
     }
 

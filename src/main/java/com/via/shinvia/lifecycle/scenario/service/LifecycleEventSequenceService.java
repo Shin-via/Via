@@ -4,7 +4,7 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleEventInput;
 import com.via.shinvia.lifecycle.common.dto.LifecycleEventResult;
 import com.via.shinvia.lifecycle.common.dto.LifecycleFinancialStateDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
-import com.via.shinvia.lifecycle.scenario.event.LifecycleEventCalculator;
+import com.via.shinvia.lifecycle.scenario.simulator.LifecycleEventSimulator;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,20 +17,23 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 7대 생애주기 이벤트 시뮬레이터(Simulator)를 연쇄 실행(Sequence Execution)하는 서비스
+ */
 @Service
 public class LifecycleEventSequenceService {
 
     private final LifecycleProjectionService projectionService;
-    private final Map<LifecycleEventType, LifecycleEventCalculator> calculatorMap;
+    private final Map<LifecycleEventType, LifecycleEventSimulator> simulatorMap;
 
     public LifecycleEventSequenceService(
             LifecycleProjectionService projectionService,
-            List<LifecycleEventCalculator> calculators
+            List<LifecycleEventSimulator> simulators
     ) {
         this.projectionService = projectionService;
-        this.calculatorMap = calculators.stream()
+        this.simulatorMap = simulators.stream()
                 .collect(Collectors.toMap(
-                        LifecycleEventCalculator::getEventType,
+                        LifecycleEventSimulator::getEventType,
                         Function.identity()
                 ));
     }
@@ -69,7 +72,7 @@ public class LifecycleEventSequenceService {
         List<LifecycleEventResult> results = new java.util.ArrayList<>();
 
         for (LifecycleEventInput input : orderedInputs) {
-            LifecycleEventCalculator calculator = findCalculator(input.getEventType());
+            LifecycleEventSimulator simulator = findSimulator(input.getEventType());
 
             LifecycleFinancialStateDto projectedState = projectionService.project(
                     currentState,
@@ -78,12 +81,12 @@ public class LifecycleEventSequenceService {
                     annualInflationRate
             );
 
-            LifecycleEventResult result = calculator.calculate(projectedState, input);
+            LifecycleEventResult result = simulator.simulate(projectedState, input);
 
             if (result == null) {
                 throw new ResponseStatusException(
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        "이벤트 계산 결과가 비어있습니다. eventType=" + input.getEventType()
+                        "이벤트 시뮬레이션 결과가 비어있습니다. eventType=" + input.getEventType()
                 );
             }
 
@@ -96,17 +99,17 @@ public class LifecycleEventSequenceService {
         return results;
     }
 
-    private LifecycleEventCalculator findCalculator(LifecycleEventType eventType) {
-        LifecycleEventCalculator calculator = calculatorMap.get(eventType);
+    private LifecycleEventSimulator findSimulator(LifecycleEventType eventType) {
+        LifecycleEventSimulator simulator = simulatorMap.get(eventType);
 
-        if (calculator == null) {
+        if (simulator == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "지원하지 않는 생애주기 이벤트입니다. eventType=" + eventType
             );
         }
 
-        return calculator;
+        return simulator;
     }
 
     private Comparator<LifecycleEventInput> eventOrderComparator() {
