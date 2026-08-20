@@ -24,6 +24,7 @@ public class LifecycleSimulationService {
     private final LifecycleEventSequenceService lifecycleEventSequenceService;
     private final LifecycleScenarioResultMapperService lifecycleScenarioResultMapperService;
     private final com.via.shinvia.lifecycle.scenario.mapper.LifecycleScenarioMapper lifecycleScenarioMapper;
+    private final com.via.shinvia.finprofile.FinancialProfileMapper financialProfileMapper;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = createObjectMapper();
 
     private static com.fasterxml.jackson.databind.ObjectMapper createObjectMapper() {
@@ -117,32 +118,68 @@ public class LifecycleSimulationService {
             merged.setBaseDate(LocalDate.now());
         }
 
-        if (baseSurvey == null) {
-            return merged;
+        if (userId != null) {
+            try {
+                com.via.shinvia.finprofile.FinancialProfile profile =
+                        financialProfileMapper.findFinancialProfileByUserId(userId);
+                if (profile != null) {
+                    if (merged.getAnnualIncome() == null && profile.getAnnualIncome() != null) {
+                        merged.setAnnualIncome(profile.getAnnualIncome());
+                    }
+                    if (merged.getLiquidAssetAmount() == null && profile.getLiquidAssetAmount() != null) {
+                        merged.setLiquidAssetAmount(profile.getLiquidAssetAmount());
+                    }
+                }
+            } catch (Exception e) {
+                // Fallback gracefully if financial profile query fails
+            }
         }
 
-        if (merged.getMonthlyLivingExpense() == null) {
-            merged.setMonthlyLivingExpense(baseSurvey.getMonthlyLivingExpense());
+        if (merged.getAnnualIncome() == null) {
+            merged.setAnnualIncome(new java.math.BigDecimal("40000000"));
         }
 
-        if (merged.getCurrentHousingType() == null) {
-            merged.setCurrentHousingType(baseSurvey.getCurrentHousingType());
+        if (merged.getLiquidAssetAmount() == null) {
+            merged.setLiquidAssetAmount(new java.math.BigDecimal("15000000"));
         }
 
-        if (merged.getMonthlyHousingExpense() == null) {
-            merged.setMonthlyHousingExpense(baseSurvey.getMonthlyHousingExpense());
-        }
+        if (baseSurvey != null) {
+            if (merged.getMonthlyLivingExpense() == null) {
+                merged.setMonthlyLivingExpense(baseSurvey.getMonthlyLivingExpense());
+            }
 
-        if (merged.getIndustryCode() == null) {
-            merged.setIndustryCode(baseSurvey.getIndustryCode());
-        }
+            if (merged.getCurrentHousingType() == null) {
+                merged.setCurrentHousingType(baseSurvey.getCurrentHousingType());
+            }
 
-        if (merged.getSalaryGrowthScenario() == null) {
-            merged.setSalaryGrowthScenario(baseSurvey.getSalaryGrowthScenario());
+            if (merged.getMonthlyHousingExpense() == null) {
+                merged.setMonthlyHousingExpense(baseSurvey.getMonthlyHousingExpense());
+            }
+
+            if (merged.getIndustryCode() == null) {
+                merged.setIndustryCode(baseSurvey.getIndustryCode());
+            }
+
+            if (merged.getSalaryGrowthScenario() == null) {
+                merged.setSalaryGrowthScenario(baseSurvey.getSalaryGrowthScenario());
+            }
+
+            if (merged.getAnnualSalaryGrowthRate() == null) {
+                merged.setAnnualSalaryGrowthRate(baseSurvey.getCustomSalaryGrowthRate());
+            }
         }
 
         if (merged.getAnnualSalaryGrowthRate() == null) {
-            merged.setAnnualSalaryGrowthRate(baseSurvey.getCustomSalaryGrowthRate());
+            merged.setAnnualSalaryGrowthRate(new java.math.BigDecimal("0.03"));
+        }
+        if (merged.getMonthlyLivingExpense() == null) {
+            merged.setMonthlyLivingExpense(new java.math.BigDecimal("1500000"));
+        }
+        if (merged.getMonthlyHousingExpense() == null) {
+            merged.setMonthlyHousingExpense(java.math.BigDecimal.ZERO);
+        }
+        if (merged.getCurrentHousingType() == null) {
+            merged.setCurrentHousingType("FAMILY");
         }
 
         return merged;

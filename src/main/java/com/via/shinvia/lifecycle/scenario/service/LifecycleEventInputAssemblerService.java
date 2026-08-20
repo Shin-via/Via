@@ -119,14 +119,13 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal estimatedCost = positiveOrDefault(
-                survey.getCustomEstimatedCost(),
-                referenceAmount(LifecycleEventType.MARRIAGE, TOTAL_COST)
+        BigDecimal estimatedCost = survey.getCustomEstimatedCost() != null && survey.getCustomEstimatedCost().signum() > 0
+                ? survey.getCustomEstimatedCost()
+                : referenceAmount(LifecycleEventType.MARRIAGE, TOTAL_COST)
                         .multiply(lifestyleMultiplier(
                                 LifecycleEventType.MARRIAGE,
                                 survey.getLifestyleLevel()
-                        ))
-        );
+                        ));
 
         BigDecimal userShare = estimatedCost.multiply(
                 defaultIfNull(survey.getUserContributionRate(), ONE)
@@ -307,27 +306,25 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal deposit = positiveOrDefault(
-                survey.getDesiredDeposit(),
-                calculateHousingAmount(
+        BigDecimal deposit = survey.getDesiredDeposit() != null && survey.getDesiredDeposit().signum() > 0
+                ? survey.getDesiredDeposit()
+                : calculateHousingAmount(
                         LifecycleEventType.MONTHLY_RENT,
                         RENT_BASE_DEPOSIT,
                         survey.getLifestyleLevel(),
                         survey.getHousingType(),
                         survey.getDesiredArea()
-                )
-        );
+                );
 
-        BigDecimal monthlyRent = positiveOrDefault(
-                survey.getDesiredMonthlyRent(),
-                calculateHousingAmount(
+        BigDecimal monthlyRent = survey.getDesiredMonthlyRent() != null && survey.getDesiredMonthlyRent().signum() > 0
+                ? survey.getDesiredMonthlyRent()
+                : calculateHousingAmount(
                         LifecycleEventType.MONTHLY_RENT,
                         MONTHLY_RENT_BASE_AMOUNT,
                         survey.getLifestyleLevel(),
                         survey.getHousingType(),
                         survey.getDesiredArea()
-                )
-        );
+                );
 
         BigDecimal cashInflow =
                 sumSupportAmount(supports, SupportEffectType.CASH_INFLOW);
@@ -384,16 +381,15 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal deposit = positiveOrDefault(
-                survey.getDesiredJeonseAmount(),
-                calculateHousingAmount(
+        BigDecimal deposit = survey.getDesiredJeonseAmount() != null && survey.getDesiredJeonseAmount().signum() > 0
+                ? survey.getDesiredJeonseAmount()
+                : calculateHousingAmount(
                         LifecycleEventType.JEONSE,
                         JEONSE_BASE_DEPOSIT,
                         survey.getLifestyleLevel(),
                         survey.getHousingType(),
                         survey.getDesiredArea()
-                )
-        );
+                );
 
         BigDecimal newLoanAmount = nvl(survey.getDesiredLoanAmount());
 
@@ -453,16 +449,15 @@ public class LifecycleEventInputAssemblerService {
                         userId
                 );
 
-        BigDecimal purchasePrice = positiveOrDefault(
-                survey.getDesiredPurchasePrice(),
-                calculateHousingAmount(
+        BigDecimal purchasePrice = survey.getDesiredPurchasePrice() != null && survey.getDesiredPurchasePrice().signum() > 0
+                ? survey.getDesiredPurchasePrice()
+                : calculateHousingAmount(
                         LifecycleEventType.HOME_PURCHASE,
                         HOME_BASE_PURCHASE_PRICE,
                         survey.getLifestyleLevel(),
                         survey.getHousingType(),
                         survey.getDesiredArea()
-                )
-        );
+                );
 
         BigDecimal acquisitionTax = purchasePrice.multiply(
                 referenceRate(
