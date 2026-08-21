@@ -143,12 +143,84 @@ function initializeProfilePopover() {
 
 function initializeTokenRefresh() {
     const refreshBtn = document.getElementById("headerTokenRefreshBtn");
-    if (!refreshBtn) return;
+    const remainingTime = document.getElementById("headerSessionRemainingTime");
+    if (!refreshBtn || !remainingTime) return;
+
+    const deadlineKey = "viaTokenExtensionDeadline";
+    let countdownId = null;
+
+    function formatRemainingTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}분 ${String(seconds).padStart(2, "0")}초`;
+    }
+
+    function renderCountdown() {
+        const deadline = Number(sessionStorage.getItem(deadlineKey) || 0);
+        if (!deadline) {
+            remainingTime.textContent = "00분 00초";
+            refreshBtn.setAttribute("aria-label", "접속시간 1시간 연장");
+            return false;
+        }
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.ceil((deadline - Date.now()) / 1000)
+        );
+        if (remainingSeconds <= 0) {
+            sessionStorage.removeItem(deadlineKey);
+            remainingTime.textContent = "00분 00초";
+            refreshBtn.setAttribute("aria-label", "접속시간 1시간 연장");
+            if (countdownId) clearInterval(countdownId);
+            countdownId = null;
+            return false;
+        }
+
+        remainingTime.textContent = formatRemainingTime(remainingSeconds);
+        refreshBtn.setAttribute("aria-label", `접속시간 1시간 연장, 현재 남은 시간 ${remainingTime.textContent}`);
+        return true;
+    }
+
+    function startCountdown() {
+        sessionStorage.setItem(deadlineKey, String(Date.now() + 3_599_000));
+        if (countdownId) clearInterval(countdownId);
+        renderCountdown();
+        countdownId = setInterval(renderCountdown, 1000);
+    }
+
+    async function initializeCountdownFromLogin() {
+        try {
+            const response = await fetch("/api/auth/token/extension-status", {
+                headers: {"Accept": "application/json"}
+            });
+            if (response.ok) {
+                const status = await response.json();
+                const remainingSeconds = Number(
+                    status.remainingSeconds ?? status.remaining_seconds ?? 0
+                );
+                if (remainingSeconds > 0) {
+                    sessionStorage.setItem(
+                        deadlineKey,
+                        String(Date.now() + remainingSeconds * 1000)
+                    );
+                } else {
+                    sessionStorage.removeItem(deadlineKey);
+                }
+            }
+        } catch (error) {
+            console.error("Session extension status failed:", error);
+        }
+
+        if (renderCountdown()) {
+            countdownId = setInterval(renderCountdown, 1000);
+        }
+    }
+
+    initializeCountdownFromLogin();
 
     refreshBtn.addEventListener("click", async () => {
         if (refreshBtn.disabled) return;
 
-        const originalText = refreshBtn.textContent;
         refreshBtn.disabled = true;
         refreshBtn.textContent = "연장 중...";
         try {
@@ -161,6 +233,7 @@ function initializeTokenRefresh() {
 
             if (response.ok) {
                 const message = await response.text();
+                startCountdown();
                 showToast(message || "토큰 및 세션 시간이 성공적으로 연장되었습니다.", "success");
             } else {
                 const errorText = await response.text();
@@ -171,7 +244,8 @@ function initializeTokenRefresh() {
             showToast("네트워크 오류가 발생했습니다.", "error");
         } finally {
             refreshBtn.disabled = false;
-            refreshBtn.textContent = originalText;
+            refreshBtn.textContent = "연장";
+            renderCountdown();
         }
     });
 }

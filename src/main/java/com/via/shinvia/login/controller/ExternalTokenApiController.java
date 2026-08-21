@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.via.shinvia.login.security.LoginSuccessHandler.SESSION_EXTENSION_DEADLINE;
+import static com.via.shinvia.login.security.LoginSuccessHandler.SESSION_EXTENSION_DISPLAY_MILLIS;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth/token")
@@ -45,6 +48,18 @@ public class ExternalTokenApiController {
 
         boolean hasToken = remainingSeconds != null && remainingSeconds > 0;
         return ResponseEntity.ok(new TokenStatusResponse(hasToken, hasToken ? remainingSeconds : 0L));
+    }
+
+    @GetMapping("/extension-status")
+    public ResponseEntity<TokenStatusResponse> getExtensionStatus(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return ResponseEntity.ok(new TokenStatusResponse(false, 0L));
+        }
+        Object deadlineValue = session.getAttribute(SESSION_EXTENSION_DEADLINE);
+        long deadline = deadlineValue instanceof Number number ? number.longValue() : 0L;
+        long remainingSeconds = Math.max(0L, (deadline - System.currentTimeMillis() + 999L) / 1000L);
+        return ResponseEntity.ok(new TokenStatusResponse(remainingSeconds > 0, remainingSeconds));
     }
 
     // 2. [시간 연장 / 토큰 재발급] 버튼 클릭 시 호출할 API
@@ -77,6 +92,10 @@ public class ExternalTokenApiController {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.setMaxInactiveInterval(3600);
+            session.setAttribute(
+                    SESSION_EXTENSION_DEADLINE,
+                    System.currentTimeMillis() + SESSION_EXTENSION_DISPLAY_MILLIS
+            );
         }
 
         return ResponseEntity.ok("토큰 및 세션 시간이 성공적으로 연장되었습니다.");

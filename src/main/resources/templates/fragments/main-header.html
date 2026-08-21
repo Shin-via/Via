@@ -54,7 +54,10 @@
         </div>
 
         <div class="action-buttons">
-            <button id="headerTokenRefreshBtn" class="btn-refresh" type="button" title="접속시간 연장" sec:authorize="isAuthenticated()">접속시간</button>
+            <div class="header-session-timer" sec:authorize="isAuthenticated()" aria-label="접속시간">
+                <span id="headerSessionRemainingTime" aria-live="off">00분 00초</span>
+                <button id="headerTokenRefreshBtn" class="btn-refresh" type="button" title="접속시간 1시간 연장">연장</button>
+            </div>
             <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn-signin">로그인</a>
             <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
                 <button type="submit" class="btn-signin">로그아웃</button>
