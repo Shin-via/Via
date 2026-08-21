@@ -11,6 +11,7 @@
     const modalTitleEl = document.getElementById('reportModalTitle');
     const modalListEl = document.getElementById('reportModalList');
     const modalCloseEl = document.getElementById('reportModalClose');
+    const overviewEl = document.getElementById('reportOverview');
     if (!gridEl) {
         return;
     }
@@ -43,6 +44,13 @@
                         '</span>' +
                         '</li>';
                 }).join('');
+
+                if (window.ReportOverview && overviewEl) {
+                    window.ReportOverview.render(
+                        overviewEl,
+                        header.overview
+                    );
+                }
             })
             .catch(() => {
                 headerLoadingEl.textContent = '불러오지 못했어요';
