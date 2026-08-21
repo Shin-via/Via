@@ -1,18 +1,18 @@
 package com.via.shinvia.report.service;
 
 import com.via.shinvia.report.dto.response.ReportHeaderResponse;
+import com.via.shinvia.report.overview.ReportOverviewService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class ReportHeaderService {
 
     private final FinancialScoreCalculator financialScoreCalculator;
-
-    public ReportHeaderService(FinancialScoreCalculator financialScoreCalculator) {
-        this.financialScoreCalculator = financialScoreCalculator;
-    }
+    private final ReportOverviewService reportOverviewService;
 
     public ReportHeaderResponse getHeader(Long userId) {
         FinancialScoreCalculator.Result result = financialScoreCalculator.calculate(userId);
@@ -22,7 +22,8 @@ public class ReportHeaderService {
                 gradeFor(result.totalScore()),
                 result.dimensions().stream()
                         .map(d -> new ReportHeaderResponse.Dimension(d.key(), d.label(), d.score(), d.weightPercent()))
-                        .toList()
+                        .toList(),
+                reportOverviewService.getOverview(userId)
         );
     }
 
