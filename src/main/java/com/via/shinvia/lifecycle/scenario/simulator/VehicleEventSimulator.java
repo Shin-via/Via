@@ -5,6 +5,7 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleEventResult;
 import com.via.shinvia.lifecycle.common.dto.LifecycleFinancialStateDto;
 import com.via.shinvia.lifecycle.common.dto.LifecycleLoanDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
 import com.via.shinvia.lifecycle.reference.service.LifecycleReferenceService;
 import com.via.shinvia.loan.ratesimulation.common.service.LoanRepaymentCalculator;
 import lombok.RequiredArgsConstructor;
@@ -166,9 +167,9 @@ public class VehicleEventSimulator implements LifecycleEventSimulator {
 
     private BigDecimal resolveMonthlyMaintenanceCost(LifecycleEventInput input) {
         try {
-            return referenceService.getNationalAmount(
-                    LifecycleEventType.VEHICLE_PURCHASE,
+            return referenceService.getVehicleAmount(
                     "VEHICLE_MONTHLY_MAINTENANCE_COST",
+                    VehicleClass.MIDSIZE,
                     null
             );
         } catch (Exception e) {

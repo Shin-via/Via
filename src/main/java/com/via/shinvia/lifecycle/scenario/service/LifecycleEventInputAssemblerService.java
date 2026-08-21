@@ -6,6 +6,7 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleSupportDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
 import com.via.shinvia.lifecycle.common.model.SupportEffectType;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
 import com.via.shinvia.lifecycle.recommendation.service.LifecycleProductService;
 import com.via.shinvia.lifecycle.recommendation.service.LifecycleWelfareService;
 import com.via.shinvia.lifecycle.reference.service.LifecycleReferenceService;
@@ -133,7 +134,7 @@ public class LifecycleEventInputAssemblerService {
         boolean customMarriageCost = survey.getCustomEstimatedCost() != null
                 && survey.getCustomEstimatedCost().signum() > 0;
         BigDecimal marriageMultiplier = lifestyleMultiplier(LifecycleEventType.MARRIAGE, survey.getLifestyleLevel());
-        BigDecimal weddingServiceTotal = customMarriageCost ? ZERO
+        BigDecimal hallCost = customMarriageCost ? ZERO
                 : referenceAmount(LifecycleEventType.MARRIAGE, TOTAL_COST).multiply(marriageMultiplier);
         BigDecimal mealCost = customMarriageCost ? ZERO
                 : referenceService.getRegionalAmount(
@@ -141,15 +142,13 @@ public class LifecycleEventInputAssemblerService {
                     survey.getRegionSido(), survey.getRegionSigungu(), null)
                     .multiply(BigDecimal.valueOf(survey.getGuestCount() != null ? survey.getGuestCount() : 200))
                     .multiply(marriageMultiplier);
-        // 공식 결혼 서비스 총액에서 식대를 제외한 금액을 예식장·스드메 항목으로 표시한다.
-        BigDecimal hallCost = customMarriageCost ? ZERO : maxZero(weddingServiceTotal.subtract(mealCost));
         BigDecimal furnitureCost = !customMarriageCost && Boolean.TRUE.equals(survey.getFurnitureIncluded())
                 ? referenceAmount(LifecycleEventType.MARRIAGE, "FURNITURE_COST") : ZERO;
         BigDecimal honeymoonCost = !customMarriageCost && Boolean.TRUE.equals(survey.getHoneymoonIncluded())
                 ? referenceAmount(LifecycleEventType.MARRIAGE, "HONEYMOON_COST") : ZERO;
         BigDecimal estimatedCost = customMarriageCost
                 ? survey.getCustomEstimatedCost()
-                : weddingServiceTotal.add(furnitureCost).add(honeymoonCost);
+                : hallCost.add(mealCost).add(furnitureCost).add(honeymoonCost);
 
         BigDecimal userShare = estimatedCost.multiply(
                 defaultIfNull(survey.getUserContributionRate(), ONE)
@@ -321,7 +320,7 @@ public class LifecycleEventInputAssemblerService {
         BigDecimal monthlyMaintenance = survey.getMonthlyMaintenanceCost() != null
                 && survey.getMonthlyMaintenanceCost().signum() > 0
                 ? survey.getMonthlyMaintenanceCost()
-                : calculateVehicleMonthlyCost(survey.getVehicleModel(), survey.getAnnualMileageKm());
+                : calculateVehicleMonthlyCost(survey.getVehicleModel());
 
         List<LifecycleProductDto> products =
                 productService.getRecommendedProducts(
@@ -734,16 +733,26 @@ public class LifecycleEventInputAssemblerService {
         );
     }
 
-    private BigDecimal calculateVehicleMonthlyCost(String vehicleModel, Integer annualMileageKm) {
-        BigDecimal base = referenceAmount(
-                LifecycleEventType.VEHICLE_PURCHASE,
-                "VEHICLE_MONTHLY_MAINTENANCE_COST"
+    private BigDecimal calculateVehicleMonthlyCost(String vehicleModel) {
+        return referenceService.getVehicleAmount(
+                VEHICLE_MONTHLY_MAINTENANCE_COST,
+                vehicleClassForModel(vehicleModel),
+                null
         );
-        BigDecimal mileage = annualMileageKm == null || annualMileageKm <= 0
-                ? BigDecimal.valueOf(12000)
-                : BigDecimal.valueOf(annualMileageKm);
-        return base.multiply(mileage)
-                .divide(BigDecimal.valueOf(12000), 0, RoundingMode.HALF_UP);
+    }
+
+    private VehicleClass vehicleClassForModel(String vehicleModel) {
+        if (vehicleModel == null) {
+            return VehicleClass.MIDSIZE;
+        }
+        return switch (vehicleModel.toUpperCase()) {
+            case "RAY" -> VehicleClass.COMPACT;
+            case "K3", "AVANTE" -> VehicleClass.SEMI_MIDSIZE;
+            case "G70" -> VehicleClass.MIDSIZE;
+            case "G80", "G90" -> VehicleClass.LARGE;
+            case "GV60", "GV70", "GV80" -> VehicleClass.SUV;
+            default -> VehicleClass.MIDSIZE;
+        };
     }
 
     private BigDecimal calculateHousingAmount(

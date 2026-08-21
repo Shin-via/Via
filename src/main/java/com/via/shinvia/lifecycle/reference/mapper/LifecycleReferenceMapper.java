@@ -2,6 +2,8 @@ package com.via.shinvia.lifecycle.reference.mapper;
 
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
+import com.via.shinvia.lifecycle.common.model.VehicleCondition;
 import com.via.shinvia.lifecycle.reference.dto.LifecycleReferenceDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -27,5 +29,12 @@ public interface LifecycleReferenceMapper {
 
             @Param("regionSigungu")
             String regionSigungu
+    );
+
+    LifecycleReferenceDto findLatestVehicleReference(
+            @Param("eventType") LifecycleEventType eventType,
+            @Param("referenceType") String referenceType,
+            @Param("vehicleClass") VehicleClass vehicleClass,
+            @Param("vehicleCondition") VehicleCondition vehicleCondition
     );
 }

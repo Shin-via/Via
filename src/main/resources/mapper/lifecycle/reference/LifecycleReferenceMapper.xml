@@ -80,4 +80,44 @@
 
     </select>
 
+    <select id="findLatestVehicleReference"
+            resultType="com.via.shinvia.lifecycle.reference.dto.LifecycleReferenceDto">
+        SELECT
+        lifecycle_reference_id,
+        event_type,
+        reference_type,
+        vehicle_class,
+        vehicle_condition,
+        amount_value,
+        rate_value,
+        numeric_value,
+        reference_year,
+        reference_month,
+        source_name,
+        source_title,
+        source_url,
+        source_type,
+        note,
+        active,
+        created_at,
+        updated_at
+        FROM lifecycle_reference
+        WHERE event_type = #{eventType}
+        AND reference_type = #{referenceType}
+        AND vehicle_class = #{vehicleClass}
+        AND active = TRUE
+        <choose>
+            <when test="vehicleCondition != null">
+                AND vehicle_condition = #{vehicleCondition}
+            </when>
+            <otherwise>
+                AND vehicle_condition IS NULL
+            </otherwise>
+        </choose>
+        ORDER BY reference_year DESC,
+                 COALESCE(reference_month, 0) DESC,
+                 lifecycle_reference_id DESC
+        LIMIT 1
+    </select>
+
 </mapper>

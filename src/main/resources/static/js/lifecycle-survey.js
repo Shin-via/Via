@@ -285,17 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const vehicleConditionInput = document.getElementById("vehicleCondition");
     const vehicleNameInput = document.getElementById("vehicleName");
 
-    const VEHICLE_REFERENCE_PRICES = {
-        RAY: { NEW: 15550000, USED: 15000000 },
-        K3: { NEW: 19500000, USED: 15000000 },
-        AVANTE: { NEW: 19940000, USED: 19000000 },
-        G70: { NEW: 43900000, USED: 31000000 },
-        G80: { NEW: 58900000, USED: 40000000 },
-        G90: { NEW: 89500000, USED: 79000000 },
-        GV60: { NEW: 64900000, USED: 45000000 },
-        GV70: { NEW: 53800000, USED: 47000000 },
-        GV80: { NEW: 69900000, USED: 55000000 }
-    };
+    let vehicleReferencePrices = {};
 
     function updateVehicleReferenceFields() {
         if (!vehicleModelInput || !vehicleConditionInput || !vehiclePriceInput) {
@@ -303,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const model = vehicleModelInput.value;
         const condition = vehicleConditionInput.value || "NEW";
-        const price = VEHICLE_REFERENCE_PRICES[model]?.[condition] || 0;
+        const price = vehicleReferencePrices[model]?.[condition] || 0;
         vehiclePriceInput.value = price || "";
         formatMoneyInput(vehiclePriceInput);
         if (vehicleNameInput) {
@@ -356,7 +346,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     vehicleModelInput?.addEventListener("change", updateVehicleReferenceFields);
     vehicleConditionInput?.addEventListener("change", updateVehicleReferenceFields);
-    updateVehicleReferenceFields();
+
+    async function loadVehicleReferencePrices() {
+        if (!vehiclePriceInput) return;
+        try {
+            const response = await fetch("/api/lifecycle/references/vehicle-prices", {
+                headers: {"Accept": "application/json"}
+            });
+            if (!response.ok) {
+                throw new Error(`차량 기준가격 조회 실패: ${response.status}`);
+            }
+            vehicleReferencePrices = await response.json();
+            updateVehicleReferenceFields();
+        } catch (error) {
+            console.error(error);
+            vehiclePriceInput.value = "";
+        }
+    }
+
+    loadVehicleReferencePrices();
 
     const jeonseDesiredAmountInput =
         document.getElementById("jeonseDesiredAmount");
@@ -1980,7 +1988,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (control.name === "targetDate") {
                 value = toYearMonth(value);
             } else if (control.name === "userContributionRate") {
-                value = Number(value) * 100;
+                const numericRate = Number(value);
+                value = numericRate <= 1 ? numericRate * 100 : numericRate;
             }
             if (value === undefined || value === null) {
                 return;
@@ -2441,6 +2450,17 @@ document.addEventListener("DOMContentLoaded", () => {
             guestCount = "200";
         }
 
+        const contributionRateNumber = Number(contributionRate);
+        if (!Number.isInteger(contributionRateNumber)
+            || contributionRateNumber < 1
+            || contributionRateNumber > 100) {
+            if (!isSilent) {
+                alert("본인 부담 비율은 1부터 100까지의 정수로 입력해주세요.");
+                openEventForm("marriage", true);
+                return false;
+            }
+        }
+
 
         /*
          * CUSTOM이면 예상 결혼비용 필수
@@ -2488,7 +2508,11 @@ document.addEventListener("DOMContentLoaded", () => {
              * -> 서버 0.5
              */
             userContributionRate:
-                Number(contributionRate) / 100,
+                (Number.isInteger(contributionRateNumber)
+                    && contributionRateNumber >= 1
+                    && contributionRateNumber <= 100
+                        ? contributionRateNumber
+                        : 50) / 100,
 
             familySupportAmount:
                 familySupportAmount
@@ -3441,7 +3465,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const guestCount = Number(form?.querySelector('[name="guestCount"]')?.value || 200);
             const mealPrice = REGIONAL_MEAL_PRICES[sido] || REGIONAL_MEAL_PRICES["DEFAULT"];
             const mealPriceMan = (mealPrice / 10000).toFixed(1).replace(".0", "");
-            const totalMealCost = guestCount * mealPrice;
 
             const lifestyle = form?.querySelector('input[name="marriageLifestyleLevel"]:checked')?.value || snapshot.lifestyleLevel || "AVERAGE";
             const baseHallCostMap = {
@@ -3451,7 +3474,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 PREMIUM: 14800000,
                 CUSTOM: 11390000
             };
-            const hallCost = baseHallCostMap[lifestyle] || 11390000;
+            const hallCost = Number(snapshot.marriageHallCost)
+                || baseHallCostMap[lifestyle]
+                || 11390000;
             const lifestyleNameMap = {
                 PRACTICAL: "실속형",
                 AVERAGE: "평균형",
@@ -3462,8 +3487,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const furnitureIncluded = form?.querySelector('[name="furnitureIncluded"]')?.checked ?? false;
             const honeymoonIncluded = form?.querySelector('[name="honeymoonIncluded"]')?.checked ?? false;
-            const furnitureCost = furnitureIncluded ? 12000000 : 0;
-            const honeymoonCost = honeymoonIncluded ? 6000000 : 0;
+            const totalMealCost = Number(snapshot.marriageMealCost) || guestCount * mealPrice;
+            const furnitureCost = Number(snapshot.marriageFurnitureCost)
+                || (furnitureIncluded ? 12000000 : 0);
+            const honeymoonCost = Number(snapshot.marriageHoneymoonCost)
+                || (honeymoonIncluded ? 6000000 : 0);
 
             const totalEstCost = snapshot.estimatedCost > 0
                 ? Number(snapshot.estimatedCost)
@@ -3488,7 +3516,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `
                 <div class="result-calc-breakdown">
                     <div class="result-calc-meta-row">
-                        <span class="calc-meta-item"><strong>예상 거주지</strong> ${escapeHtml(regionText)}</span>
+                        <span class="calc-meta-item"><strong>예상 예식장 위치</strong> ${escapeHtml(regionText)}</span>
                         <span class="calc-meta-item"><strong>준비 수준</strong> ${escapeHtml(lifestyleNameMap[lifestyle] || "평균형")}</span>
                     </div>
                     <div class="result-calc-list">
@@ -4266,7 +4294,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mealPrice = REGIONAL_MEAL_PRICES[sido] || REGIONAL_MEAL_PRICES.DEFAULT;
             const lifestyle = form?.querySelector('input[name="marriageLifestyleLevel"]:checked')?.value
                 || snapshot.lifestyleLevel || "AVERAGE";
-            const hallCost = ({
+            const fallbackHallCost = ({
                 PRACTICAL: 9680000,
                 AVERAGE: 11390000,
                 RELAXED: 13100000,
@@ -4275,13 +4303,19 @@ document.addEventListener("DOMContentLoaded", () => {
             })[lifestyle] || 11390000;
             const furnitureIncluded = form?.querySelector('[name="furnitureIncluded"]')?.checked ?? false;
             const honeymoonIncluded = form?.querySelector('[name="honeymoonIncluded"]')?.checked ?? false;
+            const hallCost = Number(getResponseField(snapshot, "marriageHallCost")) || fallbackHallCost;
+            const mealCost = Number(getResponseField(snapshot, "marriageMealCost")) || guestCount * mealPrice;
+            const furnitureCost = Number(getResponseField(snapshot, "marriageFurnitureCost"))
+                || (furnitureIncluded ? 12000000 : 0);
+            const honeymoonCost = Number(getResponseField(snapshot, "marriageHoneymoonCost"))
+                || (honeymoonIncluded ? 6000000 : 0);
             items = lifestyle === "CUSTOM"
                 ? [{label: "직접 입력 결혼비용", amount: total}]
                 : [
                     {label: "예식장·스드메", amount: hallCost},
-                    {label: `식대 (${guestCount}명)`, amount: guestCount * mealPrice},
-                    ...(furnitureIncluded ? [{label: "혼수 준비비", amount: 12000000}] : []),
-                    ...(honeymoonIncluded ? [{label: "신혼여행 경비", amount: 6000000}] : [])
+                    {label: `식대 (${guestCount}명)`, amount: mealCost},
+                    ...(furnitureCost > 0 ? [{label: "혼수 준비비", amount: furnitureCost}] : []),
+                    ...(honeymoonCost > 0 ? [{label: "신혼여행 경비", amount: honeymoonCost}] : [])
                 ];
         } else if (snapshot.eventType === "CHILDBIRTH") {
             const childOrder = Number(snapshot.childOrder || 1);
@@ -4438,6 +4472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const oneTimeCards = snapshots.filter(snapshot => Number(snapshot.eventCost ?? 0) > 0).map(snapshot => {
             const total = Number(snapshot.eventCost ?? 0);
             const items = eventCostComponents(snapshot);
+            const componentTotal = items.reduce((sum, item) => sum + Math.max(0, item.amount), 0);
             return `
                 <article class="lifecycle-stacked-card">
                     <header>
@@ -4445,9 +4480,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <b>${escapeHtml(formatApproxMoney(total))}</b>
                     </header>
                     <div class="lifecycle-stacked-track" role="img" aria-label="${escapeHtml(eventTypeLabel(snapshot.eventType))} 비용 항목 비중">
-                        ${stackedBarSegments(items, total)}
+                        ${stackedBarSegments(items, componentTotal)}
                     </div>
-                    <ul class="lifecycle-donut-legend lifecycle-stacked-legend">${donutLegend(items, total)}</ul>
+                    <ul class="lifecycle-donut-legend lifecycle-stacked-legend">${donutLegend(items, componentTotal)}</ul>
                 </article>`;
         }).join("");
 
