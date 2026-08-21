@@ -35,7 +35,7 @@ public class ServiceMenuProvider {
 
     private final List<ServiceMenuCategory> assetMenus = List.of(
             category("life-plan", "금융 라이프 플랜", "timeline",
-                    item("계획 시작하기", "결혼, 주거, 출산 등 미래 계획을 금융 시나리오로 구성합니다.", "/lifecycle/survey")),
+                    item("금융 라이프 플랜", "결혼, 주거, 출산 등 미래 계획을 금융 시나리오로 구성합니다.", "/lifecycle/survey")),
             category("future-simulation", "미래금융 시뮬레이터", "model_training",
                     item("미래금융 시뮬레이터", "미래 소득과 지출 변화에 따른 자산 흐름을 예측합니다.", "/futuresim")),
             category("surplus-fund", "여유자금 운용", "savings",

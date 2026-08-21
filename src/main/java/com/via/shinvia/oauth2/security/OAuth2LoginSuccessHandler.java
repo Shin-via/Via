@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static com.via.shinvia.login.security.LoginSuccessHandler.SESSION_EXTENSION_DEADLINE;
+import static com.via.shinvia.login.security.LoginSuccessHandler.SESSION_EXTENSION_DISPLAY_MILLIS;
+
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -42,6 +45,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         HttpSession session = request.getSession(false);
         if(session!=null){
             session.removeAttribute(PENDING_SOCIAL_USER);
+            session.setMaxInactiveInterval(3600);
+            session.setAttribute(
+                    SESSION_EXTENSION_DEADLINE,
+                    System.currentTimeMillis() + SESSION_EXTENSION_DISPLAY_MILLIS
+            );
         }
 
         myDataLoginService.refreshTokenOnLogin(
