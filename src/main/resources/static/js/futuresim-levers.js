@@ -501,7 +501,7 @@
         // 직접 입력도 레버의 실제 단위를 쓴다. 과거 슬라이더의 0~100 제한을 재사용하지 않는다.
         const inputConstraints = {
             INCOME_CHANGE: {min: 100000, max: 10000000, step: 100000},
-            LOAN_PREPAYMENT: {min: 10000000, max: Number(presets[presets.length - 1].intensity), step: 1000000},
+            LOAN_PREPAYMENT: {min: 1000000, max: Number(presets[presets.length - 1].intensity), step: 1000000},
             LOAN_TERM_EXTENSION: {min: 12, max: 240, step: 12},
             NEW_LOAN: {min: 10000000, max: 500000000, step: 10000000}
         }[item.leverType];

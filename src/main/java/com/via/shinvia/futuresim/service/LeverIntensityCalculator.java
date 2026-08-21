@@ -23,7 +23,7 @@ public class LeverIntensityCalculator {
     public static final int NEW_LOAN_ASSUMED_TERM_MONTHS = 60;
     public static final String NEW_LOAN_ASSUMED_REPAYMENT_TYPE = "원리금균등";
 
-    private static final BigDecimal PREPAYMENT_MIN = new BigDecimal("10000000");
+    private static final BigDecimal PREPAYMENT_MIN = new BigDecimal("1000000");
     private static final BigDecimal PREPAYMENT_MAX_CAP = new BigDecimal("150000000");
     private static final int TERM_EXTENSION_MIN_MONTHS = 12;
     private static final int TERM_EXTENSION_MAX_MONTHS = 240;
@@ -34,7 +34,7 @@ public class LeverIntensityCalculator {
 
     // 기본 강도(레버 랭킹 막대그래프 기준값)
     public static final BigDecimal DEFAULT_MONTHLY_EXTRA_CAPACITY = new BigDecimal("500000");
-    public static final BigDecimal DEFAULT_PREPAYMENT_AMOUNT = new BigDecimal("50000000");
+    public static final BigDecimal DEFAULT_PREPAYMENT_AMOUNT = new BigDecimal("5000000");
     public static final BigDecimal DEFAULT_TERM_EXTENSION_MONTHS = BigDecimal.valueOf(120);
     public static final BigDecimal DEFAULT_NEW_LOAN_PRINCIPAL = new BigDecimal("100000000");
 
