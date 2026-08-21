@@ -46,6 +46,18 @@ class LifecycleFeasibilityServiceTest {
     }
 
     @Test
+    void doesNotRecommendDelayWhenFundingIsShortAndMonthlyCashFlowIsNegative() {
+        LifecycleFeasibilityDto result = service.assess(event(
+                "6000000", "1000000", "-100000", "20"
+        ));
+
+        assertEquals("DEFER", result.getStatus());
+        assertEquals("초기자금이 부족하고 월 적자가 예상됩니다.", result.getTitle());
+        assertEquals(new BigDecimal("6000000"), result.getCashGap());
+        assertNull(result.getRecommendedDelayMonths());
+    }
+
+    @Test
     void returnsCautionWhenDsrIsBetweenThirtyAndFortyPercent() {
         LifecycleFeasibilityDto result = service.assess(event(
                 "0", "1000000", "500000", "35"

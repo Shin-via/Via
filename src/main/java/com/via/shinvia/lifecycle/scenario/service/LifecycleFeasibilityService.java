@@ -28,24 +28,32 @@ public class LifecycleFeasibilityService {
                 : ZERO;
         BigDecimal afterDsr = after != null ? nvl(after.getDsr()) : ZERO;
 
-        if (shortage.signum() > 0) {
-            Integer delayMonths = calculateDelayMonths(
-                    shortage,
-                    before != null ? before.getMonthlySavingCapacity() : ZERO
-            );
-            String message = delayMonths != null
-                    ? "현재 저축여력을 유지하면 부족자금 마련에 약 " + delayMonths + "개월이 필요합니다."
-                    : "현재 저축여력으로는 부족자금을 해소하기 어려워 비용이나 계획 시점 조정이 필요합니다.";
-            return deferred("필요한 초기자금이 부족합니다.", message, shortage, delayMonths);
-        }
-
         if (afterSaving.signum() < 0) {
+            if (shortage.signum() > 0) {
+                return deferred(
+                        "초기자금이 부족하고 월 적자가 예상됩니다.",
+                        "준비기간을 늘리는 것만으로는 해결하기 어려우므로 비용이나 대출 규모를 함께 낮춰야 합니다.",
+                        shortage,
+                        null
+                );
+            }
             return deferred(
                     "이벤트 이후 매월 적자가 예상됩니다.",
                     "고정지출이나 대출 규모를 낮춘 뒤 진행 시점을 다시 검토하세요.",
                     ZERO,
                     null
             );
+        }
+
+        if (shortage.signum() > 0) {
+            Integer delayMonths = calculateDelayMonths(
+                    shortage,
+                    before != null ? before.getMonthlySavingCapacity() : ZERO
+            );
+            String message = delayMonths != null
+                    ? "이벤트 전 월 저축여력을 유지하면 초기 부족자금 마련에 약 " + delayMonths + "개월이 필요합니다."
+                    : "현재 저축여력으로는 부족자금을 해소하기 어려워 비용이나 계획 시점 조정이 필요합니다.";
+            return deferred("필요한 초기자금이 부족합니다.", message, shortage, delayMonths);
         }
 
         if (afterDsr.compareTo(DSR_DEFER) >= 0) {
@@ -61,7 +69,7 @@ public class LifecycleFeasibilityService {
             return caution("진행은 가능하지만 대출 상환부담을 점검해야 합니다.");
         }
 
-        return ready("현재 입력 조건에서는 계획을 진행할 재무 여력이 있습니다.");
+        return ready("이 이벤트를 반영한 뒤에도 월 저축여력과 대출 상환부담이 안정적인 수준입니다.");
     }
 
     private Integer calculateDelayMonths(BigDecimal shortage, BigDecimal monthlySaving) {

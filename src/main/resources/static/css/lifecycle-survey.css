@@ -2027,6 +2027,24 @@
         background: #f8fafc;
     }
 
+    .lifecycle-saved-results-toggle {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .lifecycle-saved-results-toggle::-webkit-details-marker {
+        display: none;
+    }
+
+    .lifecycle-saved-results-chevron {
+        flex: 0 0 auto;
+        transition: transform .2s ease;
+    }
+
+    .lifecycle-saved-results-section[open] .lifecycle-saved-results-chevron {
+        transform: rotate(180deg);
+    }
+
     .lifecycle-saved-result-list {
         display: grid;
         gap: 10px;
@@ -3464,12 +3482,13 @@
     border-radius: 10px;
     background: #fff;
     cursor: pointer;
+    font-size: 0.7rem;
 }
 
 .childbirth-repurchase-options label strong {
     margin-left: auto;
     color: #52616f;
-    font-size: 0.85rem;
+    font-size: 0.7rem;
 }
 
 @media (max-width: 640px) {

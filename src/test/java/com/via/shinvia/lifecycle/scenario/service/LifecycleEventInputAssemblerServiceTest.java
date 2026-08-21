@@ -6,6 +6,7 @@ import com.via.shinvia.lifecycle.common.dto.LifecycleSupportDto;
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
 import com.via.shinvia.lifecycle.common.model.SupportEffectType;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
 import com.via.shinvia.lifecycle.recommendation.service.LifecycleProductService;
 import com.via.shinvia.lifecycle.recommendation.service.LifecycleWelfareService;
 import com.via.shinvia.lifecycle.reference.service.LifecycleReferenceService;
@@ -103,8 +104,10 @@ class LifecycleEventInputAssemblerServiceTest {
         );
 
         assertEquals(LifecycleEventType.MARRIAGE, input.getEventType());
-        assertEquals(new BigDecimal("20000000.00"), input.getEstimatedCost());
-        assertEquals(new BigDecimal("7000000.00"), input.getUserRequiredAmount());
+        assertEquals(new BigDecimal("30000000.00"), input.getEstimatedCost());
+        assertEquals(new BigDecimal("12000000.00"), input.getUserRequiredAmount());
+        assertEquals(new BigDecimal("20000000.00"), input.getMarriageHallCost());
+        assertEquals(new BigDecimal("10000000.00"), input.getMarriageMealCost());
         assertEquals(new BigDecimal("0.00"), input.getCashInflowAmount());
         assertEquals(new BigDecimal("3000000.00"), input.getFamilySupportAmount());
         assertEquals(1, input.getSupports().size());
@@ -194,11 +197,11 @@ class LifecycleEventInputAssemblerServiceTest {
                 eq("VEHICLE_BASE_PRICE"),
                 isNull()
         )).thenReturn(new BigDecimal("30000000"));
-        when(referenceService.getNationalAmount(
-                eq(LifecycleEventType.VEHICLE_PURCHASE),
+        when(referenceService.getVehicleAmount(
                 eq("VEHICLE_MONTHLY_MAINTENANCE_COST"),
+                eq(VehicleClass.MIDSIZE),
                 isNull()
-        )).thenReturn(new BigDecimal("400000"));
+        )).thenReturn(new BigDecimal("460000"));
         when(referenceService.getNationalRate(
                 LifecycleEventType.VEHICLE_PURCHASE,
                 "VEHICLE_ACQUISITION_TAX_RATE",
@@ -233,7 +236,7 @@ class LifecycleEventInputAssemblerServiceTest {
         assertEquals(new BigDecimal("12102000.00"), input.getUserRequiredAmount());
         assertEquals(new BigDecimal("20000000.00"), input.getNewLoanAmount());
         assertEquals(new BigDecimal("30000000.00"), input.getAcquiredAssetAmount());
-        assertEquals(new BigDecimal("400000.00"), input.getAdditionalMonthlyExpense());
+        assertEquals(new BigDecimal("460000.00"), input.getAdditionalMonthlyExpense());
     }
 
     @Test
@@ -288,9 +291,9 @@ class LifecycleEventInputAssemblerServiceTest {
                 "VEHICLE_BASE_PRICE",
                 null
         );
-        verify(referenceService, never()).getNationalAmount(
-                LifecycleEventType.VEHICLE_PURCHASE,
+        verify(referenceService, never()).getVehicleAmount(
                 "VEHICLE_MONTHLY_MAINTENANCE_COST",
+                VehicleClass.MIDSIZE,
                 null
         );
     }

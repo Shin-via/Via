@@ -199,7 +199,7 @@
                     <h4 id="cardPaletteTitle">시나리오 카드 보관함</h4>
                     <p>등록할 이벤트를 마우스로 잡고 위의 순서 흐름 영역으로 끌어다 놓으세요.</p>
                 </div>
-                <span class="card-palette-counter" id="cardPaletteCounter">총 7개 이벤트</span>
+                <span class="card-palette-counter" id="cardPaletteCounter">총 6개 이벤트</span>
             </div>
 
             <div class="lifecycle-event-grid" id="scenarioCardPalette">
@@ -486,18 +486,19 @@
             <p>선택한 생활 이벤트가 자산과 부채에 미치는 영향과 맞춤 지원 정보를 확인하세요.</p>
         </div>
 
-        <section class="lifecycle-saved-results-section">
-            <div class="lifecycle-simulation-heading">
+        <details class="lifecycle-saved-results-section">
+            <summary class="lifecycle-simulation-heading lifecycle-saved-results-toggle">
                 <div>
                     <span class="lifecycle-result-eyebrow">SAVED RESULTS</span>
                     <h3>저장된 시나리오 결과</h3>
                     <p>완료한 시나리오 결과를 선택하면 저장 당시 결과 화면을 다시 불러옵니다.</p>
                 </div>
-            </div>
+                <span class="material-symbols-outlined lifecycle-saved-results-chevron" aria-hidden="true">expand_more</span>
+            </summary>
             <div id="lifecycleSavedResultList" class="lifecycle-saved-result-list">
                 <p class="lifecycle-cost-empty">저장된 결과가 없습니다.</p>
             </div>
-        </section>
+        </details>
 
         <section class="lifecycle-simulation-section">
 

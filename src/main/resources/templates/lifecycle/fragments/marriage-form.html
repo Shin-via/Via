@@ -45,7 +45,7 @@
             </div>
 
             <div class="lifecycle-form-group">
-                <label for="marriageRegionSido">결혼 시점 예상 거주 시·도</label>
+                <label for="marriageRegionSido">예상 예식장 위치 시·도</label>
                 <select id="marriageRegionSido"
                         name="regionSido"
                         data-region-sido
@@ -56,7 +56,7 @@
             </div>
 
             <div class="lifecycle-form-group">
-                <label for="marriageRegionSigungu">결혼 시점 예상 시·군·구</label>
+                <label for="marriageRegionSigungu">예상 예식장 위치 시·군·구</label>
                 <select id="marriageRegionSigungu"
                         name="regionSigungu"
                         data-region-sigungu
@@ -152,8 +152,9 @@
                     <input type="number"
                            id="marriageUserContributionRate"
                            name="userContributionRate"
-                           min="0"
+                           min="1"
                            max="100"
+                           step="1"
                            value="50">
 
                     <span>%</span>

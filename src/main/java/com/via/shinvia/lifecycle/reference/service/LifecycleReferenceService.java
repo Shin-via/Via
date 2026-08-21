@@ -2,6 +2,8 @@ package com.via.shinvia.lifecycle.reference.service;
 
 import com.via.shinvia.lifecycle.common.model.LifecycleEventType;
 import com.via.shinvia.lifecycle.common.model.LifestyleLevel;
+import com.via.shinvia.lifecycle.common.model.VehicleClass;
+import com.via.shinvia.lifecycle.common.model.VehicleCondition;
 import com.via.shinvia.lifecycle.reference.dto.LifecycleReferenceDto;
 import com.via.shinvia.lifecycle.reference.mapper.LifecycleReferenceMapper;
 import lombok.RequiredArgsConstructor;
@@ -93,6 +95,32 @@ public class LifecycleReferenceService {
             throw missingValue("numeric_value", eventType, referenceType);
         }
         return reference.getNumericValue();
+    }
+
+    public BigDecimal getVehicleAmount(
+            String referenceType,
+            VehicleClass vehicleClass,
+            VehicleCondition vehicleCondition
+    ) {
+        if (vehicleClass == null) {
+            throw new IllegalArgumentException("차량 차급은 필수입니다.");
+        }
+        LifecycleReferenceDto reference = lifecycleReferenceMapper.findLatestVehicleReference(
+                LifecycleEventType.VEHICLE_PURCHASE,
+                referenceType,
+                vehicleClass,
+                vehicleCondition
+        );
+        if (reference == null || reference.getAmountValue() == null) {
+            throw missingReference(
+                    LifecycleEventType.VEHICLE_PURCHASE,
+                    referenceType,
+                    null,
+                    null,
+                    null
+            );
+        }
+        return reference.getAmountValue();
     }
 
     private void validateKey(LifecycleEventType eventType, String referenceType) {
