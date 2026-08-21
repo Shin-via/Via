@@ -86,4 +86,15 @@ public class LifecycleSimulationController {
                 currentUser.getUserId(authentication), resultId);
         return result != null ? ResponseEntity.ok(result) : ResponseEntity.notFound().build();
     }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/results/{resultId:\\d+}")
+    public ResponseEntity<Void> deleteSavedResult(
+            Authentication authentication,
+            @PathVariable Long resultId
+    ) {
+        lifecycleSimulationService.deleteSavedResult(
+                currentUser.getUserId(authentication), resultId
+        );
+        return ResponseEntity.noContent().build();
+    }
 }

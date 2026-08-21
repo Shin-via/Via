@@ -38,6 +38,16 @@ public interface LifecycleScenarioMapper {
             @Param("userId") Long userId
     );
 
+    int deleteSimulationResultByScenarioIdAndUserId(
+            @Param("scenarioId") Long scenarioId,
+            @Param("userId") Long userId
+    );
+
+    int clearSimulationResult(
+            @Param("scenarioId") Long scenarioId,
+            @Param("userId") Long userId
+    );
+
     int updateSimulationResult(
             @Param("scenarioId") Long scenarioId,
             @Param("userId") Long userId,

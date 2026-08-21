@@ -126,8 +126,26 @@ public class LifecycleSimulationService {
     @Transactional
     public List<LifecycleScenarioResultRecord> getSavedResults(Long userId) {
         ensureResultStorage();
-        lifecycleScenarioMapper.backfillSimulationResults(userId);
         return lifecycleScenarioMapper.findSimulationResultRecordsByUserId(userId);
+    }
+
+    @Transactional
+    public void deleteSavedResult(Long userId, Long resultId) {
+        ensureResultStorage();
+        LifecycleScenarioResultRecord record =
+                lifecycleScenarioMapper.findSimulationResultRecordById(resultId, userId);
+        if (record == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND,
+                    "저장된 시나리오 결과를 찾을 수 없습니다."
+            );
+        }
+        lifecycleScenarioMapper.deleteSimulationResultByScenarioIdAndUserId(
+                record.getLifecycleScenarioId(), userId
+        );
+        lifecycleScenarioMapper.clearSimulationResult(
+                record.getLifecycleScenarioId(), userId
+        );
     }
 
     @Transactional
