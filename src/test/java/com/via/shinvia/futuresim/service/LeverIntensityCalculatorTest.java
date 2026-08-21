@@ -150,20 +150,21 @@ class LeverIntensityCalculatorTest {
         List<BigDecimal> presets = calculator().presetIntensitiesFor(USER_ID, LeverIntensityCalculator.LeverType.LOAN_PREPAYMENT);
 
         assertThat(presets).hasSize(3);
-        assertThat(presets.get(0)).isEqualByComparingTo("10000000");
-        assertThat(presets.get(1)).isEqualByComparingTo("50000000");
+        assertThat(presets.get(0)).isEqualByComparingTo("1000000");
+        assertThat(presets.get(1)).isEqualByComparingTo("5000000");
         assertThat(presets.get(2)).isEqualByComparingTo("80000000");
     }
 
     @Test
-    void 대출_잔액이_작아_최대_강도가_기본값보다_작으면_프리셋은_2개로_줄어든다() {
+    void 대출_잔액이_작아도_최소_기본_최대_강도_프리셋을_제공한다() {
         when(loanMapper.findNormalLoansByUserId(USER_ID)).thenReturn(List.of(loan(new BigDecimal("30000000"))));
 
         List<BigDecimal> presets = calculator().presetIntensitiesFor(USER_ID, LeverIntensityCalculator.LeverType.LOAN_PREPAYMENT);
 
-        assertThat(presets).hasSize(2);
-        assertThat(presets.get(0)).isEqualByComparingTo("10000000");
-        assertThat(presets.get(1)).isEqualByComparingTo("30000000");
+        assertThat(presets).hasSize(3);
+        assertThat(presets.get(0)).isEqualByComparingTo("1000000");
+        assertThat(presets.get(1)).isEqualByComparingTo("5000000");
+        assertThat(presets.get(2)).isEqualByComparingTo("30000000");
     }
 
     @Test
