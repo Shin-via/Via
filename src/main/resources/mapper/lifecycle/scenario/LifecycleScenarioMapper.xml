@@ -82,10 +82,24 @@
 
     <update id="archiveScenario">
         UPDATE lifecycle_scenario
-        SET status = 'ARCHIVED'
+        SET status = 'ARCHIVED',
+            result_data = NULL
         WHERE lifecycle_scenario_id = #{scenarioId}
           AND user_id = #{userId}
           AND status != 'ARCHIVED'
+    </update>
+
+    <delete id="deleteSimulationResultByScenarioIdAndUserId">
+        DELETE FROM lifecycle_scenario_result
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
+    </delete>
+
+    <update id="clearSimulationResult">
+        UPDATE lifecycle_scenario
+        SET result_data = NULL
+        WHERE lifecycle_scenario_id = #{scenarioId}
+          AND user_id = #{userId}
     </update>
 
     <update id="updateSimulationResult">

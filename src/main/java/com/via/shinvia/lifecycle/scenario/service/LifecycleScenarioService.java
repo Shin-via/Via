@@ -117,6 +117,12 @@ public class LifecycleScenarioService {
 
     @Transactional
     public void archiveScenario(Long userId, Long scenarioId) {
+        getScenario(userId, scenarioId);
+        lifecycleScenarioMapper.ensureSimulationResultTable();
+        lifecycleScenarioMapper.deleteSimulationResultByScenarioIdAndUserId(
+                scenarioId,
+                userId
+        );
         int updated = lifecycleScenarioMapper.archiveScenario(
                 scenarioId,
                 userId

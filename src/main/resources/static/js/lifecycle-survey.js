@@ -747,28 +747,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
         scenarioList.querySelectorAll("[data-archive-scenario]").forEach(button => {
             button.addEventListener("click", async () => {
-                if (!window.confirm("이 시나리오를 삭제하시겠습니까?")) {
+                if (!window.confirm("이 시나리오를 삭제하시겠습니까? 저장된 시나리오 결과도 함께 삭제됩니다.")) {
                     return;
                 }
-                const archivedId = Number(button.dataset.archiveScenario);
-                const response = await fetch(`/api/lifecycle/scenarios/${archivedId}`, {
-                    method: "DELETE"
-                });
-                if (!response.ok) {
-                    alert("시나리오를 삭제하지 못했습니다.");
-                    return;
-                }
-                if (scenarioId === archivedId) {
-                    scenarioId = null;
-                    scenarioName = null;
-                    updateScenarioUrl(null);
-                    resetScenarioWorkspace();
-                    if (activeScenarioName) {
-                        activeScenarioName.textContent = "선택된 시나리오 없음";
+                button.disabled = true;
+                try {
+                    const archivedId = Number(button.dataset.archiveScenario);
+                    const response = await fetch(`/api/lifecycle/scenarios/${archivedId}`, {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json" },
+                        cache: "no-store"
+                    });
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        throw new Error(`시나리오 삭제 실패: ${response.status} ${errorBody}`);
                     }
-                    setBaseSurveyReady(true);
+                    if (Number(scenarioId) === archivedId) {
+                        scenarioId = null;
+                        scenarioName = null;
+                        updateScenarioUrl(null);
+                        resetScenarioWorkspace();
+                        if (activeScenarioName) {
+                            activeScenarioName.textContent = "선택된 시나리오 없음";
+                        }
+                        setBaseSurveyReady(true);
+                    }
+                    await Promise.all([
+                        loadScenarioList(),
+                        loadSavedResultList()
+                    ]);
+                } catch (error) {
+                    console.error(error);
+                    alert("시나리오를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.");
+                } finally {
+                    button.disabled = false;
                 }
-                await loadScenarioList();
             });
         });
     }
@@ -3152,7 +3165,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <time>${escapeHtml(String(result.simulatedAt || "").replace("T", " ").substring(0, 16))}</time>
                         <small>총비용 ${escapeHtml(formatCompactMoney(result.totalEventCost))} · 최종 순자산 ${escapeHtml(formatCompactMoney(result.finalNetAsset))}</small>
                     </div>
-                    <button type="button" class="lifecycle-secondary-button" data-load-result="${result.lifecycleScenarioResultId}">결과 불러오기</button>
+                    <div class="lifecycle-saved-result-actions">
+                        <button type="button" class="lifecycle-secondary-button" data-load-result="${result.lifecycleScenarioResultId}">결과 불러오기</button>
+                        <button type="button" class="lifecycle-secondary-button" data-delete-result="${result.lifecycleScenarioResultId}">삭제</button>
+                    </div>
                 </article>
             `).join("");
             savedResultList.querySelectorAll("[data-load-result]").forEach(button => {
@@ -3173,6 +3189,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     } catch (error) {
                         console.error(error);
                         alert("저장된 시나리오 결과를 불러오지 못했습니다.");
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            });
+            savedResultList.querySelectorAll("[data-delete-result]").forEach(button => {
+                button.addEventListener("click", async () => {
+                    if (!window.confirm("저장된 시나리오 결과를 삭제하시겠습니까? 진행 중인 시나리오는 유지됩니다.")) return;
+                    button.disabled = true;
+                    try {
+                        const response = await fetch(`/api/lifecycle/scenarios/results/${button.dataset.deleteResult}`, {
+                            method: "DELETE",
+                            headers: { "Accept": "application/json" },
+                            cache: "no-store"
+                        });
+                        if (!response.ok) throw new Error(`저장 결과 삭제 실패: ${response.status} ${await response.text()}`);
+                        await loadSavedResultList();
+                    } catch (error) {
+                        console.error(error);
+                        alert("저장된 시나리오 결과를 삭제하지 못했습니다.");
                     } finally {
                         button.disabled = false;
                     }
